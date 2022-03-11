@@ -1,0 +1,24 @@
+<configuration>
+
+    <appender name="fout" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>output.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>output_%i.log</fileNamePattern>
+            <minIndex>1</minIndex>
+            <maxIndex>100</maxIndex>
+        </rollingPolicy>
+
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>100MB</maxFileSize>
+        </triggeringPolicy>
+
+        <encoder>
+            <pattern>%d{yyyy.MM.dd HH:mm:ss} [%t] %p %c %m%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="DEBUG">
+        <appender-ref ref="fout" />
+    </root>
+</configuration>
