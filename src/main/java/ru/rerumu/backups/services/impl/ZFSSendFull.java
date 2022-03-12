@@ -45,4 +45,12 @@ public class ZFSSendFull implements ZFSSend {
         }
         logger.info("Process closed");
     }
+
+    @Override
+    public void kill() throws InterruptedException {
+        logger.info("Killing process");
+        process.destroy();
+        errThread.join();
+        logger.info("Process killed");
+    }
 }

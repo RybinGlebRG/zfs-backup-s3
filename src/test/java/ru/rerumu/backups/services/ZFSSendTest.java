@@ -26,6 +26,11 @@ public class ZFSSendTest implements ZFSSend{
 
     }
 
+    @Override
+    public void kill() {
+
+    }
+
     public byte[] getSrc() {
         return src;
     }

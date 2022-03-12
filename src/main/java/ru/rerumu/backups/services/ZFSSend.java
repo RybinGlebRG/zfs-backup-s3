@@ -8,4 +8,5 @@ public interface ZFSSend {
 
     BufferedInputStream getBufferedInputStream();
     void close() throws InterruptedException, IOException;
+    void kill() throws InterruptedException;
 }

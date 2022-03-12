@@ -1,4 +1,4 @@
-<configuration>
+<configuration scan="true" scanPeriod="10 seconds">
 
     <appender name="fout" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>output.log</file>
