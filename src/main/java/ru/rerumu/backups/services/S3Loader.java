@@ -8,6 +8,8 @@ import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.UploadPartRequest;
 import software.amazon.awssdk.services.s3.model.UploadPartResponse;
+import software.amazon.awssdk.transfer.s3.S3ClientConfiguration;
+import software.amazon.awssdk.transfer.s3.S3TransferManager;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -43,6 +45,19 @@ public class S3Loader {
         }
 
     }
+
+//    public void uploadV2(Path path){
+//        for (S3Storage s3Storage:storages ) {
+//            S3ClientConfiguration s3ClientConfiguration = S3ClientConfiguration.builder()
+//                    .credentialsProvider(StaticCredentialsProvider.create(s3Storage.getCredentials()))
+//                    .region(s3Storage.getRegion())
+//                    .maxConcurrency(1)
+//                    .build();
+//            S3TransferManager s3TransferManager = S3TransferManager.builder()
+//                    .s3ClientConfiguration(s3ClientConfiguration)
+//                    .
+//        }
+//    }
 
     private S3Client prepareS3Client(S3Storage s3Storage){
         S3Client s3 = S3Client.builder()
