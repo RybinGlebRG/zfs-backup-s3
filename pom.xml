@@ -6,7 +6,7 @@
 
     <groupId>ru.rerumu</groupId>
     <artifactId>ZFSBackupS3</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -63,18 +63,6 @@
 
     <build>
         <plugins>
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-jar-plugin</artifactId>-->
-<!--                <version>3.2.2</version>-->
-<!--                <configuration>-->
-<!--                    <archive>-->
-<!--                        <manifest>-->
-<!--                            <mainClass>ru.rerumu.backups.App</mainClass>-->
-<!--                        </manifest>-->
-<!--                    </archive>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
