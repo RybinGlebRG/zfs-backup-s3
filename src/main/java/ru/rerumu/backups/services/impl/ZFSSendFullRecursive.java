@@ -10,17 +10,17 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
-public class ZFSSendFull implements ZFSSend {
+public class ZFSSendFullRecursive implements ZFSSend {
 
-    private final Logger logger = LoggerFactory.getLogger(ZFSSendFull.class);
+    private final Logger logger = LoggerFactory.getLogger(ZFSSendFullRecursive.class);
     private final Process process;
     private final BufferedInputStream bufferedInputStream;
     private final BufferedInputStream bufferedErrorStream;
     private final Thread errThread;
 
-    public ZFSSendFull(Snapshot fullSnapshot) throws IOException {
+    public ZFSSendFullRecursive(Snapshot fullSnapshot) throws IOException {
         logger.info(String.format("Sending snapshot '%s'",fullSnapshot.getFullName()));
-        ProcessBuilder pb = new ProcessBuilder(Arrays.asList("zfs","send","-v",fullSnapshot.getFullName()));
+        ProcessBuilder pb = new ProcessBuilder(Arrays.asList("zfs","send","-vR",fullSnapshot.getFullName()));
         process = pb.start();
         bufferedInputStream = new BufferedInputStream(process.getInputStream());
         bufferedErrorStream = new BufferedInputStream(process.getErrorStream());

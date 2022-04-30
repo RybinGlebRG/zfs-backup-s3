@@ -10,15 +10,9 @@ import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.repositories.FilePartRepository;
 import ru.rerumu.backups.repositories.SnapshotRepository;
 import ru.rerumu.backups.repositories.impl.FilePartRepositoryImpl;
-import ru.rerumu.backups.services.S3Loader;
-import ru.rerumu.backups.services.ZFSBackupsService;
-import ru.rerumu.backups.services.ZFSSend;
-import ru.rerumu.backups.services.ZFSSendFactory;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.regions.Region;
+import ru.rerumu.backups.services.*;
 
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Paths;
 
 public class SendController {
@@ -34,8 +28,9 @@ public class SendController {
             boolean isLoadAWS,
             long filePartSize,
             boolean isDeleteAfterUpload) throws IOException, CompressorException, InterruptedException, EncryptException {
-        ZFSBackupsService zfsBackupsService = new ZFSBackupsService(password);
+
         ZFSSendFactory zfsSendFactory = new ZFSSendFactory();
+        ZFSBackupsService zfsBackupsService = new ZFSBackupsService(password,new ZFSProcessFactory());
         logger.info("Start 'sendFull'");
         ZFSSend zfsSendFull = zfsSendFactory.getZFSSendFull(fullSnapshot);
         FilePartRepository filePartRepository = new FilePartRepositoryImpl(
@@ -48,14 +43,13 @@ public class SendController {
             s3Loader.addStorage(s3Storage);
         }
 
-        zfsBackupsService.zfsSend(
-                zfsSendFull,
+        zfsBackupsService.zfsSendFull(
                 chunkSize,
                 isLoadAWS,
                 filePartSize,
                 filePartRepository,
-                isDeleteAfterUpload,
-                s3Loader
+                s3Loader,
+                fullSnapshot
         );
 
         // TODO: Kill processes and threads if exception

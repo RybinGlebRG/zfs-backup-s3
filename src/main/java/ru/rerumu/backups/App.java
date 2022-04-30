@@ -29,7 +29,8 @@ public class App {
             logger.info("Mode is '"+mode+"'");
             Configuration configuration = new Configuration();
             ZFSBackupsService zfsBackupsService = new ZFSBackupsService(
-                    configuration.getProperty("password")
+                    configuration.getProperty("password"),
+                    new ZFSProcessFactory()
             );
             switch (mode) {
                 case "sendFull": {

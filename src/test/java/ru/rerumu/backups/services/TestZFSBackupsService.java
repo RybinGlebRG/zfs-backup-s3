@@ -1,7 +1,6 @@
 package ru.rerumu.backups.services;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
@@ -12,17 +11,13 @@ import ru.rerumu.backups.exceptions.CompressorException;
 import ru.rerumu.backups.exceptions.EncryptException;
 import ru.rerumu.backups.exceptions.NoMorePartsException;
 import ru.rerumu.backups.exceptions.TooManyPartsException;
-import ru.rerumu.backups.models.CryptoMessage;
 import ru.rerumu.backups.repositories.FilePartRepository;
 import ru.rerumu.backups.repositories.FilePartRepositoryTest;
 import ru.rerumu.backups.repositories.impl.FilePartRepositoryImpl;
-import ru.rerumu.backups.services.impl.AESCryptor;
-import ru.rerumu.backups.services.impl.GZIPCompressor;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,7 +35,7 @@ public class TestZFSBackupsService {
         S3Loader s3LoaderMock = Mockito.mock(S3Loader.class);
         ArgumentCaptor<Path> argumentCaptorPath = ArgumentCaptor.forClass(Path.class);
 
-        zfsBackupsServiceSend.zfsSend(
+        zfsBackupsServiceSend.zfsSendFull(
                 zfsSendTest,
                 40000,
                 true,
@@ -77,7 +72,7 @@ public class TestZFSBackupsService {
         Runnable runnableSend = ()->{
             Logger logger = LoggerFactory.getLogger("runnableSend");
             try {
-                zfsBackupsServiceSend.zfsSend(
+                zfsBackupsServiceSend.zfsSendFull(
                         zfsSendTest,
                         40000,
                         false,
