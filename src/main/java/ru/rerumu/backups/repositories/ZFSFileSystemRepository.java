@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface ZFSFileSystemRepository {
     List<ZFSFileSystem> getAllFilesystems(ZFSPool pool);
+    List<ZFSFileSystem> getFilesystemsTreeList(ZFSFileSystem zfsFileSystem);
 }

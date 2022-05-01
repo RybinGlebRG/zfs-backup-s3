@@ -3,15 +3,15 @@ package ru.rerumu.backups;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.backups.controllers.SendController;
+import ru.rerumu.backups.controllers.BackupController;
+import ru.rerumu.backups.controllers.RestoreController;
 import ru.rerumu.backups.models.S3Storage;
 import ru.rerumu.backups.models.Snapshot;
+import ru.rerumu.backups.models.ZFSPool;
 import ru.rerumu.backups.repositories.FilePartRepository;
 import ru.rerumu.backups.repositories.impl.FilePartRepositoryImpl;
 import ru.rerumu.backups.repositories.SnapshotRepository;
 import ru.rerumu.backups.services.*;
-import ru.rerumu.backups.services.S3Loader;
-import ru.rerumu.backups.services.impl.AESCryptor;
 import ru.rerumu.backups.services.impl.ZFSReceiveImpl;
 import software.amazon.awssdk.regions.Region;
 
@@ -28,34 +28,22 @@ public class App {
             String mode = System.getProperty("mode");
             logger.info("Mode is '"+mode+"'");
             Configuration configuration = new Configuration();
-            ZFSBackupsService zfsBackupsService = new ZFSBackupsService(
-                    configuration.getProperty("password"),
-                    new ZFSProcessFactory()
-            );
+
             switch (mode) {
-                case "sendFull": {
-                    SendController sendController = new SendController();
-                    sendController.sendFull(
+                case "backupFull": {
+                    BackupController backupController = new BackupController();
+                    backupController.backupFull(
                             configuration.getProperty("full.snapshot"),
                             configuration.getProperty("backup.directory"),
                             new S3Storage[]{
-//                                    new S3Storage(
-//                                            Region.of(configuration.getProperty("s3.aws.region_name")),
-//                                            configuration.getProperty("s3.aws.full.s3_bucket"),
-//                                            configuration.getProperty("s3.aws.access_key_id"),
-//                                            configuration.getProperty("s3.aws.secret_access_key"),
-//                                            Paths.get(configuration.getProperty("s3.aws.full.prefix")),
-//                                            new URI(configuration.getProperty("s3.aws.endpoint_url")),
-//                                            configuration.getProperty("s3.aws.full.storage_class")
-//                                    ),
                                     new S3Storage(
-                                            Region.of(configuration.getProperty("s3.yandex.region_name")),
-                                            configuration.getProperty("s3.yandex.full.s3_bucket"),
-                                            configuration.getProperty("s3.yandex.access_key_id"),
-                                            configuration.getProperty("s3.yandex.secret_access_key"),
-                                            Paths.get(configuration.getProperty("s3.yandex.full.prefix")),
-                                            new URI(configuration.getProperty("s3.yandex.endpoint_url")),
-                                            configuration.getProperty("s3.yandex.full.storage_class")
+                                            Region.of(configuration.getProperty("s3.region_name")),
+                                            configuration.getProperty("s3.full.s3_bucket"),
+                                            configuration.getProperty("s3.access_key_id"),
+                                            configuration.getProperty("s3.secret_access_key"),
+                                            Paths.get(configuration.getProperty("s3.full.prefix")),
+                                            new URI(configuration.getProperty("s3.endpoint_url")),
+                                            configuration.getProperty("s3.full.storage_class")
                                     )
                             },
                             configuration.getProperty("password"),
@@ -67,17 +55,14 @@ public class App {
                     );
                     break;
                 }
-                case "receive": {
-                    ZFSReceiveImpl zfsReceive = new ZFSReceiveImpl(configuration.getProperty("receive.pool"));
-                    FilePartRepository filePartRepository = new FilePartRepositoryImpl(
-                            Paths.get(configuration.getProperty("backup.directory")),
-                            new SnapshotRepository(new Snapshot(configuration.getProperty("full.snapshot"))).getLastFullSnapshot().getName()
+                case "restore": {
+                    RestoreController restoreController = new RestoreController();
+                    restoreController.restore(
+                            configuration.getProperty("backup.directory"),
+                            configuration.getProperty("password"),
+                            Boolean.parseBoolean(configuration.getProperty("is.delete.after.receive")),
+                            new ZFSPool(configuration.getProperty("receive.pool"))
                     );
-
-                    zfsBackupsService.zfsReceive(
-                            zfsReceive,
-                            filePartRepository,
-                            Boolean.parseBoolean(configuration.getProperty("is.delete.after.receive")));
                     break;
                 }
                 default:

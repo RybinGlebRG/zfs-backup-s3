@@ -21,62 +21,18 @@ public class FilePartRepositoryImpl implements FilePartRepository {
 
     private static final String filePostfix = ".part";
     private static final String FINISH_MARK = "finished";
-    private final String fileSuffix;
     private final Path backupDirectory;
     private final Logger logger = LoggerFactory.getLogger(FilePartRepositoryImpl.class);
     private Path lastPart;
     private int n = 0;
 
-    public FilePartRepositoryImpl(Path backupDirectory,
-                                  String fileSuffix){
+    public FilePartRepositoryImpl(Path backupDirectory) {
 
         this.backupDirectory = backupDirectory;
-        this.fileSuffix = fileSuffix;
     }
 
     public Path getLastPart() {
         return lastPart;
-    }
-
-    @Override
-    public boolean isLastPartExists() {
-        logger.info(String.format("Checking '%s' exists",lastPart.toString()));
-        return Files.exists(lastPart);
-    }
-
-    public BufferedInputStream getNextInputStream() throws NoMorePartsException, FinishedFlagException, IOException, TooManyPartsException {
-        List<Path> fileParts = new ArrayList<>();
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(backupDirectory)) {
-            for (Path item : stream) {
-                logger.info(String.format("Found file '%s'",item.toString()));
-                if (item.toString().endsWith(".ready") || item.getFileName().toString().equals(FINISH_MARK)) {
-                    logger.info(String.format("Accepted file '%s'",item.toString()));
-                    fileParts.add(item);
-                }
-            }
-        }
-
-        if (fileParts.size() == 0){
-            throw new NoMorePartsException();
-        }
-        else if (fileParts.size() > 1){
-            throw new TooManyPartsException();
-        }
-        else {
-
-            Path filePart = fileParts.get(0);
-            if (filePart.getFileName().toString().equals(FINISH_MARK)) {
-                throw new FinishedFlagException();
-            }
-
-            lastPart = filePart;
-            InputStream inputStream = Files.newInputStream(filePart);
-            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
-
-            return bufferedInputStream;
-        }
-
-
     }
 
     public void deleteLastPart() throws IOException {
@@ -86,28 +42,81 @@ public class FilePartRepositoryImpl implements FilePartRepository {
     @Override
     public void markReceivedLastPart() throws IOException {
         String fileName = lastPart.getFileName().toString();
-        fileName = fileName.replace(".ready",".received");
-        Path res = Paths.get(lastPart.getParent().toString(),fileName);
-        Files.move(lastPart,res);
-        lastPart=res;
+        fileName = fileName.replace(".ready", ".received");
+        Path res = Paths.get(lastPart.getParent().toString(), fileName);
+        Files.move(lastPart, res);
+        lastPart = res;
     }
 
     @Override
-    public void markReadyLastPart() throws IOException {
-        String fileName = lastPart.getFileName().toString();
-        fileName = fileName+".ready";
-        Path res = Paths.get(lastPart.getParent().toString(),fileName);
-        Files.move(lastPart,res);
-        lastPart=res;
+    public Path createNewFilePath(String prefix, int partNumber) {
+        Path filePart = Paths.get(backupDirectory.toString(), prefix + filePostfix + partNumber);
+        return filePart;
     }
 
     @Override
-    public BufferedOutputStream newPart() throws IOException {
-        Path filePart = Paths.get(backupDirectory.toString(), fileSuffix + filePostfix + n);
-        lastPart = filePart;
-        BufferedOutputStream outputStream = new BufferedOutputStream(Files.newOutputStream(filePart));
-        n++;
-        return outputStream;
+    public OutputStream createNewOutputStream(Path path) throws IOException {
+        return Files.newOutputStream(path);
     }
 
+    @Override
+    public void delete(Path path) throws IOException {
+        Files.delete(path);
+    }
+
+    @Override
+    public Path markReady(Path path) throws IOException {
+        Path res = Paths.get(path.toString() + ".ready");
+        Files.move(path, res);
+        return res;
+    }
+
+    @Override
+    public boolean isExists(Path path) {
+        logger.info(String.format("Checking '%s' exists", path.toString()));
+        return Files.exists(path);
+    }
+
+    @Override
+    public Path markReceived(Path path) throws IOException {
+        String fileName = path.getFileName().toString();
+        fileName = fileName.replace(".ready", ".received");
+        Path res = Paths.get(path.getParent().toString(), fileName);
+        Files.move(path, res);
+        return res;
+    }
+
+    @Override
+    public Path getNextInputPath() throws NoMorePartsException, FinishedFlagException, IOException, TooManyPartsException {
+        List<Path> fileParts = new ArrayList<>();
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(backupDirectory)) {
+            for (Path item : stream) {
+                logger.info(String.format("Found file '%s'", item.toString()));
+                if (item.toString().endsWith(".ready") || item.getFileName().toString().equals(FINISH_MARK)) {
+                    logger.info(String.format("Accepted file '%s'", item.toString()));
+                    fileParts.add(item);
+                }
+            }
+        }
+
+        if (fileParts.size() == 0) {
+            throw new NoMorePartsException();
+        } else if (fileParts.size() > 1) {
+            throw new TooManyPartsException();
+        } else {
+
+            Path filePart = fileParts.get(0);
+            if (filePart.getFileName().toString().equals(FINISH_MARK)) {
+                throw new FinishedFlagException();
+            }
+
+            return filePart;
+
+        }
+    }
+
+    @Override
+    public InputStream createNewInputStream(Path path) throws IOException {
+        return Files.newInputStream(path);
+    }
 }

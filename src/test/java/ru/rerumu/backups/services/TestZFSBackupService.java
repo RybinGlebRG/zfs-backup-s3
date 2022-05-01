@@ -21,12 +21,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TestZFSBackupsService {
+public class TestZFSBackupService {
 
 
     @Test
     void shouldSendS3() throws CompressorException, IOException, InterruptedException, EncryptException, NoMorePartsException, TooManyPartsException, ClassNotFoundException {
-        ZFSBackupsService zfsBackupsServiceSend = new ZFSBackupsService(
+        ZFSBackupService zfsBackupServiceSend = new ZFSBackupService(
                 "gWR9IPAzbSaOfPp0"
         );
 
@@ -35,7 +35,7 @@ public class TestZFSBackupsService {
         S3Loader s3LoaderMock = Mockito.mock(S3Loader.class);
         ArgumentCaptor<Path> argumentCaptorPath = ArgumentCaptor.forClass(Path.class);
 
-        zfsBackupsServiceSend.zfsSendFull(
+        zfsBackupServiceSend.zfsBackupFull(
                 zfsSendTest,
                 40000,
                 true,
@@ -55,7 +55,7 @@ public class TestZFSBackupsService {
 
     @Test
     void shouldSendReceive(@TempDir Path tempDir) throws CompressorException, IOException, InterruptedException, EncryptException, NoMorePartsException, TooManyPartsException, ClassNotFoundException {
-        ZFSBackupsService zfsBackupsServiceSend = new ZFSBackupsService(
+        ZFSBackupService zfsBackupServiceSend = new ZFSBackupService(
                 "gWR9IPAzbSaOfPp0"
         );
 
@@ -64,7 +64,7 @@ public class TestZFSBackupsService {
         FilePartRepository filePartRepositoryReceive = new FilePartRepositoryImpl(tempDir,"MainPool@level0_25_02_2020__20_50");
         S3Loader s3LoaderMock = Mockito.mock(S3Loader.class);
 
-        ZFSBackupsService zfsBackupsServiceReceive = new ZFSBackupsService(
+        ZFSBackupService zfsBackupServiceReceive = new ZFSBackupService(
                 "gWR9IPAzbSaOfPp0"
         );
         ZFSReceiveTest zfsReceiveTest = new ZFSReceiveTest();
@@ -72,7 +72,7 @@ public class TestZFSBackupsService {
         Runnable runnableSend = ()->{
             Logger logger = LoggerFactory.getLogger("runnableSend");
             try {
-                zfsBackupsServiceSend.zfsSendFull(
+                zfsBackupServiceSend.zfsBackupFull(
                         zfsSendTest,
                         40000,
                         false,
@@ -90,7 +90,7 @@ public class TestZFSBackupsService {
         Runnable runnableReceive = ()->{
             Logger logger = LoggerFactory.getLogger("runnableReceive");
             try {
-                zfsBackupsServiceReceive.zfsReceive(
+                zfsBackupServiceReceive.zfsReceive(
                         zfsReceiveTest,
                         filePartRepositoryReceive,
                         false

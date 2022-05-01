@@ -10,17 +10,20 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
-public class ZFSSendFull implements ZFSSend {
+public class ZFSSendIncremental implements ZFSSend {
 
-    private final Logger logger = LoggerFactory.getLogger(ZFSSendFull.class);
+    private final Logger logger = LoggerFactory.getLogger(ZFSSendIncremental.class);
     private final Process process;
     private final BufferedInputStream bufferedInputStream;
     private final BufferedInputStream bufferedErrorStream;
     private final Thread errThread;
 
-    public ZFSSendFull(Snapshot fullSnapshot) throws IOException {
-        logger.info(String.format("Sending snapshot '%s'",fullSnapshot.getFullName()));
-        ProcessBuilder pb = new ProcessBuilder(Arrays.asList("zfs","send","-vpP",fullSnapshot.getFullName()));
+    public ZFSSendIncremental(Snapshot baseSnapshot, Snapshot incrementalSnapshot) throws IOException {
+        logger.info(String.format(
+                "Sending incremental snapshot '%s'. Base snapshot - '%s'",
+                incrementalSnapshot.getFullName(),
+                baseSnapshot.getFullName()));
+        ProcessBuilder pb = new ProcessBuilder(Arrays.asList("zfs", "send", "-vpPi", baseSnapshot.getFullName(), incrementalSnapshot.getFullName()));
         process = pb.start();
         bufferedInputStream = new BufferedInputStream(process.getInputStream());
         bufferedErrorStream = new BufferedInputStream(process.getErrorStream());
