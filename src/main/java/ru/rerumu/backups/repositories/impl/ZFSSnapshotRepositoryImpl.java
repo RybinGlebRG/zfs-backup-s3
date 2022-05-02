@@ -10,6 +10,7 @@ import ru.rerumu.backups.services.impl.ZFSProcessFactoryImpl;
 import ru.rerumu.backups.zfs_api.ProcessWrapper;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,7 +30,8 @@ public class ZFSSnapshotRepositoryImpl implements ZFSSnapshotRepository {
         byte[] buf = zfsListSnapshots.getBufferedInputStream().readAllBytes();
         zfsListSnapshots.close();
 
-        String str = Arrays.toString(buf);
+//        String str = Arrays.toString(buf);
+        String str = new String(buf, StandardCharsets.UTF_8);
         String[] lines = str.split("\\n");
 
         List<Snapshot> snapshotList = new ArrayList<>();
