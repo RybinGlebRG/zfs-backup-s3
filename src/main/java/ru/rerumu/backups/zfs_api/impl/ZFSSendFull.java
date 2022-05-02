@@ -1,26 +1,26 @@
-package ru.rerumu.backups.services.impl;
+package ru.rerumu.backups.zfs_api.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.models.Snapshot;
-import ru.rerumu.backups.services.InputStreamLogger;
-import ru.rerumu.backups.services.ZFSSend;
+import ru.rerumu.backups.zfs_api.InputStreamLogger;
+import ru.rerumu.backups.zfs_api.ZFSSend;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
-public class ZFSSendFullRecursive implements ZFSSend {
+public class ZFSSendFull implements ZFSSend {
 
-    private final Logger logger = LoggerFactory.getLogger(ZFSSendFullRecursive.class);
+    private final Logger logger = LoggerFactory.getLogger(ZFSSendFull.class);
     private final Process process;
     private final BufferedInputStream bufferedInputStream;
     private final BufferedInputStream bufferedErrorStream;
     private final Thread errThread;
 
-    public ZFSSendFullRecursive(Snapshot fullSnapshot) throws IOException {
+    public ZFSSendFull(Snapshot fullSnapshot) throws IOException {
         logger.info(String.format("Sending snapshot '%s'",fullSnapshot.getFullName()));
-        ProcessBuilder pb = new ProcessBuilder(Arrays.asList("zfs","send","-vR",fullSnapshot.getFullName()));
+        ProcessBuilder pb = new ProcessBuilder(Arrays.asList("zfs","send","-vpP",fullSnapshot.getFullName()));
         process = pb.start();
         bufferedInputStream = new BufferedInputStream(process.getInputStream());
         bufferedErrorStream = new BufferedInputStream(process.getErrorStream());

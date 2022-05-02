@@ -11,8 +11,11 @@ import ru.rerumu.backups.repositories.ZFSFileSystemRepository;
 import ru.rerumu.backups.repositories.ZFSSnapshotRepository;
 import ru.rerumu.backups.services.impl.AESCryptor;
 import ru.rerumu.backups.services.impl.GZIPCompressor;
+import ru.rerumu.backups.services.impl.ZFSProcessFactoryImpl;
+import ru.rerumu.backups.zfs_api.ZFSSend;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -21,24 +24,30 @@ public class ZFSBackupService {
 
     private final String password;
     private final Logger logger = LoggerFactory.getLogger(ZFSBackupService.class);
-    private final ZFSProcessFactory zfsProcessFactory;
+    private final ZFSProcessFactoryImpl zfsProcessFactory;
     private final int chunkSize;
     private final boolean isLoadS3;
     private final long filePartSize;
     private final FilePartRepository filePartRepository;
+    private final ZFSFileSystemRepository zfsFileSystemRepository;
+    private final ZFSSnapshotRepository zfsSnapshotRepository;
 
     public ZFSBackupService(String password,
-                            ZFSProcessFactory zfsProcessFactory,
+                            ZFSProcessFactoryImpl zfsProcessFactory,
                             int chunkSize,
                             boolean isLoadS3,
                             long filePartSize,
-                            FilePartRepository filePartRepository) {
+                            FilePartRepository filePartRepository,
+                            ZFSFileSystemRepository zfsFileSystemRepository,
+                            ZFSSnapshotRepository zfsSnapshotRepository) {
         this.password = password;
         this.zfsProcessFactory = zfsProcessFactory;
         this.chunkSize = chunkSize;
         this.isLoadS3 = isLoadS3;
         this.filePartSize = filePartSize;
         this.filePartRepository = filePartRepository;
+        this.zfsFileSystemRepository = zfsFileSystemRepository;
+        this.zfsSnapshotRepository = zfsSnapshotRepository;
     }
 
     private void writeToFile(ZFSSend zfsSend, Path path)
@@ -51,7 +60,7 @@ public class ZFSBackupService {
         Cryptor cryptor = new AESCryptor(password);
         Compressor compressor = new GZIPCompressor();
 
-        try (OutputStream outputStream = filePartRepository.createNewOutputStream(path);
+        try (OutputStream outputStream = Files.newOutputStream(path);
              ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream)) {
             logger.info(String.format("Writing stream to file '%s'", path.toString()));
             long written = 0;
@@ -83,7 +92,7 @@ public class ZFSBackupService {
             filePartRepository.delete(path);
         } else {
             Path readyPath = filePartRepository.markReady(path);
-            while (filePartRepository.isExists(readyPath)) {
+            while (Files.exists(readyPath)) {
                 logger.debug("Last part exists. Waiting 10 seconds before retry");
                 Thread.sleep(10000);
             }
@@ -117,8 +126,6 @@ public class ZFSBackupService {
 
     // TODO: Test
     public void zfsBackupFull(S3Loader s3Loader,
-                              ZFSFileSystemRepository zfsFileSystemRepository,
-                              ZFSSnapshotRepository zfsSnapshotRepository,
                               Snapshot targetSnapshot) throws
             IOException,
             InterruptedException,

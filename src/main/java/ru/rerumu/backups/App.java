@@ -6,13 +6,7 @@ import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.controllers.BackupController;
 import ru.rerumu.backups.controllers.RestoreController;
 import ru.rerumu.backups.models.S3Storage;
-import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSPool;
-import ru.rerumu.backups.repositories.FilePartRepository;
-import ru.rerumu.backups.repositories.impl.FilePartRepositoryImpl;
-import ru.rerumu.backups.repositories.SnapshotRepository;
-import ru.rerumu.backups.services.*;
-import ru.rerumu.backups.services.impl.ZFSReceiveImpl;
 import software.amazon.awssdk.regions.Region;
 
 import java.net.URI;
@@ -49,8 +43,7 @@ public class App {
                             configuration.getProperty("password"),
                             Integer.parseInt(configuration.getProperty("chunk.size")),
                             Boolean.parseBoolean(configuration.getProperty("is.load.aws")),
-                            Long.parseLong(configuration.getProperty("file.part.size")),
-                            Boolean.parseBoolean(configuration.getProperty("is.delete.after.upload"))
+                            Long.parseLong(configuration.getProperty("file.part.size"))
 
                     );
                     break;

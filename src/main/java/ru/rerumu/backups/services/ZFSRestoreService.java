@@ -4,30 +4,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.*;
 import ru.rerumu.backups.models.CryptoMessage;
-import ru.rerumu.backups.models.Snapshot;
-import ru.rerumu.backups.models.ZFSFileSystem;
 import ru.rerumu.backups.models.ZFSPool;
 import ru.rerumu.backups.repositories.FilePartRepository;
-import ru.rerumu.backups.repositories.ZFSFileSystemRepository;
-import ru.rerumu.backups.repositories.ZFSSnapshotRepository;
 import ru.rerumu.backups.services.impl.AESCryptor;
 import ru.rerumu.backups.services.impl.GZIPCompressor;
+import ru.rerumu.backups.services.impl.ZFSProcessFactoryImpl;
+import ru.rerumu.backups.zfs_api.ZFSReceive;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
 
 public class ZFSRestoreService {
 
     private final String password;
     private final Logger logger = LoggerFactory.getLogger(ZFSRestoreService.class);
-    private final ZFSProcessFactory zfsProcessFactory;
+    private final ZFSProcessFactoryImpl zfsProcessFactory;
     private final boolean isDelete;
     private final FilePartRepository filePartRepository;
 
     public ZFSRestoreService(String password,
-                             ZFSProcessFactory zfsProcessFactory,
+                             ZFSProcessFactoryImpl zfsProcessFactory,
                              boolean isDelete,
                              FilePartRepository filePartRepository) {
         this.password = password;
@@ -58,9 +55,9 @@ public class ZFSRestoreService {
         Compressor compressor = new GZIPCompressor();
 
 
-        try (InputStream inputStream = filePartRepository.createNewInputStream(nextInputPath);
+        try (InputStream inputStream = Files.newInputStream(nextInputPath);
              ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)) {
-            logger.info(String.format("Reading file '%s'", filePartRepository.getLastPart().toString()));
+            logger.info(String.format("Reading file '%s'", nextInputPath.toString()));
             while (true) {
                 logger.trace("Reading object from stream");
                 Object object = objectInputStream.readUnshared();
@@ -110,7 +107,7 @@ public class ZFSRestoreService {
                     logger.info("Finish flag found. Exiting loop");
                     break;
                 } catch (EOFException e) {
-                    logger.info(String.format("End of file '%s'", filePartRepository.getLastPart().toString()));
+                    logger.info(String.format("End of file '%s'", nextInputPath.toString()));
                     processReceivedFile(nextInputPath);
                     break;
                 }

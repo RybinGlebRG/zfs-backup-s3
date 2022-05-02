@@ -1,11 +1,13 @@
 package ru.rerumu.backups.services;
 
+import ru.rerumu.backups.zfs_api.ZFSSend;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Random;
 
-public class ZFSSendTest implements ZFSSend{
+public class ZFSSendTest implements ZFSSend {
     private BufferedInputStream bufferedInputStream;
     private byte[] src;
 
