@@ -7,6 +7,5 @@ import java.io.IOException;
 import java.util.List;
 
 public interface ZFSFileSystemRepository {
-//    List<ZFSFileSystem> getAllFilesystems(ZFSPool pool);
-    List<ZFSFileSystem> getFilesystemsTreeList(ZFSFileSystem zfsFileSystem) throws IOException, InterruptedException;
+    List<ZFSFileSystem> getFilesystemsTreeList(String fileSystemName) throws IOException, InterruptedException;
 }

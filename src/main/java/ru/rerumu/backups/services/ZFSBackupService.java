@@ -17,6 +17,7 @@ import ru.rerumu.backups.zfs_api.ZFSSend;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -24,7 +25,7 @@ public class ZFSBackupService {
 
     private final String password;
     private final Logger logger = LoggerFactory.getLogger(ZFSBackupService.class);
-    private final ZFSProcessFactoryImpl zfsProcessFactory;
+    private final ZFSProcessFactory zfsProcessFactory;
     private final int chunkSize;
     private final boolean isLoadS3;
     private final long filePartSize;
@@ -33,7 +34,7 @@ public class ZFSBackupService {
     private final ZFSSnapshotRepository zfsSnapshotRepository;
 
     public ZFSBackupService(String password,
-                            ZFSProcessFactoryImpl zfsProcessFactory,
+                            ZFSProcessFactory zfsProcessFactory,
                             int chunkSize,
                             boolean isLoadS3,
                             long filePartSize,
@@ -124,19 +125,43 @@ public class ZFSBackupService {
         }
     }
 
+    private void sendIncrementalSnapshots(Snapshot baseSnapshot, List<Snapshot> incrementalSnapshots, S3Loader s3Loader)
+            throws IOException, CompressorException, InterruptedException, EncryptException {
+        for (Snapshot incrementalSnapshot : incrementalSnapshots) {
+            logger.debug(String.format(
+                    "Sending incremental snapshot '%s'. Base snapshot - '%s'",
+                    incrementalSnapshot.getFullName(),
+                    baseSnapshot.getFullName()));
+
+            String streamMark = baseSnapshot.getDataset()
+                    + "_" + baseSnapshot.getName()
+                    + "__" + incrementalSnapshot.getDataset()
+                    + "_" + incrementalSnapshot.getName();
+
+            sendSingleSnapshot(
+                    zfsProcessFactory.getZFSSendIncremental(baseSnapshot, incrementalSnapshot),
+                    s3Loader,
+                    streamMark);
+            baseSnapshot = incrementalSnapshot;
+        }
+    }
+
     // TODO: Test
     public void zfsBackupFull(S3Loader s3Loader,
-                              Snapshot targetSnapshot) throws
+                              String targetSnapshotName,
+                              String parentDatasetName) throws
             IOException,
             InterruptedException,
             CompressorException,
-            EncryptException {
+            EncryptException, BaseSnapshotNotFoundException {
 
-        List<ZFSFileSystem> zfsFileSystemList = zfsFileSystemRepository.getFilesystemsTreeList(new ZFSFileSystem(targetSnapshot.getDataset()));
+        List<ZFSFileSystem> zfsFileSystemList = zfsFileSystemRepository.getFilesystemsTreeList(parentDatasetName);
 
         for (ZFSFileSystem zfsFileSystem : zfsFileSystemList) {
 
-            Snapshot baseSnapshot = zfsSnapshotRepository.getBaseSnapshot(zfsFileSystem);
+            Snapshot baseSnapshot = zfsFileSystem.getBaseSnapshot();
+            List<Snapshot> incrementalSnapshots = zfsFileSystem.getIncrementalSnapshots(targetSnapshotName);
+
             logger.debug(String.format("Sending base snapshot '%s'", baseSnapshot.getFullName()));
             String streamMark = baseSnapshot.getDataset() + "_" + baseSnapshot.getName();
             sendSingleSnapshot(
@@ -144,82 +169,28 @@ public class ZFSBackupService {
                     s3Loader,
                     streamMark);
 
-            List<Snapshot> incrementalSnapshotList = zfsSnapshotRepository.getAllSnapshotsOrdered(zfsFileSystem);
-            for (Snapshot incrementalSnapshot : incrementalSnapshotList) {
-                logger.debug(String.format(
-                        "Sending incremental snapshot '%s'. Base snapshot - '%s'",
-                        incrementalSnapshot.getFullName(),
-                        baseSnapshot.getFullName()));
-
-                streamMark = baseSnapshot.getDataset()
-                        + "_" + baseSnapshot.getName()
-                        + "__" + incrementalSnapshot.getDataset()
-                        + "_" + incrementalSnapshot.getName();
-
-                sendSingleSnapshot(
-                        zfsProcessFactory.getZFSSendIncremental(baseSnapshot, incrementalSnapshot),
-                        s3Loader,
-                        streamMark);
-                if (incrementalSnapshot.getName().equals(targetSnapshot.getName())) {
-                    logger.debug(String.format("Target snapshot '%s' reached", targetSnapshot.getName()));
-                    break;
-                }
-                baseSnapshot = incrementalSnapshot;
-            }
-
+            sendIncrementalSnapshots(baseSnapshot,incrementalSnapshots,s3Loader);
 
         }
     }
 
     // TODO: Test
     public void zfsBackupIncremental(S3Loader s3Loader,
-                                     ZFSFileSystemRepository zfsFileSystemRepository,
-                                     ZFSSnapshotRepository zfsSnapshotRepository,
-                                     Snapshot targetSnapshot,
-                                     Snapshot baseSnapshot) throws
+                                     String baseSnapshotName,
+                                     String targetSnapshotName,
+                                     String parentDatasetName) throws
             IOException,
             InterruptedException,
             CompressorException,
-            EncryptException {
+            EncryptException, SnapshotNotFoundException {
 
-        if (!targetSnapshot.getDataset().equals(baseSnapshot.getDataset())) {
-            throw new IllegalArgumentException();
-        }
+        List<ZFSFileSystem> zfsFileSystemList = zfsFileSystemRepository.getFilesystemsTreeList(parentDatasetName);
 
-        List<ZFSFileSystem> zfsFileSystemList = zfsFileSystemRepository.getFilesystemsTreeList(new ZFSFileSystem(targetSnapshot.getDataset()));
-        boolean isFoundBaseSnapshot = false;
         for (ZFSFileSystem zfsFileSystem : zfsFileSystemList) {
-            List<Snapshot> incrementalSnapshotList = zfsSnapshotRepository.getAllSnapshotsOrdered(zfsFileSystem);
-            for (Snapshot incrementalSnapshot : incrementalSnapshotList) {
-                if (incrementalSnapshot.getName().equals(baseSnapshot.getName())) {
-                    baseSnapshot = incrementalSnapshot;
-                    isFoundBaseSnapshot = true;
-                }
-                if (!isFoundBaseSnapshot) {
-                    continue;
-                }
-                logger.debug(String.format(
-                        "Sending incremental snapshot '%s'. Base snapshot - '%s'",
-                        incrementalSnapshot.getFullName(),
-                        baseSnapshot.getFullName()));
+            List<Snapshot> incrementalSnapshots = zfsFileSystem.getIncrementalSnapshots(baseSnapshotName, targetSnapshotName);
+            Snapshot baseSnapshot = incrementalSnapshots.remove(0);
 
-                String streamMark = baseSnapshot.getDataset()
-                        + "_" + baseSnapshot.getName()
-                        + "__" + incrementalSnapshot.getDataset()
-                        + "_" + incrementalSnapshot.getName();
-
-                sendSingleSnapshot(
-                        zfsProcessFactory.getZFSSendIncremental(baseSnapshot, incrementalSnapshot),
-                        s3Loader,
-                        streamMark);
-                if (incrementalSnapshot.getName().equals(targetSnapshot.getName())) {
-                    logger.debug(String.format("Target snapshot '%s' reached", targetSnapshot.getName()));
-                    break;
-                }
-                baseSnapshot = incrementalSnapshot;
-            }
-
-
+            sendIncrementalSnapshots(baseSnapshot,incrementalSnapshots,s3Loader);
         }
     }
 }

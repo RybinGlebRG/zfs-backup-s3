@@ -19,12 +19,12 @@ public class ZFSRestoreService {
 
     private final String password;
     private final Logger logger = LoggerFactory.getLogger(ZFSRestoreService.class);
-    private final ZFSProcessFactoryImpl zfsProcessFactory;
+    private final ZFSProcessFactory zfsProcessFactory;
     private final boolean isDelete;
     private final FilePartRepository filePartRepository;
 
     public ZFSRestoreService(String password,
-                             ZFSProcessFactoryImpl zfsProcessFactory,
+                             ZFSProcessFactory zfsProcessFactory,
                              boolean isDelete,
                              FilePartRepository filePartRepository) {
         this.password = password;

@@ -11,9 +11,9 @@ import java.util.Arrays;
 public class ZFSListFilesystems extends ProcessWrapperImpl {
     protected final Logger logger = LoggerFactory.getLogger(ZFSListFilesystems.class);
 
-    public ZFSListFilesystems(ZFSFileSystem zfsFileSystem) throws IOException {
+    public ZFSListFilesystems(String parentFileSystem) throws IOException {
         super(Arrays.asList(
-                "zfs","list","-rH","-t","filesystem","-o","name","-s","name",zfsFileSystem.getName()
+                "zfs","list","-rH","-t","filesystem","-o","name","-s","name",parentFileSystem
         ));
     }
 }

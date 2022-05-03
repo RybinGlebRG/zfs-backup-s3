@@ -27,8 +27,7 @@ public class TestZFSSnapshotRepository {
         snapshots.add("ExternalPool/Applications@auto-20210106-150000");
         zfsProcessFactoryTest.setStringList(snapshots);
         ZFSSnapshotRepository zfsSnapshotRepository = new ZFSSnapshotRepositoryImpl(zfsProcessFactoryTest);
-        ZFSFileSystem zfsFileSystem = new ZFSFileSystem("ExternalPool/Applications");
-        List<Snapshot> dst = zfsSnapshotRepository.getAllSnapshotsOrdered(zfsFileSystem);
+        List<Snapshot> dst = zfsSnapshotRepository.getAllSnapshotsOrdered("ExternalPool/Applications");
 
         List<Snapshot> src = new ArrayList<>();
         src.add(new Snapshot("ExternalPool/Applications@auto-20200321-173000"));
@@ -52,8 +51,7 @@ public class TestZFSSnapshotRepository {
         snapshots.add("ExternalPool/Applications@auto-20210106-150000");
         zfsProcessFactoryTest.setStringList(snapshots);
         ZFSSnapshotRepository zfsSnapshotRepository = new ZFSSnapshotRepositoryImpl(zfsProcessFactoryTest);
-        ZFSFileSystem zfsFileSystem = new ZFSFileSystem("ExternalPool/Applications/virtual_box");
-        List<Snapshot> dst = zfsSnapshotRepository.getAllSnapshotsOrdered(zfsFileSystem);
+        List<Snapshot> dst = zfsSnapshotRepository.getAllSnapshotsOrdered("ExternalPool/Applications/virtual_box");
 
         List<Snapshot> src = new ArrayList<>();
         src.add(new Snapshot("ExternalPool/Applications/virtual_box@auto-20220326-150000"));

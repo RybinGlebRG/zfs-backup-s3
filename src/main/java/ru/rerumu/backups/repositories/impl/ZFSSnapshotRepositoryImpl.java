@@ -25,8 +25,8 @@ public class ZFSSnapshotRepositoryImpl implements ZFSSnapshotRepository {
     }
 
     @Override
-    public List<Snapshot> getAllSnapshotsOrdered(ZFSFileSystem zfsFileSystem) throws IOException, InterruptedException {
-        ProcessWrapper zfsListSnapshots = zfsProcessFactory.getZFSListSnapshots(zfsFileSystem);
+    public List<Snapshot> getAllSnapshotsOrdered(String fileSystemName) throws IOException, InterruptedException {
+        ProcessWrapper zfsListSnapshots = zfsProcessFactory.getZFSListSnapshots(fileSystemName);
         byte[] buf = zfsListSnapshots.getBufferedInputStream().readAllBytes();
         zfsListSnapshots.close();
 
@@ -38,17 +38,11 @@ public class ZFSSnapshotRepositoryImpl implements ZFSSnapshotRepository {
 
         for (String line : lines){
             Snapshot snapshot = new Snapshot(line);
-            if (snapshot.getDataset().equals(zfsFileSystem.getName())) {
+            if (snapshot.getDataset().equals(fileSystemName)) {
                 snapshotList.add(snapshot);
             }
         }
 
         return snapshotList;
     }
-
-    @Override
-    public Snapshot getBaseSnapshot(ZFSFileSystem zfsFileSystem) {
-        return null;
-    }
-
 }

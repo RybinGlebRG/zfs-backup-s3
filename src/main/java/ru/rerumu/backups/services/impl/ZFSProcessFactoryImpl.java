@@ -26,12 +26,12 @@ public class ZFSProcessFactoryImpl implements ZFSProcessFactory {
         return new ZFSReceiveImpl(zfsPool.getName());
     }
 
-    public ZFSListFilesystems getZFSListFilesystems(ZFSFileSystem zfsFileSystem) throws IOException {
-        return new ZFSListFilesystems(zfsFileSystem);
+    public ZFSListFilesystems getZFSListFilesystems(String parentFileSystem) throws IOException {
+        return new ZFSListFilesystems(parentFileSystem);
     }
 
-    public ProcessWrapper getZFSListSnapshots(ZFSFileSystem zfsFileSystem) throws IOException {
-        return new ZFSListSnapshots(zfsFileSystem);
+    public ProcessWrapper getZFSListSnapshots(String fileSystemName) throws IOException {
+        return new ZFSListSnapshots(fileSystemName);
     }
 
 

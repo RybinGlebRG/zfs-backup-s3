@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.models.S3Storage;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.repositories.FilePartRepository;
+import ru.rerumu.backups.repositories.ZFSFileSystemRepository;
+import ru.rerumu.backups.repositories.ZFSSnapshotRepository;
 import ru.rerumu.backups.repositories.impl.FilePartRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.ZFSFileSystemRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.ZFSSnapshotRepositoryImpl;
@@ -30,15 +32,19 @@ public class BackupController {
                     Paths.get(backupDirectory)
             );
 
+            ZFSProcessFactory zfsProcessFactory = new ZFSProcessFactoryImpl();
+            ZFSSnapshotRepository zfsSnapshotRepository = new ZFSSnapshotRepositoryImpl(zfsProcessFactory);
+            ZFSFileSystemRepository zfsFileSystemRepository = new ZFSFileSystemRepositoryImpl(zfsProcessFactory,zfsSnapshotRepository);
+
             ZFSBackupService zfsBackupService = new ZFSBackupService(
                     password,
-                    new ZFSProcessFactoryImpl(),
+                    zfsProcessFactory,
                     chunkSize,
                     isLoadAWS,
                     filePartSize,
                     filePartRepository,
-                    new ZFSFileSystemRepositoryImpl(new ZFSProcessFactoryImpl()),
-                    new ZFSSnapshotRepositoryImpl(new ZFSProcessFactoryImpl()));
+                    zfsFileSystemRepository,
+                    zfsSnapshotRepository);
             logger.info("Start 'sendFull'");
 
             S3Loader s3Loader = new S3Loader();
@@ -46,10 +52,11 @@ public class BackupController {
             for (S3Storage s3Storage : s3Storages) {
                 s3Loader.addStorage(s3Storage);
             }
-
+            Snapshot targetSnapshot = new Snapshot(fullSnapshot);
             zfsBackupService.zfsBackupFull(
                     s3Loader,
-                    new Snapshot(fullSnapshot)
+                    targetSnapshot.getName(),
+                    targetSnapshot.getDataset()
             );
 
             // TODO: Kill processes and threads if exception

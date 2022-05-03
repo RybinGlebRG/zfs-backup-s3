@@ -8,8 +8,6 @@ import java.util.List;
 
 public interface ZFSSnapshotRepository {
 
-    List<Snapshot> getAllSnapshotsOrdered(ZFSFileSystem zfsFileSystem) throws IOException, InterruptedException;
-    Snapshot getBaseSnapshot(ZFSFileSystem zfsFileSystem);
-//    List<Snapshot> getIncrementalSnapshotsOrdered(ZFSFileSystem zfsFileSystem);
+    List<Snapshot> getAllSnapshotsOrdered(String fileSystemName) throws IOException, InterruptedException;
 
 }
