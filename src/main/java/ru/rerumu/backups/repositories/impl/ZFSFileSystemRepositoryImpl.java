@@ -8,9 +8,11 @@ import ru.rerumu.backups.repositories.ZFSFileSystemRepository;
 import ru.rerumu.backups.repositories.ZFSSnapshotRepository;
 import ru.rerumu.backups.services.ZFSProcessFactory;
 import ru.rerumu.backups.services.impl.ZFSProcessFactoryImpl;
+import ru.rerumu.backups.zfs_api.ProcessWrapper;
 import ru.rerumu.backups.zfs_api.ZFSListFilesystems;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,11 +31,11 @@ public class ZFSFileSystemRepositoryImpl implements ZFSFileSystemRepository {
 
     @Override
     public List<ZFSFileSystem> getFilesystemsTreeList(String fileSystemName) throws IOException, InterruptedException {
-        ZFSListFilesystems zfsListFilesystems = zfsProcessFactory.getZFSListFilesystems(fileSystemName);
+        ProcessWrapper zfsListFilesystems = zfsProcessFactory.getZFSListFilesystems(fileSystemName);
         byte[] buf = zfsListFilesystems.getBufferedInputStream().readAllBytes();
         zfsListFilesystems.close();
 
-        String str = Arrays.toString(buf);
+        String str = new String(buf, StandardCharsets.UTF_8);
         String[] lines = str.split("\\n");
 
         List<ZFSFileSystem> zfsFileSystemList = new ArrayList<>();

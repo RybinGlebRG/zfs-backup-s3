@@ -8,12 +8,17 @@ import ru.rerumu.backups.zfs_api.*;
 import java.io.IOException;
 import java.util.List;
 
-public class ZFSProcessFactoryTest implements ZFSProcessFactory{
+public class ZFSProcessFactoryTest implements ZFSProcessFactory {
 
     private List<String> stringList;
+    private List<String> filesystems;
 
     public void setStringList(List<String> stringList) {
         this.stringList = stringList;
+    }
+
+    public void setFilesystems(List<String> filesystems) {
+        this.filesystems = filesystems;
     }
 
     @Override
@@ -22,8 +27,8 @@ public class ZFSProcessFactoryTest implements ZFSProcessFactory{
     }
 
     @Override
-    public ZFSListFilesystems getZFSListFilesystems(String parentFileSystem) throws IOException {
-        return null;
+    public ProcessWrapper getZFSListFilesystems(String parentFileSystem) throws IOException {
+        return new ZFSListFilesystemsTest(filesystems);
     }
 
     @Override

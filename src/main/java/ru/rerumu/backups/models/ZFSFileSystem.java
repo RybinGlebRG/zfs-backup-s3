@@ -5,6 +5,7 @@ import ru.rerumu.backups.exceptions.SnapshotNotFoundException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ZFSFileSystem {
 
@@ -86,5 +87,18 @@ public class ZFSFileSystem {
             throw new SnapshotNotFoundException();
         }
         return res;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ZFSFileSystem that = (ZFSFileSystem) o;
+        return name.equals(that.name) && snapshotList.equals(that.snapshotList);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, snapshotList);
     }
 }
