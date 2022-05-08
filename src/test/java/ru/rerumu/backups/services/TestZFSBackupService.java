@@ -8,13 +8,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.backups.exceptions.CompressorException;
-import ru.rerumu.backups.exceptions.EncryptException;
-import ru.rerumu.backups.exceptions.NoMorePartsException;
-import ru.rerumu.backups.exceptions.TooManyPartsException;
+import ru.rerumu.backups.exceptions.*;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.repositories.FilePartRepository;
 import ru.rerumu.backups.repositories.FilePartRepositoryTest;
+import ru.rerumu.backups.repositories.ZFSFileSystemRepository;
+import ru.rerumu.backups.repositories.ZFSSnapshotRepository;
 import ru.rerumu.backups.repositories.impl.FilePartRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.ZFSFileSystemRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.ZFSSnapshotRepositoryImpl;
@@ -22,10 +21,40 @@ import ru.rerumu.backups.repositories.impl.ZFSSnapshotRepositoryImpl;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 public class TestZFSBackupService {
+
+    @Test
+    void shouldBackupRestore(@TempDir Path tempDirBackup, @TempDir Path tempDirRestore) throws BaseSnapshotNotFoundException, CompressorException, SnapshotNotFoundException, IOException, InterruptedException, EncryptException {
+        ZFSProcessFactory zfsProcessFactory = new ZFSProcessFactoryTest();
+        ZFSSnapshotRepository zfsSnapshotRepository = new ZFSSnapshotRepositoryImpl(zfsProcessFactory);
+        ZFSFileSystemRepository zfsFileSystemRepository = new ZFSFileSystemRepositoryImpl(zfsProcessFactory, zfsSnapshotRepository);
+        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDirBackup);
+        String password = "";
+        int chunkSize=1000;
+        boolean isLoadAWS = false;
+        long filePartSize = 10000;
+
+        ZFSBackupService zfsBackupService = new ZFSBackupService(
+                password,
+                zfsProcessFactory,
+                chunkSize,
+                isLoadAWS,
+                filePartSize,
+                filePartRepository,
+                zfsFileSystemRepository,
+                zfsSnapshotRepository);
+        S3Loader s3Loader = new S3Loader();
+        Snapshot targetSnapshot = new Snapshot("ExternalPool/Applications@auto-20210106-150000");
+        zfsBackupService.zfsBackupFull(
+                s3Loader,
+                targetSnapshot.getName(),
+                targetSnapshot.getDataset()
+        );
+    }
 
 //    @Disabled
 //    @Test

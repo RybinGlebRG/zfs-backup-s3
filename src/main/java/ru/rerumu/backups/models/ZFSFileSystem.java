@@ -32,31 +32,23 @@ public class ZFSFileSystem {
         return snapshotList.get(0);
     }
 
-    public List<Snapshot> getIncrementalSnapshots(){
+    public List<Snapshot> getIncrementalSnapshots(String upperSnapshotName) throws SnapshotNotFoundException {
         List<Snapshot> res = new ArrayList<>();
         int n=0;
+        boolean isUpperFound = false;
         for (Snapshot snapshot: snapshotList){
             if (n==0){
                 n++;
                 continue;
             }
             res.add(snapshot);
-        }
-        return res;
-    }
-
-    public List<Snapshot> getIncrementalSnapshots(String upperSnapshotName){
-        List<Snapshot> res = new ArrayList<>();
-        int n=0;
-        for (Snapshot snapshot: snapshotList){
-            if (n==0){
-                n++;
-                continue;
-            }
-            res.add(snapshot);
-            if (snapshot.getName().equals(upperSnapshotName)){
+            if (snapshot.getFullName().equals(upperSnapshotName)){
+                isUpperFound = true;
                 break;
             }
+        }
+        if (!isUpperFound){
+            throw new SnapshotNotFoundException();
         }
         return res;
     }
@@ -71,14 +63,14 @@ public class ZFSFileSystem {
                 n++;
                 continue;
             }
-            if (snapshot.getName().equals(lowerSnapshotName)){
+            if (snapshot.getFullName().equals(lowerSnapshotName)){
                 isLowerFound = true;
             }
             if (!isLowerFound){
                 continue;
             }
             res.add(snapshot);
-            if (snapshot.getName().equals(upperSnapshotName)){
+            if (snapshot.getFullName().equals(upperSnapshotName)){
                 isUpperFound = true;
                 break;
             }

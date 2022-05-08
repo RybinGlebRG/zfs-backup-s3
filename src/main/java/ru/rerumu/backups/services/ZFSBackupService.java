@@ -153,7 +153,7 @@ public class ZFSBackupService {
             IOException,
             InterruptedException,
             CompressorException,
-            EncryptException, BaseSnapshotNotFoundException {
+            EncryptException, BaseSnapshotNotFoundException, SnapshotNotFoundException {
 
         List<ZFSFileSystem> zfsFileSystemList = zfsFileSystemRepository.getFilesystemsTreeList(parentDatasetName);
 
