@@ -34,7 +34,7 @@ public class TestZFSFileSystem {
         snapshotList.add(new Snapshot("ExternalPool/Applications@auto-20210108-150000"));
         ZFSFileSystem zfsFileSystem = new ZFSFileSystem(fileSystemName, snapshotList);
 
-        List<Snapshot> upperLimited = zfsFileSystem.getIncrementalSnapshots("ExternalPool/Applications@auto-20210107-150000");
+        List<Snapshot> upperLimited = zfsFileSystem.getIncrementalSnapshots("auto-20210107-150000");
 
         List<Snapshot> should = new ArrayList<>();
         should.add(new Snapshot("ExternalPool/Applications@auto-20210106-060000"));
@@ -57,8 +57,8 @@ public class TestZFSFileSystem {
         ZFSFileSystem zfsFileSystem = new ZFSFileSystem(fileSystemName, snapshotList);
 
         List<Snapshot> upperLimited = zfsFileSystem.getIncrementalSnapshots(
-                "ExternalPool/Applications@auto-20210106-150000",
-                "ExternalPool/Applications@auto-20210107-150000");
+                "auto-20210106-150000",
+                "auto-20210107-150000");
 
         List<Snapshot> should = new ArrayList<>();
         should.add(new Snapshot("ExternalPool/Applications@auto-20210106-150000"));

@@ -6,7 +6,7 @@ import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSFileSystem;
 import ru.rerumu.backups.repositories.impl.ZFSFileSystemRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.ZFSSnapshotRepositoryImpl;
-import ru.rerumu.backups.services.ZFSProcessFactoryTest;
+import ru.rerumu.backups.services.helpers.ZFSProcessFactoryTest;
 
 import java.io.IOException;
 import java.util.ArrayList;

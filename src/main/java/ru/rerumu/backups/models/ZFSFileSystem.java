@@ -42,7 +42,7 @@ public class ZFSFileSystem {
                 continue;
             }
             res.add(snapshot);
-            if (snapshot.getFullName().equals(upperSnapshotName)){
+            if (snapshot.getName().equals(upperSnapshotName)){
                 isUpperFound = true;
                 break;
             }
@@ -63,14 +63,14 @@ public class ZFSFileSystem {
                 n++;
                 continue;
             }
-            if (snapshot.getFullName().equals(lowerSnapshotName)){
+            if (snapshot.getName().equals(lowerSnapshotName)){
                 isLowerFound = true;
             }
             if (!isLowerFound){
                 continue;
             }
             res.add(snapshot);
-            if (snapshot.getFullName().equals(upperSnapshotName)){
+            if (snapshot.getName().equals(upperSnapshotName)){
                 isUpperFound = true;
                 break;
             }

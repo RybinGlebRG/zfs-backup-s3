@@ -1,14 +1,10 @@
 package ru.rerumu.backups.repositories;
 
-import junit.framework.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.rerumu.backups.models.Snapshot;
-import ru.rerumu.backups.models.ZFSFileSystem;
 import ru.rerumu.backups.repositories.impl.ZFSSnapshotRepositoryImpl;
-import ru.rerumu.backups.services.ZFSProcessFactory;
-import ru.rerumu.backups.services.ZFSProcessFactoryTest;
-import ru.rerumu.backups.services.impl.ZFSProcessFactoryImpl;
+import ru.rerumu.backups.services.helpers.ZFSProcessFactoryTest;
 
 import java.io.IOException;
 import java.util.ArrayList;

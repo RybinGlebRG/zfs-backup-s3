@@ -146,7 +146,6 @@ public class ZFSBackupService {
         }
     }
 
-    // TODO: Test
     public void zfsBackupFull(S3Loader s3Loader,
                               String targetSnapshotName,
                               String parentDatasetName) throws

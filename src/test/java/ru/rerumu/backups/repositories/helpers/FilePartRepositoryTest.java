@@ -1,9 +1,10 @@
-package ru.rerumu.backups.repositories;
+package ru.rerumu.backups.repositories.helpers;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import ru.rerumu.backups.exceptions.FinishedFlagException;
 import ru.rerumu.backups.exceptions.NoMorePartsException;
 import ru.rerumu.backups.exceptions.TooManyPartsException;
+import ru.rerumu.backups.repositories.FilePartRepository;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -11,7 +12,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FilePartRepositoryTest  implements FilePartRepository{
+public class FilePartRepositoryTest  implements FilePartRepository {
 
     private final List<ByteArrayInputStream> byteArrayInputStreamList = new ArrayList<>();
     private int n=0;
