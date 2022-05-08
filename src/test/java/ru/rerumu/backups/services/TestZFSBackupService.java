@@ -1,19 +1,24 @@
 package ru.rerumu.backups.services;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.*;
 import ru.rerumu.backups.models.Snapshot;
+import ru.rerumu.backups.models.ZFSPool;
 import ru.rerumu.backups.repositories.FilePartRepository;
 import ru.rerumu.backups.repositories.ZFSFileSystemRepository;
 import ru.rerumu.backups.repositories.ZFSSnapshotRepository;
 import ru.rerumu.backups.repositories.impl.FilePartRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.ZFSFileSystemRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.ZFSSnapshotRepositoryImpl;
+import ru.rerumu.backups.services.helpers.S3LoaderTest;
 import ru.rerumu.backups.services.helpers.ZFSProcessFactoryTest;
 import ru.rerumu.backups.services.helpers.ZFSStreamTest;
+import ru.rerumu.backups.services.impl.S3LoaderImpl;
 
 import java.io.*;
 import java.nio.file.DirectoryStream;
@@ -57,6 +62,7 @@ public class TestZFSBackupService {
 
         List<ZFSStreamTest> zfsStreamTests = new ArrayList<>();
 
+
         // ExternalPool/Applications/virtual_box
         zfsStreamTests.add(new ZFSStreamTest(1500));
         zfsStreamTests.add(new ZFSStreamTest(1500));
@@ -76,13 +82,30 @@ public class TestZFSBackupService {
         zfsStreamTests.add(new ZFSStreamTest(1500));
 
         // ExternalPool
-        zfsStreamTests.add(new ZFSStreamTest(1500));
-        zfsStreamTests.add(new ZFSStreamTest(1500));
-        zfsStreamTests.add(new ZFSStreamTest(1500));
-        zfsStreamTests.add(new ZFSStreamTest(1500));
+        zfsStreamTests.add(new ZFSStreamTest(10));
+        zfsStreamTests.add(new ZFSStreamTest(10));
+        zfsStreamTests.add(new ZFSStreamTest(10));
+        zfsStreamTests.add(new ZFSStreamTest(10));
 
         zfsProcessFactory.setZfsStreamTests(zfsStreamTests);
         zfsProcessFactory.setSnapshots(snapshots,zfsStreamTests);
+
+        byte[] src = new byte[0];
+        src = ArrayUtils.addAll(src,zfsProcessFactory.getSnapshotsWithStream().get("ExternalPool@auto-20220326-150000"));
+        src = ArrayUtils.addAll(src,zfsProcessFactory.getSnapshotsWithStream().get("ExternalPool@auto-20220327-060000"));
+        src = ArrayUtils.addAll(src,zfsProcessFactory.getSnapshotsWithStream().get("ExternalPool@auto-20220327-150000"));
+
+        src = ArrayUtils.addAll(src,zfsProcessFactory.getSnapshotsWithStream().get("ExternalPool/Applications@auto-20220326-150000"));
+        src = ArrayUtils.addAll(src,zfsProcessFactory.getSnapshotsWithStream().get("ExternalPool/Applications@auto-20220327-060000"));
+        src = ArrayUtils.addAll(src,zfsProcessFactory.getSnapshotsWithStream().get("ExternalPool/Applications@auto-20220327-150000"));
+
+        src = ArrayUtils.addAll(src,zfsProcessFactory.getSnapshotsWithStream().get("ExternalPool/Applications/virtual_box@auto-20220326-150000"));
+        src = ArrayUtils.addAll(src,zfsProcessFactory.getSnapshotsWithStream().get("ExternalPool/Applications/virtual_box@auto-20220327-060000"));
+        src = ArrayUtils.addAll(src,zfsProcessFactory.getSnapshotsWithStream().get("ExternalPool/Applications/virtual_box@auto-20220327-150000"));
+
+        src = ArrayUtils.addAll(src,zfsProcessFactory.getSnapshotsWithStream().get("ExternalPool/Books@auto-20220326-150000"));
+        src = ArrayUtils.addAll(src,zfsProcessFactory.getSnapshotsWithStream().get("ExternalPool/Books@auto-20220327-060000"));
+        src = ArrayUtils.addAll(src,zfsProcessFactory.getSnapshotsWithStream().get("ExternalPool/Books@auto-20220327-150000"));
 
 
         ZFSSnapshotRepository zfsSnapshotRepository = new ZFSSnapshotRepositoryImpl(zfsProcessFactory);
@@ -90,7 +113,7 @@ public class TestZFSBackupService {
         FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDirBackup);
         String password = "hMHteFgxdnxBoXD";
         int chunkSize=1000;
-        boolean isLoadAWS = false;
+        boolean isLoadAWS = true;
         long filePartSize = 10000;
 
 
@@ -105,16 +128,12 @@ public class TestZFSBackupService {
                 filePartRepository,
                 zfsFileSystemRepository,
                 zfsSnapshotRepository);
-        S3Loader s3Loader = new S3Loader();
+        S3Loader s3Loader = new S3LoaderTest(tempDirBackup,tempDirRestore);
         Snapshot targetSnapshot = new Snapshot("ExternalPool@auto-20220327-150000");
-        zfsBackupService.zfsBackupFull(
-                s3Loader,
-                targetSnapshot.getName(),
-                targetSnapshot.getDataset()
-        );
 
         Runnable runnableBackup = ()->{
             Logger logger = LoggerFactory.getLogger("runnableBackup");
+            logger.info("Starting backup");
             try {
                 zfsBackupService.zfsBackupFull(
                         s3Loader,
@@ -124,27 +143,64 @@ public class TestZFSBackupService {
             } catch (IOException | InterruptedException | CompressorException | EncryptException | BaseSnapshotNotFoundException | SnapshotNotFoundException e) {
                 logger.error(e.toString());
             }
+            logger.info("Finished backup");
         };
         Thread threadSend = new Thread(runnableBackup);
 
+
+        FilePartRepository restoreFilePartRepository = new FilePartRepositoryImpl(tempDirRestore);
+        ZFSProcessFactoryTest restoreZFSProcessFactory = new ZFSProcessFactoryTest();
+        ZFSRestoreService zfsRestoreService = new ZFSRestoreService(
+                password,
+                restoreZFSProcessFactory,
+                true,
+                restoreFilePartRepository
+        );
+
+        Runnable runnableRestore = ()->{
+            Logger logger = LoggerFactory.getLogger("runnableRestore");
+            logger.info("Starting restore");
+            try {
+               zfsRestoreService.zfsReceive(new ZFSPool("ExternalPool"));
+            } catch (IOException | TooManyPartsException | EncryptException | CompressorException | InterruptedException | ClassNotFoundException | FinishedFlagException | NoMorePartsException e) {
+                logger.error(e.toString());
+            }
+            logger.info("Finished restore");
+        };
+        Thread threadRestore = new Thread(runnableRestore);
+
+
+        threadRestore.start();
         threadSend.start();
-        threadReceive.start();
+
 
         threadSend.join();
         while (true){
             boolean isFoundFile = true;
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(tempDirRestore)) {
-
+                isFoundFile = false;
                 for (Path item : stream) {
-                    isFoundFile = false;
+                    isFoundFile = true;
                 }
             }
             if (!isFoundFile){
                 break;
             }
+            Thread.sleep(10000);
         }
         Files.createFile(tempDirRestore.resolve("finished"));
-        threadReceive.join();
+        threadRestore.join();
+
+
+
+//        for (ZFSStreamTest zfsStreamTest: zfsStreamTests){
+//            src = ArrayUtils.addAll(src,zfsStreamTest.getData());
+//        }
+
+        restoreZFSProcessFactory.getZFSReceive().getBufferedOutputStream().flush();
+        byte[] dst = restoreZFSProcessFactory.getZFSReceive().getByteArrayOutputStream().toByteArray();
+
+        Assertions.assertArrayEquals(src,dst);
     }
 
 //    @Disabled

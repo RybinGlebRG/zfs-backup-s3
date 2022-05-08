@@ -11,6 +11,7 @@ import ru.rerumu.backups.repositories.impl.FilePartRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.ZFSFileSystemRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.ZFSSnapshotRepositoryImpl;
 import ru.rerumu.backups.services.*;
+import ru.rerumu.backups.services.impl.S3LoaderImpl;
 import ru.rerumu.backups.services.impl.ZFSProcessFactoryImpl;
 
 import java.nio.file.Paths;
@@ -47,7 +48,7 @@ public class BackupController {
                     zfsSnapshotRepository);
             logger.info("Start 'sendFull'");
 
-            S3Loader s3Loader = new S3Loader();
+            S3Loader s3Loader = new S3LoaderImpl();
 
             for (S3Storage s3Storage : s3Storages) {
                 s3Loader.addStorage(s3Storage);

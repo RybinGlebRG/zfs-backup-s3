@@ -50,7 +50,7 @@ public class ZFSRestoreService {
             TooManyPartsException,
             EncryptException,
             CompressorException,
-            EOFException{
+            EOFException {
         Cryptor cryptor = new AESCryptor(password);
         Compressor compressor = new GZIPCompressor();
 
@@ -93,23 +93,27 @@ public class ZFSRestoreService {
             ClassNotFoundException,
             FinishedFlagException,
             NoMorePartsException {
+        logger.debug("Starting restore");
         ZFSReceive zfsReceive = zfsProcessFactory.getZFSReceive(zfsPool);
-        try{
+        try {
             while (true) {
-                Path nextInputPath = filePartRepository.getNextInputPath();
                 try {
-                    readFromFile(zfsReceive, nextInputPath);
+                    Path nextInputPath = filePartRepository.getNextInputPath();
+                    logger.info(String.format("Reading file '%s'", nextInputPath.toString()));
+
+                    try {
+                        readFromFile(zfsReceive, nextInputPath);
+                    } catch (FinishedFlagException e) {
+                        logger.info("Finish flag found. Exiting loop");
+                        break;
+                    } catch (EOFException e) {
+                        logger.info(String.format("End of file '%s'", nextInputPath.toString()));
+                        processReceivedFile(nextInputPath);
+                    }
+
                 } catch (NoMorePartsException e) {
                     logger.debug("No files found. Waiting 10 seconds before retry");
                     Thread.sleep(10000);
-                    continue;
-                } catch (FinishedFlagException e) {
-                    logger.info("Finish flag found. Exiting loop");
-                    break;
-                } catch (EOFException e) {
-                    logger.info(String.format("End of file '%s'", nextInputPath.toString()));
-                    processReceivedFile(nextInputPath);
-                    break;
                 }
 
 
@@ -117,10 +121,11 @@ public class ZFSRestoreService {
 
             zfsReceive.close();
 
-        } catch (Exception e){
+        } catch (Exception e) {
             zfsReceive.close();
-            throw  e;
+            throw e;
         }
+        logger.debug("Finished restore");
 
 
     }

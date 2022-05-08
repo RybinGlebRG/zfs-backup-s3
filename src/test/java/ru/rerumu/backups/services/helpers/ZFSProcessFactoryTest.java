@@ -17,6 +17,7 @@ public class ZFSProcessFactoryTest implements ZFSProcessFactory {
     private List<String> filesystems;
     private List<ZFSStreamTest> zfsStreamTests;
     private HashMap<String, byte[]> snapshotsWithStream;
+    private ZFSReceiveTest zfsReceiveTest;
 
     public void setStringList(List<String> stringList) {
         this.stringList = stringList;
@@ -42,6 +43,10 @@ public class ZFSProcessFactoryTest implements ZFSProcessFactory {
         }
     }
 
+    public HashMap<String, byte[]> getSnapshotsWithStream() {
+        return snapshotsWithStream;
+    }
+
     @Override
     public ProcessWrapper getZFSListSnapshots(String fileSystemName) throws IOException {
         return new ZFSListSnapshotsTest(stringList);
@@ -54,7 +59,13 @@ public class ZFSProcessFactoryTest implements ZFSProcessFactory {
 
     @Override
     public ZFSReceive getZFSReceive(ZFSPool zfsPool) throws IOException {
-        return null;
+        ZFSReceiveTest zfsReceiveTest = new ZFSReceiveTest();
+        this.zfsReceiveTest = zfsReceiveTest;
+        return zfsReceiveTest;
+    }
+
+    public ZFSReceiveTest getZFSReceive(){
+        return zfsReceiveTest;
     }
 
     @Override

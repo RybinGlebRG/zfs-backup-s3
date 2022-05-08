@@ -11,13 +11,12 @@ import ru.rerumu.backups.repositories.ZFSFileSystemRepository;
 import ru.rerumu.backups.repositories.ZFSSnapshotRepository;
 import ru.rerumu.backups.services.impl.AESCryptor;
 import ru.rerumu.backups.services.impl.GZIPCompressor;
-import ru.rerumu.backups.services.impl.ZFSProcessFactoryImpl;
+import ru.rerumu.backups.services.impl.S3LoaderImpl;
 import ru.rerumu.backups.zfs_api.ZFSSend;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -112,7 +111,14 @@ public class ZFSBackupService {
                     writeToFile(zfsSend, newFilePath);
                 } catch (FileHitSizeLimitException e) {
                     processCreatedFile(isLoadS3, s3Loader, newFilePath);
+                    logger.debug(String.format(
+                            "File '%s' processed",
+                            newFilePath));
                 } catch (ZFSStreamEndedException e) {
+                    processCreatedFile(isLoadS3, s3Loader, newFilePath);
+                    logger.debug(String.format(
+                            "File '%s' processed",
+                            newFilePath));
                     logger.info("End of stream. Exiting");
                     break;
                 }
@@ -133,10 +139,10 @@ public class ZFSBackupService {
                     incrementalSnapshot.getFullName(),
                     baseSnapshot.getFullName()));
 
-            String streamMark = baseSnapshot.getDataset()
-                    + "_" + baseSnapshot.getName()
-                    + "__" + incrementalSnapshot.getDataset()
-                    + "_" + incrementalSnapshot.getName();
+            String streamMark = escapeSymbols(baseSnapshot.getDataset())
+                    + "@" + baseSnapshot.getName()
+                    + "__" + escapeSymbols(incrementalSnapshot.getDataset())
+                    + "@" + incrementalSnapshot.getName();
 
             sendSingleSnapshot(
                     zfsProcessFactory.getZFSSendIncremental(baseSnapshot, incrementalSnapshot),
@@ -144,6 +150,10 @@ public class ZFSBackupService {
                     streamMark);
             baseSnapshot = incrementalSnapshot;
         }
+    }
+
+    private String escapeSymbols(String srcString){
+        return srcString.replace('/','-');
     }
 
     public void zfsBackupFull(S3Loader s3Loader,
@@ -162,7 +172,7 @@ public class ZFSBackupService {
             List<Snapshot> incrementalSnapshots = zfsFileSystem.getIncrementalSnapshots(targetSnapshotName);
 
             logger.debug(String.format("Sending base snapshot '%s'", baseSnapshot.getFullName()));
-            String streamMark = baseSnapshot.getDataset() + "_" + baseSnapshot.getName();
+            String streamMark = escapeSymbols(baseSnapshot.getDataset()) + "@" + baseSnapshot.getName();
             sendSingleSnapshot(
                     zfsProcessFactory.getZFSSendFull(baseSnapshot),
                     s3Loader,
@@ -171,10 +181,11 @@ public class ZFSBackupService {
             sendIncrementalSnapshots(baseSnapshot,incrementalSnapshots,s3Loader);
 
         }
+        logger.debug("Sent all filesystems");
     }
 
     // TODO: Test
-    public void zfsBackupIncremental(S3Loader s3Loader,
+    public void zfsBackupIncremental(S3LoaderImpl s3Loader,
                                      String baseSnapshotName,
                                      String targetSnapshotName,
                                      String parentDatasetName) throws
