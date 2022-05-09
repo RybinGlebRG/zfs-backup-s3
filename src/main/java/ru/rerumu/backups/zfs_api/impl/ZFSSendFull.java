@@ -17,6 +17,7 @@ public class ZFSSendFull implements ZFSSend {
     private final BufferedInputStream bufferedInputStream;
     private final BufferedInputStream bufferedErrorStream;
     private final Thread errThread;
+    private boolean isKilled = false;
 
     public ZFSSendFull(Snapshot fullSnapshot) throws IOException {
         logger.info(String.format("Sending snapshot '%s'",fullSnapshot.getFullName()));
@@ -34,6 +35,10 @@ public class ZFSSendFull implements ZFSSend {
     }
 
     public void close() throws InterruptedException, IOException {
+        if (isKilled){
+            logger.info("Already killed");
+            return;
+        }
         logger.info("Closing process");
         int exitCode = process.waitFor();
         errThread.join();
@@ -51,6 +56,7 @@ public class ZFSSendFull implements ZFSSend {
         logger.info("Killing process");
         process.destroy();
         errThread.join();
+        isKilled = true;
         logger.info("Process killed");
     }
 }

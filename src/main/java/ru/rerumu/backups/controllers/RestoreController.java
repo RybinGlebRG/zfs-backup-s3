@@ -30,6 +30,7 @@ public class RestoreController {
 
             zfsRestoreService.zfsReceive(zfsPool);
         } catch (Exception e) {
+            logger.error(e.getMessage(), e);
             e.printStackTrace();
         }
     }

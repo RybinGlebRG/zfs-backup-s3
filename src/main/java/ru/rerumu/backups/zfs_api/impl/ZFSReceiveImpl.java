@@ -3,6 +3,7 @@ package ru.rerumu.backups.zfs_api.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.zfs_api.InputStreamLogger;
+import ru.rerumu.backups.zfs_api.StderrLogger;
 import ru.rerumu.backups.zfs_api.ZFSReceive;
 
 import java.io.BufferedInputStream;
@@ -23,13 +24,14 @@ public class ZFSReceiveImpl implements ZFSReceive {
 
     public ZFSReceiveImpl(String pool) throws IOException {
 //        ZFSProcessWrapper = new ZFSProcessWrapper(Arrays.asList("zfs","receive","-duvF",pool), true);
+        logger.debug(String.format("Running command '%s'",Arrays.asList("zfs","receive","-duvF",pool)));
         ProcessBuilder pb = new ProcessBuilder(Arrays.asList("zfs","receive","-duvF",pool));
         process = pb.start();
         bufferedInputStream = new BufferedInputStream(process.getInputStream());
         bufferedErrorStream = new BufferedInputStream(process.getErrorStream());
         bufferedOutputStream = new BufferedOutputStream(process.getOutputStream());
         // TODO: Log exception
-        errThread = new Thread(new InputStreamLogger(bufferedErrorStream, LoggerFactory.getLogger(InputStreamLogger.class)));
+        errThread = new Thread(new StderrLogger(bufferedErrorStream, LoggerFactory.getLogger(StderrLogger.class)));
         errThread.start();
         outThread = new Thread(new InputStreamLogger(bufferedInputStream, LoggerFactory.getLogger(InputStreamLogger.class)));
         outThread.start();

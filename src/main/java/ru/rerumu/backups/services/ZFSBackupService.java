@@ -102,7 +102,6 @@ public class ZFSBackupService {
     private void sendSingleSnapshot(ZFSSend zfsSend,
                                     S3Loader s3Loader,
                                     String streamMark) throws InterruptedException, CompressorException, IOException, EncryptException {
-        try {
             int n=0;
             while (true) {
                 Path newFilePath= filePartRepository.createNewFilePath(streamMark,n);
@@ -124,11 +123,6 @@ public class ZFSBackupService {
                 }
 
             }
-            zfsSend.close();
-        } catch (Exception e) {
-            zfsSend.kill();
-            throw e;
-        }
     }
 
     private void sendIncrementalSnapshots(Snapshot baseSnapshot, List<Snapshot> incrementalSnapshots, S3Loader s3Loader)
@@ -144,10 +138,23 @@ public class ZFSBackupService {
                     + "__" + escapeSymbols(incrementalSnapshot.getDataset())
                     + "@" + incrementalSnapshot.getName();
 
-            sendSingleSnapshot(
-                    zfsProcessFactory.getZFSSendIncremental(baseSnapshot, incrementalSnapshot),
-                    s3Loader,
-                    streamMark);
+            ZFSSend zfsSend = null;
+            try {
+                zfsSend = zfsProcessFactory.getZFSSendIncremental(baseSnapshot, incrementalSnapshot);
+                sendSingleSnapshot(
+                        zfsSend,
+                        s3Loader,
+                        streamMark);
+            } catch (Exception e) {
+                if (zfsSend!=null) {
+                    zfsSend.kill();
+                }
+                throw e;
+            } finally {
+                if (zfsSend!=null) {
+                    zfsSend.close();
+                }
+            }
             baseSnapshot = incrementalSnapshot;
         }
     }
@@ -173,10 +180,28 @@ public class ZFSBackupService {
 
             logger.debug(String.format("Sending base snapshot '%s'", baseSnapshot.getFullName()));
             String streamMark = escapeSymbols(baseSnapshot.getDataset()) + "@" + baseSnapshot.getName();
-            sendSingleSnapshot(
-                    zfsProcessFactory.getZFSSendFull(baseSnapshot),
-                    s3Loader,
-                    streamMark);
+//            sendSingleSnapshot(
+//                    zfsProcessFactory.getZFSSendFull(baseSnapshot),
+//                    s3Loader,
+//                    streamMark);
+
+            ZFSSend zfsSend = null;
+            try {
+                zfsSend = zfsProcessFactory.getZFSSendFull(baseSnapshot);
+                sendSingleSnapshot(
+                        zfsSend,
+                        s3Loader,
+                        streamMark);
+            } catch (Exception e) {
+                if (zfsSend!=null) {
+                    zfsSend.kill();
+                }
+                throw e;
+            } finally {
+                if (zfsSend!=null) {
+                    zfsSend.close();
+                }
+            }
 
             sendIncrementalSnapshots(baseSnapshot,incrementalSnapshots,s3Loader);
 
