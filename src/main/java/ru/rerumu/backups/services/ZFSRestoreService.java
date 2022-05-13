@@ -113,9 +113,6 @@ public class ZFSRestoreService {
                             zfsReceive.close();
                         }
                     }
-                } catch (FinishedFlagException e) {
-                    logger.info("Finish flag found. Exiting loop");
-                    break;
                 } catch (EOFException e) {
                     logger.info(String.format("End of file '%s'", nextInputPath.toString()));
                     processReceivedFile(nextInputPath);
@@ -124,6 +121,9 @@ public class ZFSRestoreService {
             } catch (NoMorePartsException e) {
                 logger.debug("No files found. Waiting 10 seconds before retry");
                 Thread.sleep(10000);
+            } catch (FinishedFlagException e) {
+                logger.info("Finish flag found. Exiting loop");
+                break;
             }
 
 

@@ -17,6 +17,7 @@ import ru.rerumu.backups.repositories.impl.ZFSFileSystemRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.ZFSSnapshotRepositoryImpl;
 import ru.rerumu.backups.services.helpers.S3LoaderTest;
 import ru.rerumu.backups.services.helpers.ZFSProcessFactoryTest;
+import ru.rerumu.backups.services.helpers.ZFSReceiveTest;
 import ru.rerumu.backups.services.helpers.ZFSStreamTest;
 import ru.rerumu.backups.services.impl.S3LoaderImpl;
 
@@ -191,8 +192,9 @@ public class TestZFSBackupService {
         Files.createFile(tempDirRestore.resolve("finished"));
         threadRestore.join();
 
-        restoreZFSProcessFactory.getZFSReceive().getBufferedOutputStream().flush();
-        byte[] dst = restoreZFSProcessFactory.getZFSReceive().getByteArrayOutputStream().toByteArray();
+//        restoreZFSProcessFactory.getZFSReceive().getBufferedOutputStream().flush();
+//        byte[] dst = restoreZFSProcessFactory.getZFSReceive().getByteArrayOutputStream().toByteArray();
+        byte[] dst = ZFSReceiveTest.getResult();
 
         Assertions.assertArrayEquals(src,dst);
     }

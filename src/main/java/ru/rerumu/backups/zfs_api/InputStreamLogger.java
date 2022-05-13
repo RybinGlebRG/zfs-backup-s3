@@ -33,7 +33,7 @@ public class InputStreamLogger implements Runnable{
             }
         }
         catch (IOException e){
-            logger.error(e.getMessage());
+            logger.error(e.getMessage(),e);
         }
         logger.info("Finished reading stderr");
     }
