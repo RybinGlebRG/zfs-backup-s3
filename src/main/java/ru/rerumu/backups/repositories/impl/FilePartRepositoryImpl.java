@@ -26,6 +26,13 @@ public class FilePartRepositoryImpl implements FilePartRepository {
 //    private Path lastPart;
 //    private int n = 0;
 
+    public static int parsePartNumber(Path path){
+        String filename = path.getFileName().toString();
+        String subs = filename.substring(filename.indexOf(filePostfix)+filePostfix.length());
+        int res = Integer.parseInt(subs);
+        return res;
+    }
+
     public FilePartRepositoryImpl(Path backupDirectory) {
 
         this.backupDirectory = backupDirectory;

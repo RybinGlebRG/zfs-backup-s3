@@ -86,6 +86,11 @@ public class ZFSRestoreService {
         }
     }
 
+    private void readOneSnapshot(ZFSReceive zfsReceive) throws FinishedFlagException, NoMorePartsException, IOException, TooManyPartsException {
+        Path nextInputPath = filePartRepository.getNextInputPath();
+
+    }
+
     public void zfsReceive(ZFSPool zfsPool) throws
             IOException,
             TooManyPartsException,

@@ -7,6 +7,7 @@ import ru.rerumu.backups.zfs_api.StderrLogger;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 public class ProcessWrapperImpl implements ProcessWrapper {
@@ -17,6 +18,7 @@ public class ProcessWrapperImpl implements ProcessWrapper {
     private final Thread errThread;
 
     public ProcessWrapperImpl(List<String> args) throws IOException {
+        logger.debug(String.format("Running command '%s'", args));
         ProcessBuilder pb = new ProcessBuilder(args);
         process = pb.start();
         bufferedInputStream = new BufferedInputStream(process.getInputStream());

@@ -13,7 +13,7 @@ public class ZFSListSnapshots extends ProcessWrapperImpl {
 
     public ZFSListSnapshots(String fileSystemName) throws IOException {
         super(Arrays.asList(
-                "zfs","list","-rH","-t","snapshot","-o","name","-s","name","-s","creation",fileSystemName
+                "zfs","list","-rH","-t","snapshot","-o","name","-s","creation","-d","1", fileSystemName
         ));
     }
 }

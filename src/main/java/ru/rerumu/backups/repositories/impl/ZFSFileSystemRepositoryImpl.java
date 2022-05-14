@@ -36,13 +36,16 @@ public class ZFSFileSystemRepositoryImpl implements ZFSFileSystemRepository {
         zfsListFilesystems.close();
 
         String str = new String(buf, StandardCharsets.UTF_8);
+        logger.debug(String.format("Got filesystems: \n%s",str));
         String[] lines = str.split("\\n");
 
         List<ZFSFileSystem> zfsFileSystemList = new ArrayList<>();
 
         // Already sorted
         for (String line: lines){
+            logger.debug(String.format("Getting snapshots for filesystem '%s'",line));
             List<Snapshot> snapshotList = zfsSnapshotRepository.getAllSnapshotsOrdered(line);
+            logger.debug(String.format("Got snapshots: \n%s",snapshotList));
             zfsFileSystemList.add(new ZFSFileSystem(line,snapshotList));
         }
 
