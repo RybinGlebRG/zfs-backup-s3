@@ -2,6 +2,7 @@ package ru.rerumu.backups.services;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
@@ -214,7 +215,12 @@ public class TestZFSBackupService {
 //        byte[] dst = ZFSReceiveTest.getResult();
         List<byte[]> dstList = ZFSReceiveTest.getResultList();
 
-        Assertions.assertEquals(srcList,dstList);
+//        Assertions.assertEquals(srcList,dstList);
+        Assertions.assertEquals(srcList.size(),dstList.size());
+
+        for (int i =0; i<srcList.size(); i++){
+            Assertions.assertArrayEquals(srcList.get(i),dstList.get(i));
+        }
 
 
 

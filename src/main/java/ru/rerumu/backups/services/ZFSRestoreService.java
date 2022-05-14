@@ -5,14 +5,13 @@ import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.*;
 import ru.rerumu.backups.models.CryptoMessage;
 import ru.rerumu.backups.models.ZFSPool;
+import ru.rerumu.backups.models.ZFSStreamPart;
 import ru.rerumu.backups.repositories.FilePartRepository;
 import ru.rerumu.backups.services.impl.AESCryptor;
 import ru.rerumu.backups.services.impl.GZIPCompressor;
-import ru.rerumu.backups.services.impl.ZFSProcessFactoryImpl;
 import ru.rerumu.backups.zfs_api.ZFSReceive;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -42,7 +41,7 @@ public class ZFSRestoreService {
         }
     }
 
-    private void readFromFile(ZFSReceive zfsReceive, Path nextInputPath)
+    private void readZFSStream(ZFSReceive zfsReceive, ZFSStreamPart zfsStreamPart)
             throws
             IOException,
             ClassNotFoundException,
@@ -52,14 +51,14 @@ public class ZFSRestoreService {
             EncryptException,
             CompressorException,
             EOFException {
-        logger.info(String.format("Starting reading from file '%s'", nextInputPath.toString()));
+        logger.info(String.format("Starting reading from file '%s'", zfsStreamPart.getFullPath().toString()));
         Cryptor cryptor = new AESCryptor(password);
         Compressor compressor = new GZIPCompressor();
 
 
-        try (InputStream inputStream = Files.newInputStream(nextInputPath);
+        try (InputStream inputStream = Files.newInputStream(zfsStreamPart.getFullPath());
              ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)) {
-            logger.info(String.format("Reading file '%s'", nextInputPath.toString()));
+            logger.info(String.format("Reading file '%s'", zfsStreamPart.getFullPath().toString()));
             while (true) {
                 logger.trace("Reading object from stream");
                 Object object = objectInputStream.readUnshared();
@@ -86,8 +85,46 @@ public class ZFSRestoreService {
         }
     }
 
-    private void readOneSnapshot(ZFSReceive zfsReceive) throws FinishedFlagException, NoMorePartsException, IOException, TooManyPartsException {
-        Path nextInputPath = filePartRepository.getNextInputPath();
+    private boolean isNextPart(ZFSStreamPart previousStream, ZFSStreamPart nextStream){
+        if (previousStream.getStreamName().equals(nextStream.getStreamName()) && nextStream.getPartNumber() == previousStream.getPartNumber()+1){
+            return true;
+        }
+        return false;
+    }
+
+    private void readNextStream(ZFSReceive zfsReceive)
+            throws
+            FinishedFlagException,
+            IOException,
+            TooManyPartsException,
+            CompressorException,
+            ClassNotFoundException,
+            EncryptException,
+            InterruptedException,
+            ZFSStreamEndedException{
+
+        ZFSStreamPart previousStream = null;
+        ZFSStreamPart nextStream = null;
+
+        while (true){
+            try{
+                nextStream = new ZFSStreamPart(filePartRepository.getNextInputPath());
+                if (previousStream != null && !isNextPart(previousStream,nextStream)){
+                    throw new ZFSStreamEndedException();
+                }
+                readZFSStream(zfsReceive,nextStream);
+            } catch (EOFException e) {
+                logger.info(String.format("End of file '%s'", nextStream.getFullPath().toString()));
+                processReceivedFile(nextStream.getFullPath());
+                previousStream = nextStream;
+            } catch (NoMorePartsException e) {
+                logger.debug("No files found. Waiting 10 seconds before retry");
+                Thread.sleep(10000);
+            }
+        }
+
+
+
 
     }
 
@@ -105,33 +142,21 @@ public class ZFSRestoreService {
 
         while (true) {
             try {
-                Path nextInputPath = filePartRepository.getNextInputPath();
-                logger.info(String.format("Got next path - '%s'", nextInputPath.toString()));
                 ZFSReceive zfsReceive = null;
-
                 try {
-                    try {
-                        zfsReceive = zfsProcessFactory.getZFSReceive(zfsPool);
-                        readFromFile(zfsReceive, nextInputPath);
-                    } finally {
-                        if (zfsReceive != null) {
-                            zfsReceive.close();
-                        }
+                    zfsReceive = zfsProcessFactory.getZFSReceive(zfsPool);
+                    readNextStream(zfsReceive);
+                } finally {
+                    if (zfsReceive != null) {
+                        zfsReceive.close();
                     }
-                } catch (EOFException e) {
-                    logger.info(String.format("End of file '%s'", nextInputPath.toString()));
-                    processReceivedFile(nextInputPath);
                 }
-
-            } catch (NoMorePartsException e) {
-                logger.debug("No files found. Waiting 10 seconds before retry");
-                Thread.sleep(10000);
+            } catch (ZFSStreamEndedException e){
+                continue;
             } catch (FinishedFlagException e) {
                 logger.info("Finish flag found. Exiting loop");
                 break;
             }
-
-
         }
 
         logger.debug("Finished restore");

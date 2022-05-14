@@ -23,48 +23,18 @@ public class FilePartRepositoryImpl implements FilePartRepository {
     private static final String FINISH_MARK = "finished";
     private final Path backupDirectory;
     private final Logger logger = LoggerFactory.getLogger(FilePartRepositoryImpl.class);
-//    private Path lastPart;
-//    private int n = 0;
 
-    public static int parsePartNumber(Path path){
-        String filename = path.getFileName().toString();
-        String subs = filename.substring(filename.indexOf(filePostfix)+filePostfix.length());
-        int res = Integer.parseInt(subs);
-        return res;
-    }
 
     public FilePartRepositoryImpl(Path backupDirectory) {
 
         this.backupDirectory = backupDirectory;
     }
 
-//    public Path getLastPart() {
-//        return lastPart;
-//    }
-//
-//    public void deleteLastPart() throws IOException {
-//        Files.delete(lastPart);
-//    }
-//
-//    @Override
-//    public void markReceivedLastPart() throws IOException {
-//        String fileName = lastPart.getFileName().toString();
-//        fileName = fileName.replace(".ready", ".received");
-//        Path res = Paths.get(lastPart.getParent().toString(), fileName);
-//        Files.move(lastPart, res);
-//        lastPart = res;
-//    }
-
     @Override
     public Path createNewFilePath(String prefix, int partNumber) {
         Path filePart = Paths.get(backupDirectory.toString(), prefix + filePostfix + partNumber);
         return filePart;
     }
-
-//    @Override
-//    public OutputStream createNewOutputStream(Path path) throws IOException {
-//        return Files.newOutputStream(path);
-//    }
 
     @Override
     public void delete(Path path) throws IOException {
@@ -77,12 +47,6 @@ public class FilePartRepositoryImpl implements FilePartRepository {
         Files.move(path, res);
         return res;
     }
-
-//    @Override
-//    public boolean isExists(Path path) {
-//        logger.info(String.format("Checking '%s' exists", path.toString()));
-//        return Files.exists(path);
-//    }
 
     @Override
     public Path markReceived(Path path) throws IOException {
@@ -121,9 +85,4 @@ public class FilePartRepositoryImpl implements FilePartRepository {
 
         }
     }
-
-//    @Override
-//    public InputStream createNewInputStream(Path path) throws IOException {
-//        return Files.newInputStream(path);
-//    }
 }
