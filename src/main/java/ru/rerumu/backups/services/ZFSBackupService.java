@@ -176,6 +176,7 @@ public class ZFSBackupService {
         for (ZFSFileSystem zfsFileSystem : zfsFileSystemList) {
 
             Snapshot baseSnapshot = zfsFileSystem.getBaseSnapshot();
+            // TODO: May not have target snapshot
             List<Snapshot> incrementalSnapshots = zfsFileSystem.getIncrementalSnapshots(targetSnapshotName);
 
             logger.debug(String.format("Sending base snapshot '%s'", baseSnapshot.getFullName()));
