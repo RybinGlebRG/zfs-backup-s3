@@ -20,6 +20,8 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 public class ZFSBackupService {
 
     private final String password;
@@ -50,6 +52,25 @@ public class ZFSBackupService {
         this.zfsSnapshotRepository = zfsSnapshotRepository;
     }
 
+    private byte[] fillBuffer(BufferedInputStream bufferedInputStream) throws IOException {
+        byte[] buf = new byte[0];
+        int filled = 0;
+
+        while (true) {
+            byte[] readBuf = new byte[chunkSize - filled];
+            int len = bufferedInputStream.read(readBuf);
+            if (len == -1) {
+                return buf;
+            }
+            byte[] tmp = Arrays.copyOfRange(readBuf, 0, len);
+            buf = ArrayUtils.addAll(buf, tmp);
+            filled += len;
+            if (filled == chunkSize) {
+                return buf;
+            }
+        }
+    }
+
     private void writeToFile(ZFSSend zfsSend, Path path)
             throws IOException,
             CompressorException,
@@ -64,13 +85,14 @@ public class ZFSBackupService {
              ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream)) {
             logger.info(String.format("Writing stream to file '%s'", path.toString()));
             long written = 0;
-            int len;
-            byte[] buf = new byte[chunkSize];
-            while ((len = zfsSend.getBufferedInputStream().read(buf)) >= 0) {
-                logger.trace(String.format("Data in buffer: %d bytes", len));
-                byte[] tmp = Arrays.copyOfRange(buf, 0, len);
-                tmp = compressor.compressChunk(tmp);
-                CryptoMessage cryptoMessage = cryptor.encryptChunk(tmp);
+
+            while (true) {
+                byte[] buf = fillBuffer(zfsSend.getBufferedInputStream());
+                if (buf.length == 0){
+                    break;
+                }
+                buf = compressor.compressChunk(buf);
+                CryptoMessage cryptoMessage = cryptor.encryptChunk(buf);
                 objectOutputStream.writeUnshared(cryptoMessage);
                 objectOutputStream.reset();
                 written += cryptoMessage.getMessage().length + cryptoMessage.getSalt().length + cryptoMessage.getIv().length;
@@ -203,7 +225,7 @@ public class ZFSBackupService {
                 sendIncrementalSnapshots(baseSnapshot, incrementalSnapshots, s3Loader);
             } catch (BaseSnapshotNotFoundException | SnapshotNotFoundException e) {
                 logger.error(e.getMessage(), e);
-                logger.info(String.format("Skipping filesystem '%s'",zfsFileSystem.getName()));
+                logger.info(String.format("Skipping filesystem '%s'", zfsFileSystem.getName()));
                 continue;
             }
 

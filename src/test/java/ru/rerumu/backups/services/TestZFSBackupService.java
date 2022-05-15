@@ -29,10 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TestZFSBackupService {
 
-    @Test
-    void shouldBackupRestore(@TempDir Path tempDirBackup, @TempDir Path tempDirRestore) throws BaseSnapshotNotFoundException, CompressorException, SnapshotNotFoundException, IOException, InterruptedException, EncryptException {
-        ZFSProcessFactoryTest zfsProcessFactory = new ZFSProcessFactoryTest();
-
+    private List<String> prepareFilesystems(){
         List<String> filesystems = new ArrayList<>();
         filesystems.add("ExternalPool");
         filesystems.add("ExternalPool/Applications");
@@ -40,8 +37,10 @@ public class TestZFSBackupService {
         filesystems.add("ExternalPool/Books");
         filesystems.add("ExternalPool/Containers");
         filesystems.add("ExternalPool/VMs");
-        zfsProcessFactory.setFilesystems(filesystems);
+        return filesystems;
+    }
 
+    private List<String> prepareSnapshots(){
         List<String> snapshots = new ArrayList<>();
         snapshots.add("ExternalPool/Applications/virtual_box@auto-20220326-150000");
         snapshots.add("ExternalPool/Applications/virtual_box@auto-20220327-060000");
@@ -62,9 +61,10 @@ public class TestZFSBackupService {
         snapshots.add("ExternalPool@auto-20220327-060000");
         snapshots.add("ExternalPool@auto-20220327-150000");
         snapshots.add("ExternalPool@auto-20220328-150000");
-        zfsProcessFactory.setStringList(snapshots);
+        return snapshots;
+    }
 
-
+    private List<ZFSStreamTest> prepareZFSStreams(){
         List<ZFSStreamTest> zfsStreamTests = new ArrayList<>();
 
 
@@ -99,7 +99,21 @@ public class TestZFSBackupService {
         zfsStreamTests.add(new ZFSStreamTest(250));
         zfsStreamTests.add(new ZFSStreamTest(200));
 
+        return zfsStreamTests;
+    }
+
+    @Test
+    void shouldBackupRestore(@TempDir Path tempDirBackup, @TempDir Path tempDirRestore) throws IOException, InterruptedException {
+        ZFSProcessFactoryTest zfsProcessFactory = new ZFSProcessFactoryTest();
+
+        zfsProcessFactory.setFilesystems(prepareFilesystems());
+
+        List<String> snapshots = prepareSnapshots();
+        zfsProcessFactory.setStringList(snapshots);
+
+        List<ZFSStreamTest> zfsStreamTests = prepareZFSStreams();
         zfsProcessFactory.setZfsStreamTests(zfsStreamTests);
+
         zfsProcessFactory.setSnapshots(snapshots,zfsStreamTests);
 
         List<byte[]> srcList = new ArrayList<>();
@@ -124,7 +138,7 @@ public class TestZFSBackupService {
         ZFSFileSystemRepository zfsFileSystemRepository = new ZFSFileSystemRepositoryImpl(zfsProcessFactory, zfsSnapshotRepository);
         FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDirBackup);
         String password = "hMHteFgxdnxBoXD";
-        int chunkSize=100;
+        int chunkSize=700;
         boolean isLoadAWS = true;
         long filePartSize = 1000;
 
