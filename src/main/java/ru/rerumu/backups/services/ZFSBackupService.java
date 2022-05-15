@@ -102,27 +102,27 @@ public class ZFSBackupService {
     private void sendSingleSnapshot(ZFSSend zfsSend,
                                     S3Loader s3Loader,
                                     String streamMark) throws InterruptedException, CompressorException, IOException, EncryptException {
-            int n=0;
-            while (true) {
-                Path newFilePath= filePartRepository.createNewFilePath(streamMark,n);
-                n++;
-                try {
-                    writeToFile(zfsSend, newFilePath);
-                } catch (FileHitSizeLimitException e) {
-                    processCreatedFile(isLoadS3, s3Loader, newFilePath);
-                    logger.debug(String.format(
-                            "File '%s' processed",
-                            newFilePath));
-                } catch (ZFSStreamEndedException e) {
-                    processCreatedFile(isLoadS3, s3Loader, newFilePath);
-                    logger.debug(String.format(
-                            "File '%s' processed",
-                            newFilePath));
-                    logger.info("End of stream. Exiting");
-                    break;
-                }
-
+        int n = 0;
+        while (true) {
+            Path newFilePath = filePartRepository.createNewFilePath(streamMark, n);
+            n++;
+            try {
+                writeToFile(zfsSend, newFilePath);
+            } catch (FileHitSizeLimitException e) {
+                processCreatedFile(isLoadS3, s3Loader, newFilePath);
+                logger.debug(String.format(
+                        "File '%s' processed",
+                        newFilePath));
+            } catch (ZFSStreamEndedException e) {
+                processCreatedFile(isLoadS3, s3Loader, newFilePath);
+                logger.debug(String.format(
+                        "File '%s' processed",
+                        newFilePath));
+                logger.info("End of stream. Exiting");
+                break;
             }
+
+        }
     }
 
     private void sendIncrementalSnapshots(Snapshot baseSnapshot, List<Snapshot> incrementalSnapshots, S3Loader s3Loader)
@@ -146,12 +146,12 @@ public class ZFSBackupService {
                         s3Loader,
                         streamMark);
             } catch (Exception e) {
-                if (zfsSend!=null) {
+                if (zfsSend != null) {
                     zfsSend.kill();
                 }
                 throw e;
             } finally {
-                if (zfsSend!=null) {
+                if (zfsSend != null) {
                     zfsSend.close();
                 }
             }
@@ -159,8 +159,8 @@ public class ZFSBackupService {
         }
     }
 
-    private String escapeSymbols(String srcString){
-        return srcString.replace('/','-');
+    private String escapeSymbols(String srcString) {
+        return srcString.replace('/', '-');
     }
 
     public void zfsBackupFull(S3Loader s3Loader,
@@ -174,37 +174,38 @@ public class ZFSBackupService {
         List<ZFSFileSystem> zfsFileSystemList = zfsFileSystemRepository.getFilesystemsTreeList(parentDatasetName);
 
         for (ZFSFileSystem zfsFileSystem : zfsFileSystemList) {
-
-            Snapshot baseSnapshot = zfsFileSystem.getBaseSnapshot();
-            // TODO: May not have target snapshot
-            List<Snapshot> incrementalSnapshots = zfsFileSystem.getIncrementalSnapshots(targetSnapshotName);
-
-            logger.debug(String.format("Sending base snapshot '%s'", baseSnapshot.getFullName()));
-            String streamMark = escapeSymbols(baseSnapshot.getDataset()) + "@" + baseSnapshot.getName();
-//            sendSingleSnapshot(
-//                    zfsProcessFactory.getZFSSendFull(baseSnapshot),
-//                    s3Loader,
-//                    streamMark);
-
-            ZFSSend zfsSend = null;
             try {
-                zfsSend = zfsProcessFactory.getZFSSendFull(baseSnapshot);
-                sendSingleSnapshot(
-                        zfsSend,
-                        s3Loader,
-                        streamMark);
-            } catch (Exception e) {
-                if (zfsSend!=null) {
-                    zfsSend.kill();
-                }
-                throw e;
-            } finally {
-                if (zfsSend!=null) {
-                    zfsSend.close();
-                }
-            }
+                Snapshot baseSnapshot = zfsFileSystem.getBaseSnapshot();
 
-            sendIncrementalSnapshots(baseSnapshot,incrementalSnapshots,s3Loader);
+                List<Snapshot> incrementalSnapshots = zfsFileSystem.getIncrementalSnapshots(targetSnapshotName);
+
+                logger.debug(String.format("Sending base snapshot '%s'", baseSnapshot.getFullName()));
+                String streamMark = escapeSymbols(baseSnapshot.getDataset()) + "@" + baseSnapshot.getName();
+
+                ZFSSend zfsSend = null;
+                try {
+                    zfsSend = zfsProcessFactory.getZFSSendFull(baseSnapshot);
+                    sendSingleSnapshot(
+                            zfsSend,
+                            s3Loader,
+                            streamMark);
+                } catch (Exception e) {
+                    if (zfsSend != null) {
+                        zfsSend.kill();
+                    }
+                    throw e;
+                } finally {
+                    if (zfsSend != null) {
+                        zfsSend.close();
+                    }
+                }
+
+                sendIncrementalSnapshots(baseSnapshot, incrementalSnapshots, s3Loader);
+            } catch (BaseSnapshotNotFoundException | SnapshotNotFoundException e) {
+                logger.error(e.getMessage(), e);
+                logger.info(String.format("Skipping filesystem '%s'",zfsFileSystem.getName()));
+                continue;
+            }
 
         }
         logger.debug("Sent all filesystems");
@@ -226,7 +227,7 @@ public class ZFSBackupService {
             List<Snapshot> incrementalSnapshots = zfsFileSystem.getIncrementalSnapshots(baseSnapshotName, targetSnapshotName);
             Snapshot baseSnapshot = incrementalSnapshots.remove(0);
 
-            sendIncrementalSnapshots(baseSnapshot,incrementalSnapshots,s3Loader);
+            sendIncrementalSnapshots(baseSnapshot, incrementalSnapshots, s3Loader);
         }
     }
 }
