@@ -45,4 +45,13 @@ public class Snapshot {
     public int hashCode() {
         return Objects.hash(name, dataset, fullName);
     }
+
+    @Override
+    public String toString() {
+        return "Snapshot{" +
+                "name='" + name + '\'' +
+                ", dataset='" + dataset + '\'' +
+                ", fullName='" + fullName + '\'' +
+                '}';
+    }
 }

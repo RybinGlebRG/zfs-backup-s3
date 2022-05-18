@@ -9,11 +9,18 @@ import java.nio.file.Path;
 
 public interface FilePartRepository {
 
-    BufferedInputStream getNextInputStream() throws NoMorePartsException, FinishedFlagException, IOException, TooManyPartsException;
-    void deleteLastPart() throws IOException;
-    void markReceivedLastPart() throws IOException;
-    void markReadyLastPart() throws IOException;
-    BufferedOutputStream newPart()  throws IOException;
-    Path getLastPart();
-    boolean isLastPartExists();
+//    BufferedInputStream getNextInputStream() throws NoMorePartsException, FinishedFlagException, IOException, TooManyPartsException;
+    Path getNextInputPath() throws NoMorePartsException, FinishedFlagException, IOException, TooManyPartsException;
+//    void deleteLastPart() throws IOException;
+    void delete(Path path) throws IOException;
+//    void markReceivedLastPart() throws IOException;
+    Path markReceived(Path path) throws IOException;
+    Path markReady(Path path) throws IOException;
+//    BufferedOutputStream newPart()  throws IOException;
+//    Path getLastPart();
+//    boolean isExists(Path path);
+    Path createNewFilePath(String prefix, int partNumber);
+//    OutputStream createNewOutputStream(Path path) throws IOException;
+//    InputStream createNewInputStream(Path path) throws IOException;
+
 }

@@ -6,14 +6,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
-import ru.rerumu.backups.services.InputStreamLogger;
+import ru.rerumu.backups.zfs_api.InputStreamLogger;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
 import java.util.List;
 
 

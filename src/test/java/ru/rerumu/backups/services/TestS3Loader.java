@@ -1,10 +1,10 @@
 package ru.rerumu.backups.services;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import ru.rerumu.backups.models.S3Storage;
+import ru.rerumu.backups.services.impl.S3LoaderImpl;
 import software.amazon.awssdk.regions.Region;
 
 import java.io.BufferedOutputStream;
@@ -21,7 +21,7 @@ public class TestS3Loader {
     @Disabled
     @Test
     void shouldSend(@TempDir Path tempDir) throws URISyntaxException, IOException {
-        S3Loader s3Loader = new S3Loader();
+        S3LoaderImpl s3Loader = new S3LoaderImpl();
         s3Loader.addStorage(new S3Storage(
                 Region.of("***"),
                 "***",

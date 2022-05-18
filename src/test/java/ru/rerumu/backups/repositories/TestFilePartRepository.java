@@ -15,6 +15,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Random;
 
 
@@ -31,9 +32,10 @@ public class TestFilePartRepository {
             outputStream.write(src);
         }
 
-        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir, "level_0_25_02_2020__20_50");
+        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir);
         byte[] dst;
-        try(InputStream inputStream = filePartRepository.getNextInputStream()){
+        Path nextPath = filePartRepository.getNextInputPath();
+        try(InputStream inputStream = Files.newInputStream(nextPath)){
             dst = inputStream.readAllBytes();
         }
 
@@ -44,9 +46,9 @@ public class TestFilePartRepository {
     void shouldNotGetNext(@TempDir Path tempDir) throws IOException {
         Files.createFile(tempDir.resolve("level_0_25_02_2020__20_50.part0"));
 
-        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir, "level_0_25_02_2020__20_50");
+        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir);
 
-        Assertions.assertThrows(NoMorePartsException.class, filePartRepository::getNextInputStream);
+        Assertions.assertThrows(NoMorePartsException.class, filePartRepository::getNextInputPath);
     }
 
     @Test
@@ -54,9 +56,9 @@ public class TestFilePartRepository {
         Files.createFile(tempDir.resolve("level_0_25_02_2020__20_50.part0.ready"));
         Files.createFile(tempDir.resolve("level_0_25_02_2020__20_50.part1.ready"));
 
-        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir, "level_0_25_02_2020__20_50");
+        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir);
 
-        Assertions.assertThrows(TooManyPartsException.class, filePartRepository::getNextInputStream);
+        Assertions.assertThrows(TooManyPartsException.class, filePartRepository::getNextInputPath);
     }
 
     @Test
@@ -64,34 +66,35 @@ public class TestFilePartRepository {
         Files.createFile(tempDir.resolve("level_0_25_02_2020__20_50.part0.ready"));
         Files.createFile(tempDir.resolve("finished"));
 
-        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir, "level_0_25_02_2020__20_50");
+        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir);
 
-        Assertions.assertThrows(TooManyPartsException.class, filePartRepository::getNextInputStream);
+        Assertions.assertThrows(TooManyPartsException.class, filePartRepository::getNextInputPath);
     }
 
     @Test
     void shouldThrowFinished(@TempDir Path tempDir) throws IOException {
         Files.createFile(tempDir.resolve("finished"));
 
-        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir, "level_0_25_02_2020__20_50");
+        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir);
 
-        Assertions.assertThrows(FinishedFlagException.class, filePartRepository::getNextInputStream);
+        Assertions.assertThrows(FinishedFlagException.class, filePartRepository::getNextInputPath);
     }
 
     @Test
     void shouldFillNewFile(@TempDir Path tempDir) throws IOException {
         Files.createFile(tempDir.resolve("level_0_25_02_2020__20_50.part0"));
 
-        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir, "level_0_25_02_2020__20_50");
+        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir);
         byte[] src = new byte[1000];
         new Random().nextBytes(src);
-        try(BufferedOutputStream outputStream = filePartRepository.newPart()){
-            outputStream.write(src);
+        Path newPath = filePartRepository.createNewFilePath("level_0_25_02_2020__20_50",0);
+        try(OutputStream outputStream = Files.newOutputStream(newPath);
+            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)){
+            bufferedOutputStream.write(src);
         }
 
-        Path lastPart = filePartRepository.getLastPart();
         byte[] dst;
-        try(InputStream inputStream = Files.newInputStream(lastPart)){
+        try(InputStream inputStream = Files.newInputStream(newPath)){
             dst = inputStream.readAllBytes();
         }
 
@@ -102,13 +105,10 @@ public class TestFilePartRepository {
     void shouldMarkReceived(@TempDir Path tempDir) throws Exception {
         Files.createFile(tempDir.resolve("level_0_25_02_2020__20_50.part0.ready"));
 
-        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir, "level_0_25_02_2020__20_50");
-        byte[] dst;
-        try(InputStream inputStream = filePartRepository.getNextInputStream()){
-            dst = inputStream.readAllBytes();
-        }
+        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir);
+        Path nextPath = filePartRepository.getNextInputPath();
 
-        filePartRepository.markReceivedLastPart();
+        filePartRepository.markReceived(nextPath);
 
         Assertions.assertFalse(Files.exists(tempDir.resolve("level_0_25_02_2020__20_50.part0.ready")));
         Assertions.assertTrue(Files.exists(tempDir.resolve("level_0_25_02_2020__20_50.part0.received")));
@@ -116,18 +116,28 @@ public class TestFilePartRepository {
     }
 
     @Test
-    void shouldDeleteLastPart(@TempDir Path tempDir) throws Exception {
-        Files.createFile(tempDir.resolve("level_0_25_02_2020__20_50.part0.ready"));
+    void shouldMarkReady(@TempDir Path tempDir) throws Exception {
+        Path path = tempDir.resolve("level_0_25_02_2020__20_50.part0");
+        Files.createFile(path);
 
-        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir, "level_0_25_02_2020__20_50");
-        byte[] dst;
-        try(InputStream inputStream = filePartRepository.getNextInputStream()){
-            dst = inputStream.readAllBytes();
-        }
+        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir);
+        filePartRepository.markReady(path);
 
-        filePartRepository.deleteLastPart();
+        Assertions.assertFalse(Files.exists(tempDir.resolve("level_0_25_02_2020__20_50.part0")));
+        Assertions.assertTrue(Files.exists(tempDir.resolve("level_0_25_02_2020__20_50.part0.ready")));
 
-        Assertions.assertFalse(Files.exists(tempDir.resolve("level_0_25_02_2020__20_50.part0.ready")));
+    }
+
+    @Test
+    void shouldDelete(@TempDir Path tempDir) throws Exception {
+        Path path = tempDir.resolve("level_0_25_02_2020__20_50.part0.ready");
+        Files.createFile(path);
+
+        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir);
+
+        filePartRepository.delete(path);
+
+        Assertions.assertFalse(Files.exists(path));
 
     }
 }

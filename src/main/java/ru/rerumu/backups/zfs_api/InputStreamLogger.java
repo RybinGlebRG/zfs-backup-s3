@@ -1,4 +1,4 @@
-package ru.rerumu.backups.services;
+package ru.rerumu.backups.zfs_api;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,11 +10,15 @@ import java.nio.charset.StandardCharsets;
 public class InputStreamLogger implements Runnable{
 
     private final BufferedInputStream inputStream;
-    private final Logger logger;
+    protected final Logger logger;
 
     public InputStreamLogger(BufferedInputStream inputStream, Logger logger){
         this.logger = logger;
         this.inputStream = inputStream;
+    }
+
+    protected void logRecord(String str){
+        logger.debug(str);
     }
 
 
@@ -25,11 +29,11 @@ public class InputStreamLogger implements Runnable{
         int len = 0;
         try {
             while ((len = inputStream.read(buf)) >= 0) {
-                logger.debug(new String(buf,0,len, StandardCharsets.UTF_8));
+                logRecord(new String(buf,0,len, StandardCharsets.UTF_8));
             }
         }
         catch (IOException e){
-            logger.error(e.getMessage());
+            logger.error(e.getMessage(),e);
         }
         logger.info("Finished reading stderr");
     }
