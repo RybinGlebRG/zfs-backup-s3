@@ -13,7 +13,7 @@ public class ZFSListFilesystems extends ProcessWrapperImpl {
 
     public ZFSListFilesystems(String parentFileSystem) throws IOException {
         super(Arrays.asList(
-                "zfs","list","-rH","-t","filesystem","-o","name","-s","name",parentFileSystem
+                "zfs","list","-rH","-t","filesystem,volume","-o","name","-s","name",parentFileSystem
         ));
     }
 }
