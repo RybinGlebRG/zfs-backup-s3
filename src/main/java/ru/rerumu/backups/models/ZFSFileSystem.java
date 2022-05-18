@@ -81,6 +81,15 @@ public class ZFSFileSystem {
         return res;
     }
 
+    public boolean isSnapshotExists(String snapshotName){
+        for (Snapshot snapshot: snapshotList){
+            if (snapshot.getName().equals(snapshotName)){
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

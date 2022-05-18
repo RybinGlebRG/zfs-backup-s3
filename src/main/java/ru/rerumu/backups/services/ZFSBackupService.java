@@ -88,7 +88,7 @@ public class ZFSBackupService {
 
             while (true) {
                 byte[] buf = fillBuffer(zfsSend.getBufferedInputStream());
-                if (buf.length == 0){
+                if (buf.length == 0) {
                     break;
                 }
                 buf = compressor.compressChunk(buf);
@@ -147,6 +147,53 @@ public class ZFSBackupService {
         }
     }
 
+    private void sendBaseSnapshot(Snapshot baseSnapshot, S3Loader s3Loader)
+            throws InterruptedException, CompressorException, IOException, EncryptException {
+        String streamMark = escapeSymbols(baseSnapshot.getDataset()) + "@" + baseSnapshot.getName();
+        ZFSSend zfsSend = null;
+        try {
+            zfsSend = zfsProcessFactory.getZFSSendFull(baseSnapshot);
+            sendSingleSnapshot(
+                    zfsSend,
+                    s3Loader,
+                    streamMark);
+        } catch (Exception e) {
+            if (zfsSend != null) {
+                zfsSend.kill();
+            }
+            throw e;
+        } finally {
+            if (zfsSend != null) {
+                zfsSend.close();
+            }
+        }
+    }
+
+    private void sendIncrementalSnapshot(Snapshot baseSnapshot, Snapshot incrementalSnapshot, S3Loader s3Loader)
+            throws InterruptedException, CompressorException, IOException, EncryptException {
+        String streamMark = escapeSymbols(baseSnapshot.getDataset())
+                + "@" + baseSnapshot.getName()
+                + "__" + escapeSymbols(incrementalSnapshot.getDataset())
+                + "@" + incrementalSnapshot.getName();
+        ZFSSend zfsSend = null;
+        try {
+            zfsSend = zfsProcessFactory.getZFSSendIncremental(baseSnapshot, incrementalSnapshot);
+            sendSingleSnapshot(
+                    zfsSend,
+                    s3Loader,
+                    streamMark);
+        } catch (Exception e) {
+            if (zfsSend != null) {
+                zfsSend.kill();
+            }
+            throw e;
+        } finally {
+            if (zfsSend != null) {
+                zfsSend.close();
+            }
+        }
+    }
+
     private void sendIncrementalSnapshots(Snapshot baseSnapshot, List<Snapshot> incrementalSnapshots, S3Loader s3Loader)
             throws IOException, CompressorException, InterruptedException, EncryptException {
         for (Snapshot incrementalSnapshot : incrementalSnapshots) {
@@ -155,28 +202,8 @@ public class ZFSBackupService {
                     incrementalSnapshot.getFullName(),
                     baseSnapshot.getFullName()));
 
-            String streamMark = escapeSymbols(baseSnapshot.getDataset())
-                    + "@" + baseSnapshot.getName()
-                    + "__" + escapeSymbols(incrementalSnapshot.getDataset())
-                    + "@" + incrementalSnapshot.getName();
+            sendIncrementalSnapshot(baseSnapshot, incrementalSnapshot, s3Loader);
 
-            ZFSSend zfsSend = null;
-            try {
-                zfsSend = zfsProcessFactory.getZFSSendIncremental(baseSnapshot, incrementalSnapshot);
-                sendSingleSnapshot(
-                        zfsSend,
-                        s3Loader,
-                        streamMark);
-            } catch (Exception e) {
-                if (zfsSend != null) {
-                    zfsSend.kill();
-                }
-                throw e;
-            } finally {
-                if (zfsSend != null) {
-                    zfsSend.close();
-                }
-            }
             baseSnapshot = incrementalSnapshot;
         }
     }
@@ -191,41 +218,34 @@ public class ZFSBackupService {
             IOException,
             InterruptedException,
             CompressorException,
-            EncryptException, BaseSnapshotNotFoundException, SnapshotNotFoundException {
+            EncryptException {
 
         List<ZFSFileSystem> zfsFileSystemList = zfsFileSystemRepository.getFilesystemsTreeList(parentDatasetName);
 
         for (ZFSFileSystem zfsFileSystem : zfsFileSystemList) {
+            if (!zfsFileSystem.isSnapshotExists(targetSnapshotName)) {
+                logger.warn(String.format("Skipping filesystem '%s'. No acceptable snapshots", zfsFileSystem.getName()));
+                continue;
+            }
+
             try {
                 Snapshot baseSnapshot = zfsFileSystem.getBaseSnapshot();
 
-                List<Snapshot> incrementalSnapshots = zfsFileSystem.getIncrementalSnapshots(targetSnapshotName);
-
                 logger.debug(String.format("Sending base snapshot '%s'", baseSnapshot.getFullName()));
-                String streamMark = escapeSymbols(baseSnapshot.getDataset()) + "@" + baseSnapshot.getName();
 
-                ZFSSend zfsSend = null;
+                sendBaseSnapshot(baseSnapshot, s3Loader);
+
                 try {
-                    zfsSend = zfsProcessFactory.getZFSSendFull(baseSnapshot);
-                    sendSingleSnapshot(
-                            zfsSend,
-                            s3Loader,
-                            streamMark);
-                } catch (Exception e) {
-                    if (zfsSend != null) {
-                        zfsSend.kill();
-                    }
-                    throw e;
-                } finally {
-                    if (zfsSend != null) {
-                        zfsSend.close();
-                    }
+                    List<Snapshot> incrementalSnapshots;
+                    incrementalSnapshots = zfsFileSystem.getIncrementalSnapshots(targetSnapshotName);
+                    sendIncrementalSnapshots(baseSnapshot, incrementalSnapshots, s3Loader);
+                } catch (SnapshotNotFoundException e) {
+                    logger.warn(String.format("No acceptable incremental snapshots for filesystem '%s'", zfsFileSystem.getName()));
                 }
 
-                sendIncrementalSnapshots(baseSnapshot, incrementalSnapshots, s3Loader);
-            } catch (BaseSnapshotNotFoundException | SnapshotNotFoundException e) {
+            } catch (BaseSnapshotNotFoundException e) {
                 logger.error(e.getMessage(), e);
-                logger.info(String.format("Skipping filesystem '%s'", zfsFileSystem.getName()));
+                logger.warn(String.format("Skipping filesystem '%s'", zfsFileSystem.getName()));
                 continue;
             }
 

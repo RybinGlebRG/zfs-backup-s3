@@ -42,8 +42,6 @@ public class TestZFSBackupService {
 
     private List<String> prepareSnapshots(){
         List<String> snapshots = new ArrayList<>();
-        snapshots.add("ExternalPool/Applications/virtual_box@auto-20220326-150000");
-        snapshots.add("ExternalPool/Applications/virtual_box@auto-20220327-060000");
         snapshots.add("ExternalPool/Applications/virtual_box@auto-20220327-150000");
         snapshots.add("ExternalPool/Applications/virtual_box@auto-20220328-150000");
         snapshots.add("ExternalPool/Applications@auto-20220326-150000");
@@ -69,8 +67,6 @@ public class TestZFSBackupService {
 
 
         // ExternalPool/Applications/virtual_box
-        zfsStreamTests.add(new ZFSStreamTest(1500));
-        zfsStreamTests.add(new ZFSStreamTest(1500));
         zfsStreamTests.add(new ZFSStreamTest(1500));
         zfsStreamTests.add(new ZFSStreamTest(1500));
 
@@ -125,8 +121,6 @@ public class TestZFSBackupService {
         srcList.add(zfsProcessFactory.getSnapshotsWithStream().get("ExternalPool/Applications@auto-20220327-060000"));
         srcList.add(zfsProcessFactory.getSnapshotsWithStream().get("ExternalPool/Applications@auto-20220327-150000"));
 
-        srcList.add(zfsProcessFactory.getSnapshotsWithStream().get("ExternalPool/Applications/virtual_box@auto-20220326-150000"));
-        srcList.add(zfsProcessFactory.getSnapshotsWithStream().get("ExternalPool/Applications/virtual_box@auto-20220327-060000"));
         srcList.add(zfsProcessFactory.getSnapshotsWithStream().get("ExternalPool/Applications/virtual_box@auto-20220327-150000"));
 
         srcList.add(zfsProcessFactory.getSnapshotsWithStream().get("ExternalPool/Books@auto-20220326-150000"));
