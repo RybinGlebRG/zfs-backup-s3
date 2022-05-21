@@ -38,27 +38,34 @@ public class FilePartRepositoryImpl implements FilePartRepository {
 
     @Override
     public void delete(Path path) throws IOException {
+        logger.info(String.format("Deleting file '%s'",path.toString()));
         Files.delete(path);
+        logger.info(String.format("File '%s' deleted",path.toString()));
     }
 
     @Override
     public Path markReady(Path path) throws IOException {
+        logger.info(String.format("Marking file '%s' as 'ready'",path.toString()));
         Path res = Paths.get(path.toString() + ".ready");
         Files.move(path, res);
+        logger.info(String.format("markReady - '%s'",res.toString()));
         return res;
     }
 
     @Override
     public Path markReceived(Path path) throws IOException {
+        logger.info(String.format("Marking file '%s' as 'received'",path.toString()));
         String fileName = path.getFileName().toString();
         fileName = fileName.replace(".ready", ".received");
         Path res = Paths.get(path.getParent().toString(), fileName);
         Files.move(path, res);
+        logger.info(String.format("markReceived - '%s'",res.toString()));
         return res;
     }
 
     @Override
     public Path getNextInputPath() throws NoMorePartsException, FinishedFlagException, IOException, TooManyPartsException {
+        logger.info("Starting looking for next input path");
         List<Path> fileParts = new ArrayList<>();
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(backupDirectory)) {
             for (Path item : stream) {
@@ -71,16 +78,19 @@ public class FilePartRepositoryImpl implements FilePartRepository {
         }
 
         if (fileParts.size() == 0) {
+            logger.info("Did not find acceptable files");
             throw new NoMorePartsException();
         } else if (fileParts.size() > 1) {
+            logger.info("Found too many files");
             throw new TooManyPartsException();
         } else {
 
             Path filePart = fileParts.get(0);
             if (filePart.getFileName().toString().equals(FINISH_MARK)) {
+                logger.info("Found 'finished' flag");
                 throw new FinishedFlagException();
             }
-
+            logger.info(String.format("getNextInputPath - '%s'",filePart.toString()));
             return filePart;
 
         }
