@@ -108,7 +108,8 @@ public class ZFSRestoreService {
             ClassNotFoundException,
             EncryptException,
             InterruptedException,
-            ZFSStreamEndedException{
+            ZFSStreamEndedException,
+            IncorrectFilePartNameException{
 
         ZFSStreamPart previousStream = null;
         ZFSStreamPart nextStream = null;
@@ -145,7 +146,8 @@ public class ZFSRestoreService {
             InterruptedException,
             ClassNotFoundException,
             FinishedFlagException,
-            NoMorePartsException {
+            NoMorePartsException,
+            IncorrectFilePartNameException{
         logger.info("Starting restore");
 //        ZFSReceive zfsReceive = zfsProcessFactory.getZFSReceive(zfsPool);
 
