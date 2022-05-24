@@ -34,11 +34,13 @@ public class ZFSRestoreService {
     }
 
     private void processReceivedFile(Path path) throws IOException {
+        logger.info(String.format("Starting processing of file '%s'",path.toString()));
         if (isDelete) {
             filePartRepository.delete(path);
         } else {
             filePartRepository.markReceived(path);
         }
+        logger.info(String.format("Finished processing of file '%s'",path.toString()));
     }
 
     private void readZFSStream(ZFSReceive zfsReceive, ZFSStreamPart zfsStreamPart)
@@ -86,9 +88,14 @@ public class ZFSRestoreService {
     }
 
     private boolean isNextPart(ZFSStreamPart previousStream, ZFSStreamPart nextStream){
+        logger.info("isNextPart");
+        logger.info(String.format("Previous stream - %s",previousStream.toString()));
+        logger.info(String.format("Next stream - %s",nextStream.toString()));
         if (previousStream.getStreamName().equals(nextStream.getStreamName()) && nextStream.getPartNumber() == previousStream.getPartNumber()+1){
+            logger.info("isNextPart - true");
             return true;
         }
+        logger.info("isNextPart - false");
         return false;
     }
 
@@ -101,7 +108,8 @@ public class ZFSRestoreService {
             ClassNotFoundException,
             EncryptException,
             InterruptedException,
-            ZFSStreamEndedException{
+            ZFSStreamEndedException,
+            IncorrectFilePartNameException{
 
         ZFSStreamPart previousStream = null;
         ZFSStreamPart nextStream = null;
@@ -109,7 +117,9 @@ public class ZFSRestoreService {
         while (true){
             try{
                 nextStream = new ZFSStreamPart(filePartRepository.getNextInputPath());
+                logger.info(String.format("Got next stream - %s",nextStream.toString()));
                 if (previousStream != null && !isNextPart(previousStream,nextStream)){
+                    logger.info("Stream ended");
                     throw new ZFSStreamEndedException();
                 }
                 readZFSStream(zfsReceive,nextStream);
@@ -118,8 +128,8 @@ public class ZFSRestoreService {
                 processReceivedFile(nextStream.getFullPath());
                 previousStream = nextStream;
             } catch (NoMorePartsException e) {
-                logger.debug("No files found. Waiting 10 seconds before retry");
-                Thread.sleep(10000);
+                logger.debug("No acceptable files found. Waiting 1 second before retry");
+                Thread.sleep(1000);
             }
         }
 
@@ -136,7 +146,8 @@ public class ZFSRestoreService {
             InterruptedException,
             ClassNotFoundException,
             FinishedFlagException,
-            NoMorePartsException {
+            NoMorePartsException,
+            IncorrectFilePartNameException{
         logger.info("Starting restore");
 //        ZFSReceive zfsReceive = zfsProcessFactory.getZFSReceive(zfsPool);
 

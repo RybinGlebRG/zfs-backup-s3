@@ -115,8 +115,8 @@ public class ZFSBackupService {
         } else {
             Path readyPath = filePartRepository.markReady(path);
             while (Files.exists(readyPath)) {
-                logger.debug("Last part exists. Waiting 10 seconds before retry");
-                Thread.sleep(10000);
+                logger.debug("Last part exists. Waiting 1 second before retry");
+                Thread.sleep(1000);
             }
         }
     }
