@@ -1,12 +1,13 @@
-package ru.rerumu.backups.services.impl;
+package ru.rerumu.backups.io.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.models.S3Storage;
-import ru.rerumu.backups.services.S3Loader;
+import ru.rerumu.backups.io.S3Loader;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.transfer.s3.*;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,7 @@ public class S3LoaderImpl implements S3Loader {
     }
 
     @Override
-    public void upload(String datasetName, Path path){
+    public void upload(String datasetName, Path path) throws IOException {
         // TODO: Check we have storages added
         for (S3Storage s3Storage:storages ) {
             logger.info(String.format("Uploading file %s",path.toString()));
@@ -51,6 +52,10 @@ public class S3LoaderImpl implements S3Loader {
                     );
 
             CompletedFileUpload completedfileUpload = fileUpload.completionFuture().join();
+            logger.info(String.format("Status code: %d",completedfileUpload.response().sdkHttpResponse().statusCode()));
+            if (completedfileUpload.response().sdkHttpResponse().statusCode()!=200){
+                throw new IOException();
+            }
             logger.info(completedfileUpload.response().toString());
         }
     }

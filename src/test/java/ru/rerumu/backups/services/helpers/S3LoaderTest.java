@@ -1,7 +1,7 @@
 package ru.rerumu.backups.services.helpers;
 
 import ru.rerumu.backups.models.S3Storage;
-import ru.rerumu.backups.services.S3Loader;
+import ru.rerumu.backups.io.S3Loader;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;

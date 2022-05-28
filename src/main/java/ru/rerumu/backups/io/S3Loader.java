@@ -1,4 +1,4 @@
-package ru.rerumu.backups.services;
+package ru.rerumu.backups.io;
 
 import ru.rerumu.backups.models.S3Storage;
 

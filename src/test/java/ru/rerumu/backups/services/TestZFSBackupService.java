@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.backups.exceptions.*;
+import ru.rerumu.backups.io.S3Loader;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSPool;
 import ru.rerumu.backups.repositories.FilePartRepository;

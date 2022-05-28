@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import ru.rerumu.backups.models.S3Storage;
-import ru.rerumu.backups.services.impl.S3LoaderImpl;
+import ru.rerumu.backups.io.impl.S3LoaderImpl;
 import software.amazon.awssdk.regions.Region;
 
 import java.io.BufferedOutputStream;
