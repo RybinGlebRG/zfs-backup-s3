@@ -25,7 +25,7 @@ public class S3LoaderTest implements S3Loader {
     }
 
     @Override
-    public void upload(Path path) throws IOException, InterruptedException {
+    public void upload(String datasetName, Path path) throws IOException, InterruptedException {
         while (true){
             boolean isFoundFile = true;
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(dstDir)) {

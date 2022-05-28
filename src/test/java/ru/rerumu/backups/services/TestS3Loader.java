@@ -48,6 +48,6 @@ public class TestS3Loader {
         try(BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(Files.newOutputStream(path))){
             bufferedOutputStream.write(srcByte);
         }
-        s3Loader.upload(path);
+        s3Loader.upload("Test",path);
     }
 }

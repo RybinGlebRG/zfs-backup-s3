@@ -108,9 +108,10 @@ public class ZFSBackupService {
 
     private void processCreatedFile(boolean isLoadS3,
                                     S3Loader s3Loader,
+                                    String datasetName,
                                     Path path) throws IOException, InterruptedException {
         if (isLoadS3) {
-            s3Loader.upload(path);
+            s3Loader.upload(datasetName,path);
             filePartRepository.delete(path);
         } else {
             Path readyPath = filePartRepository.markReady(path);
@@ -123,7 +124,8 @@ public class ZFSBackupService {
 
     private void sendSingleSnapshot(ZFSSend zfsSend,
                                     S3Loader s3Loader,
-                                    String streamMark) throws InterruptedException, CompressorException, IOException, EncryptException {
+                                    String streamMark,
+                                    String datasetName) throws InterruptedException, CompressorException, IOException, EncryptException {
         int n = 0;
         while (true) {
             Path newFilePath = filePartRepository.createNewFilePath(streamMark, n);
@@ -131,12 +133,12 @@ public class ZFSBackupService {
             try {
                 writeToFile(zfsSend, newFilePath);
             } catch (FileHitSizeLimitException e) {
-                processCreatedFile(isLoadS3, s3Loader, newFilePath);
+                processCreatedFile(isLoadS3, s3Loader, datasetName,newFilePath);
                 logger.debug(String.format(
                         "File '%s' processed",
                         newFilePath));
             } catch (ZFSStreamEndedException e) {
-                processCreatedFile(isLoadS3, s3Loader, newFilePath);
+                processCreatedFile(isLoadS3, s3Loader, datasetName, newFilePath);
                 logger.debug(String.format(
                         "File '%s' processed",
                         newFilePath));
@@ -156,7 +158,8 @@ public class ZFSBackupService {
             sendSingleSnapshot(
                     zfsSend,
                     s3Loader,
-                    streamMark);
+                    streamMark,
+                    baseSnapshot.getDataset());
         } catch (Exception e) {
             if (zfsSend != null) {
                 zfsSend.kill();
@@ -181,7 +184,8 @@ public class ZFSBackupService {
             sendSingleSnapshot(
                     zfsSend,
                     s3Loader,
-                    streamMark);
+                    streamMark,
+                    baseSnapshot.getDataset());
         } catch (Exception e) {
             if (zfsSend != null) {
                 zfsSend.kill();

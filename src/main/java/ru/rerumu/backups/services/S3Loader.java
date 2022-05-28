@@ -7,5 +7,5 @@ import java.nio.file.Path;
 
 public interface S3Loader {
     void addStorage(S3Storage s3Storage);
-    void upload(Path path) throws IOException, InterruptedException;
+    void upload(String datasetName,Path path) throws IOException, InterruptedException;
 }
