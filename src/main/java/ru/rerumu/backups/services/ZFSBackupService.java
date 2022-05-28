@@ -84,6 +84,7 @@ public class ZFSBackupService {
                 } catch (SnapshotNotFoundException e) {
                     logger.warn(String.format("No acceptable incremental snapshots for filesystem '%s'", zfsFileSystem.getName()));
                 }
+                snapshotSender.checkSent(sentSnapshots,s3Loader);
 
             } catch (BaseSnapshotNotFoundException e) {
                 logger.error(e.getMessage(), e);
