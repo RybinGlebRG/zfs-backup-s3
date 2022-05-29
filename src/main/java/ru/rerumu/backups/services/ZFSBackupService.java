@@ -153,13 +153,14 @@ public class ZFSBackupService {
             throws InterruptedException, CompressorException, IOException, EncryptException {
         String streamMark = escapeSymbols(baseSnapshot.getDataset()) + "@" + baseSnapshot.getName();
         ZFSSend zfsSend = null;
+        String datasetName = escapeSymbols(baseSnapshot.getDataset());
         try {
             zfsSend = zfsProcessFactory.getZFSSendFull(baseSnapshot);
             sendSingleSnapshot(
                     zfsSend,
                     s3Loader,
                     streamMark,
-                    baseSnapshot.getDataset());
+                    datasetName);
         } catch (Exception e) {
             if (zfsSend != null) {
                 zfsSend.kill();
@@ -179,13 +180,14 @@ public class ZFSBackupService {
                 + "__" + escapeSymbols(incrementalSnapshot.getDataset())
                 + "@" + incrementalSnapshot.getName();
         ZFSSend zfsSend = null;
+        String datasetName = escapeSymbols(baseSnapshot.getDataset());
         try {
             zfsSend = zfsProcessFactory.getZFSSendIncremental(baseSnapshot, incrementalSnapshot);
             sendSingleSnapshot(
                     zfsSend,
                     s3Loader,
                     streamMark,
-                    baseSnapshot.getDataset());
+                    datasetName);
         } catch (Exception e) {
             if (zfsSend != null) {
                 zfsSend.kill();
