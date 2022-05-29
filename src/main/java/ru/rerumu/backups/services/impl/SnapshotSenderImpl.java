@@ -19,6 +19,7 @@ import ru.rerumu.backups.zfs_api.ZFSSend;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 public class SnapshotSenderImpl implements SnapshotSender {
     private final Logger logger = LoggerFactory.getLogger(SnapshotSenderImpl.class);
@@ -140,5 +141,10 @@ public class SnapshotSenderImpl implements SnapshotSender {
                 zfsSend.close();
             }
         }
+    }
+
+    @Override
+    public void checkSent(List<Snapshot> snapshotList, S3Loader s3Loader) {
+
     }
 }

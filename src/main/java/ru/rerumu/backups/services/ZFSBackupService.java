@@ -45,7 +45,7 @@ public class ZFSBackupService {
                     incrementalSnapshot.getFullName(),
                     baseSnapshot.getFullName()));
 
-            snapshotSender.sendIncrementalSnapshot(baseSnapshot,incrementalSnapshot,s3Loader,isLoadS3);
+            snapshotSender.sendIncrementalSnapshot(baseSnapshot, incrementalSnapshot, s3Loader, isLoadS3);
 
             baseSnapshot = incrementalSnapshot;
         }
@@ -57,62 +57,55 @@ public class ZFSBackupService {
             IOException,
             InterruptedException,
             CompressorException,
-            EncryptException {
+            EncryptException,
+            BaseSnapshotNotFoundException {
 
         List<ZFSFileSystem> zfsFileSystemList = zfsFileSystemRepository.getFilesystemsTreeList(parentDatasetName);
 
         for (ZFSFileSystem zfsFileSystem : zfsFileSystemList) {
-            List<Snapshot> sentSnapshots = new ArrayList<>();
             if (!zfsFileSystem.isSnapshotExists(targetSnapshotName)) {
                 logger.warn(String.format("Skipping filesystem '%s'. No acceptable snapshots", zfsFileSystem.getName()));
                 continue;
             }
 
+            List<Snapshot> sentSnapshots = new ArrayList<>();
+            Snapshot baseSnapshot = zfsFileSystem.getBaseSnapshot();
+
+            logger.debug(String.format("Sending base snapshot '%s'", baseSnapshot.getFullName()));
+
+            snapshotSender.sendBaseSnapshot(baseSnapshot, s3Loader, isLoadS3);
+            sentSnapshots.add(baseSnapshot);
+
             try {
-                Snapshot baseSnapshot = zfsFileSystem.getBaseSnapshot();
-
-                logger.debug(String.format("Sending base snapshot '%s'", baseSnapshot.getFullName()));
-
-                snapshotSender.sendBaseSnapshot(baseSnapshot,s3Loader,isLoadS3);
-                sentSnapshots.add(baseSnapshot);
-
-                try {
-                    List<Snapshot> incrementalSnapshots;
-                    incrementalSnapshots = zfsFileSystem.getIncrementalSnapshots(targetSnapshotName);
-                    sendIncrementalSnapshots(baseSnapshot, incrementalSnapshots, s3Loader);
-                    sentSnapshots.addAll(incrementalSnapshots);
-                } catch (SnapshotNotFoundException e) {
-                    logger.warn(String.format("No acceptable incremental snapshots for filesystem '%s'", zfsFileSystem.getName()));
-                }
-                snapshotSender.checkSent(sentSnapshots,s3Loader);
-
-            } catch (BaseSnapshotNotFoundException e) {
-                logger.error(e.getMessage(), e);
-                logger.warn(String.format("Skipping filesystem '%s'", zfsFileSystem.getName()));
-                continue;
+                List<Snapshot> incrementalSnapshots;
+                incrementalSnapshots = zfsFileSystem.getIncrementalSnapshots(targetSnapshotName);
+                sendIncrementalSnapshots(baseSnapshot, incrementalSnapshots, s3Loader);
+                sentSnapshots.addAll(incrementalSnapshots);
+            } catch (SnapshotNotFoundException e) {
+                logger.warn(String.format("No acceptable incremental snapshots for filesystem '%s'", zfsFileSystem.getName()));
             }
+            snapshotSender.checkSent(sentSnapshots, s3Loader);
 
         }
         logger.debug("Sent all filesystems");
     }
 
-    // TODO: Test
-    public void zfsBackupIncremental(S3LoaderImpl s3Loader,
-                                     String baseSnapshotName,
-                                     String targetSnapshotName,
-                                     String parentDatasetName) throws
-            IOException,
-            InterruptedException,
-            CompressorException,
-            EncryptException, SnapshotNotFoundException {
-
-        List<ZFSFileSystem> zfsFileSystemList = zfsFileSystemRepository.getFilesystemsTreeList(parentDatasetName);
-
-        for (ZFSFileSystem zfsFileSystem : zfsFileSystemList) {
-            List<Snapshot> incrementalSnapshots = zfsFileSystem.getIncrementalSnapshots(baseSnapshotName, targetSnapshotName);
-            Snapshot baseSnapshot = incrementalSnapshots.remove(0);
-
-            sendIncrementalSnapshots(baseSnapshot, incrementalSnapshots, s3Loader);
-        }
-    }
+//    public void zfsBackupIncremental(S3LoaderImpl s3Loader,
+//                                     String baseSnapshotName,
+//                                     String targetSnapshotName,
+//                                     String parentDatasetName) throws
+//            IOException,
+//            InterruptedException,
+//            CompressorException,
+//            EncryptException, SnapshotNotFoundException {
+//
+//        List<ZFSFileSystem> zfsFileSystemList = zfsFileSystemRepository.getFilesystemsTreeList(parentDatasetName);
+//
+//        for (ZFSFileSystem zfsFileSystem : zfsFileSystemList) {
+//            List<Snapshot> incrementalSnapshots = zfsFileSystem.getIncrementalSnapshots(baseSnapshotName, targetSnapshotName);
+//            Snapshot baseSnapshot = incrementalSnapshots.remove(0);
+//
+//            sendIncrementalSnapshots(baseSnapshot, incrementalSnapshots, s3Loader);
+//        }
+//    }
 }
