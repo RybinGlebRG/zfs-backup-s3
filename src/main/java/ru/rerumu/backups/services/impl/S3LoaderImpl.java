@@ -22,11 +22,11 @@ public class S3LoaderImpl implements S3Loader {
     }
 
     @Override
-    public void upload(Path path){
+    public void upload(String datasetName, Path path){
         // TODO: Check we have storages added
         for (S3Storage s3Storage:storages ) {
             logger.info(String.format("Uploading file %s",path.toString()));
-            String key = s3Storage.getPrefix().toString()+"/"+path.getFileName().toString();
+            String key = s3Storage.getPrefix().toString()+"/"+datasetName+"/"+path.getFileName().toString();
             logger.info(String.format("Target: %s",key));
 
             S3ClientConfiguration s3ClientConfiguration = S3ClientConfiguration.builder()
