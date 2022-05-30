@@ -62,40 +62,39 @@ public class S3LoaderImpl implements S3Loader {
                     .partNumber(n)
                     .build();
 
-            String etag = s3Client.uploadPart(
-                    uploadPartRequest,
-                    RequestBody.fromBytes()
-                    RequestBody.fromByteBuffer(getRandomByteBuffer(5 * mB))
-            ).eTag();
-
-
-            S3ClientConfiguration s3ClientConfiguration = S3ClientConfiguration.builder()
-                    .credentialsProvider(StaticCredentialsProvider.create(s3Storage.getCredentials()))
-                    .region(s3Storage.getRegion())
-                    .endpointOverride(s3Storage.getEndpoint())
-                    .maxConcurrency(1)
-                    .build();
-
-            S3TransferManager s3TransferManager = S3TransferManager.builder()
-                    .s3ClientConfiguration(s3ClientConfiguration)
-                    .build();
-
-            FileUpload fileUpload = s3TransferManager
-                    .uploadFile(request -> request
-                            .source(path)
-                            .putObjectRequest(p -> p
-                                .bucket(s3Storage.getBucketName())
-                                .key(key)
-                                .storageClass(s3Storage.getStorageClass())
-                            )
-                    );
-
-            CompletedFileUpload completedfileUpload = fileUpload.completionFuture().join();
-            logger.info(String.format("Status code: %d",completedfileUpload.response().sdkHttpResponse().statusCode()));
-            if (completedfileUpload.response().sdkHttpResponse().statusCode()!=200){
-                throw new IOException();
-            }
-            logger.info(completedfileUpload.response().toString());
+//            String etag = s3Client.uploadPart(
+//                    uploadPartRequest,
+//                    RequestBody.fromByteBuffer(getRandomByteBuffer(5 * mB))
+//            ).eTag();
+//
+//
+//            S3ClientConfiguration s3ClientConfiguration = S3ClientConfiguration.builder()
+//                    .credentialsProvider(StaticCredentialsProvider.create(s3Storage.getCredentials()))
+//                    .region(s3Storage.getRegion())
+//                    .endpointOverride(s3Storage.getEndpoint())
+//                    .maxConcurrency(1)
+//                    .build();
+//
+//            S3TransferManager s3TransferManager = S3TransferManager.builder()
+//                    .s3ClientConfiguration(s3ClientConfiguration)
+//                    .build();
+//
+//            FileUpload fileUpload = s3TransferManager
+//                    .uploadFile(request -> request
+//                            .source(path)
+//                            .putObjectRequest(p -> p
+//                                .bucket(s3Storage.getBucketName())
+//                                .key(key)
+//                                .storageClass(s3Storage.getStorageClass())
+//                            )
+//                    );
+//
+//            CompletedFileUpload completedfileUpload = fileUpload.completionFuture().join();
+//            logger.info(String.format("Status code: %d",completedfileUpload.response().sdkHttpResponse().statusCode()));
+//            if (completedfileUpload.response().sdkHttpResponse().statusCode()!=200){
+//                throw new IOException();
+//            }
+//            logger.info(completedfileUpload.response().toString());
         }
     }
 }

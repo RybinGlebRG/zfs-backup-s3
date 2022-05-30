@@ -65,7 +65,6 @@ public class SnapshotSenderImpl implements SnapshotSender {
                                     String datasetName,
                                     boolean isLoadS3) throws InterruptedException, CompressorException, IOException, EncryptException {
         int n = 0;
-//        ZFSFileWriter zfsFileWriter = new ZFSFileWriterFull(password,chunkSize,filePartSize);
         ZFSFileWriter zfsFileWriter = zfsFileWriterFactory.getZFSFileWriter();
         while (true) {
             Path newFilePath = filePartRepository.createNewFilePath(streamMark, n);
