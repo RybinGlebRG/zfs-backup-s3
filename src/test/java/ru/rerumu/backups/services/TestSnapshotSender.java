@@ -33,28 +33,28 @@ public class TestSnapshotSender {
         ZFSSend zfsSend = Mockito.mock(ZFSSend.class);
         ZFSFileWriter zfsFileWriter = Mockito.mock(ZFSFileWriter.class);
 
-
         Mockito.when(zfsProcessFactory.getZFSSendFull(Mockito.any())).thenReturn(zfsSend);
         Mockito.when(zfsFileWriterFactory.getZFSFileWriter()).thenReturn(zfsFileWriter);
-        Mockito.when(filePartRepository.createNewFilePath(Mockito.any(),Mockito.anyInt())).thenReturn(
+        Mockito.when(filePartRepository.createNewFilePath(Mockito.any(), Mockito.anyInt())).thenReturn(
                 Paths.get("ExternalPool-Applications@auto-20220326-150000.part0")
         );
-        Mockito.doThrow(new ZFSStreamEndedException()).when(zfsFileWriter).write(Mockito.any(),Mockito.any());
+        Mockito.doThrow(new ZFSStreamEndedException()).when(zfsFileWriter).write(Mockito.any(), Mockito.any());
 
-        SnapshotSender snapshotSender = new SnapshotSenderImpl(filePartRepository, s3Loader,zfsProcessFactory,zfsFileWriterFactory);
+        SnapshotSender snapshotSender = new SnapshotSenderImpl(filePartRepository, s3Loader, zfsProcessFactory, zfsFileWriterFactory);
         Snapshot baseSnapshot = new Snapshot("ExternalPool/Applications@auto-20220326-150000");
-        snapshotSender.sendBaseSnapshot(baseSnapshot,s3Loader,true);
+        snapshotSender.sendBaseSnapshot(baseSnapshot, s3Loader, true);
 
-        InOrder inOrder = Mockito.inOrder(filePartRepository, zfsFileWriter,s3Loader,zfsSend);
 
-        Mockito.verify(filePartRepository, Mockito.times(1)).createNewFilePath(Mockito.any(),Mockito.anyInt());
-        inOrder.verify(filePartRepository).createNewFilePath("ExternalPool-Applications@auto-20220326-150000",0);
+        InOrder inOrder = Mockito.inOrder(filePartRepository, zfsFileWriter, s3Loader, zfsSend);
 
-        Mockito.verify(zfsFileWriter, Mockito.times(1)).write(Mockito.any(),Mockito.any());
+        Mockito.verify(filePartRepository, Mockito.times(1)).createNewFilePath(Mockito.any(), Mockito.anyInt());
+        inOrder.verify(filePartRepository).createNewFilePath("ExternalPool-Applications@auto-20220326-150000", 0);
+
+        Mockito.verify(zfsFileWriter, Mockito.times(1)).write(Mockito.any(), Mockito.any());
         inOrder.verify(zfsFileWriter).write(Mockito.any(), Matchers.eq(Paths.get("ExternalPool-Applications@auto-20220326-150000.part0")));
 
-        Mockito.verify(s3Loader, Mockito.times(1)).upload(Mockito.any(),Mockito.any());
-        inOrder.verify(s3Loader).upload("ExternalPool-Applications",Paths.get("ExternalPool-Applications@auto-20220326-150000.part0"));
+        Mockito.verify(s3Loader, Mockito.times(1)).upload(Mockito.any(), Mockito.any());
+        inOrder.verify(s3Loader).upload("ExternalPool-Applications", Paths.get("ExternalPool-Applications@auto-20220326-150000.part0"));
 
         Mockito.verify(filePartRepository, Mockito.times(1)).delete(Mockito.any());
         inOrder.verify(filePartRepository).delete(Paths.get("ExternalPool-Applications@auto-20220326-150000.part0"));
