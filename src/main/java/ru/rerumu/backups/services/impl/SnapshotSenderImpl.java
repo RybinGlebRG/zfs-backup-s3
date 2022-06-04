@@ -140,6 +140,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
         }
     }
 
+    //TODO
     @Override
     public void checkSent(List<Snapshot> snapshotList, S3Loader s3Loader) {
 

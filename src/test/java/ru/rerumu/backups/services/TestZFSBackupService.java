@@ -42,74 +42,74 @@ import static org.mockito.Matchers.*;
 
 public class TestZFSBackupService {
 
-    private List<String> prepareFilesystems() {
-        List<String> filesystems = new ArrayList<>();
-        filesystems.add("ExternalPool");
-        filesystems.add("ExternalPool/Applications");
-        filesystems.add("ExternalPool/Applications/virtual_box");
-        filesystems.add("ExternalPool/Books");
-        filesystems.add("ExternalPool/Containers");
-        filesystems.add("ExternalPool/VMs");
-        return filesystems;
-    }
-
-    private List<String> prepareSnapshots() {
-        List<String> snapshots = new ArrayList<>();
-        snapshots.add("ExternalPool/Applications/virtual_box@auto-20220327-150000");
-        snapshots.add("ExternalPool/Applications/virtual_box@auto-20220328-150000");
-        snapshots.add("ExternalPool/Applications@auto-20220326-150000");
-        snapshots.add("ExternalPool/Applications@auto-2022.03.27-06.00.00");
-        snapshots.add("ExternalPool/Applications@auto-20220327-150000");
-        snapshots.add("ExternalPool/Applications@auto-20220328-150000");
-        snapshots.add("ExternalPool/Books@auto-20220326-150000");
-        snapshots.add("ExternalPool/Books@auto-2022.03.27-06.00.00");
-        snapshots.add("ExternalPool/Books@auto-20220327-150000");
-        snapshots.add("ExternalPool/Books@auto-20220328-150000");
-        snapshots.add("ExternalPool/Containers@auto-20220328-150000");
-        snapshots.add("ExternalPool/Containers@auto-20220329-150000");
-        snapshots.add("ExternalPool/VMs@auto-20220328-150000");
-        snapshots.add("ExternalPool@auto-20220326-150000");
-        snapshots.add("ExternalPool@auto-2022.03.27-06.00.00");
-        snapshots.add("ExternalPool@auto-20220327-150000");
-        snapshots.add("ExternalPool@auto-20220328-150000");
-        return snapshots;
-    }
-
-    private List<ZFSStreamTest> prepareZFSStreams() {
-        List<ZFSStreamTest> zfsStreamTests = new ArrayList<>();
-
-
-        // ExternalPool/Applications/virtual_box
-        zfsStreamTests.add(new ZFSStreamTest(1500));
-        zfsStreamTests.add(new ZFSStreamTest(1500));
-
-        // ExternalPool/Applications
-        zfsStreamTests.add(new ZFSStreamTest(1500));
-        zfsStreamTests.add(new ZFSStreamTest(1500));
-        zfsStreamTests.add(new ZFSStreamTest(1500));
-        zfsStreamTests.add(new ZFSStreamTest(1500));
-
-        // ExternalPool/Books
-        zfsStreamTests.add(new ZFSStreamTest(1500));
-        zfsStreamTests.add(new ZFSStreamTest(1500));
-        zfsStreamTests.add(new ZFSStreamTest(1500));
-        zfsStreamTests.add(new ZFSStreamTest(1500));
-
-        // ExternalPool/Containers
-        zfsStreamTests.add(new ZFSStreamTest(1500));
-        zfsStreamTests.add(new ZFSStreamTest(1500));
-
-        // ExternalPool/VMs
-        zfsStreamTests.add(new ZFSStreamTest(1500));
-
-        // ExternalPool
-        zfsStreamTests.add(new ZFSStreamTest(250));
-        zfsStreamTests.add(new ZFSStreamTest(250));
-        zfsStreamTests.add(new ZFSStreamTest(250));
-        zfsStreamTests.add(new ZFSStreamTest(200));
-
-        return zfsStreamTests;
-    }
+//    private List<String> prepareFilesystems() {
+//        List<String> filesystems = new ArrayList<>();
+//        filesystems.add("ExternalPool");
+//        filesystems.add("ExternalPool/Applications");
+//        filesystems.add("ExternalPool/Applications/virtual_box");
+//        filesystems.add("ExternalPool/Books");
+//        filesystems.add("ExternalPool/Containers");
+//        filesystems.add("ExternalPool/VMs");
+//        return filesystems;
+//    }
+//
+//    private List<String> prepareSnapshots() {
+//        List<String> snapshots = new ArrayList<>();
+//        snapshots.add("ExternalPool/Applications/virtual_box@auto-20220327-150000");
+//        snapshots.add("ExternalPool/Applications/virtual_box@auto-20220328-150000");
+//        snapshots.add("ExternalPool/Applications@auto-20220326-150000");
+//        snapshots.add("ExternalPool/Applications@auto-2022.03.27-06.00.00");
+//        snapshots.add("ExternalPool/Applications@auto-20220327-150000");
+//        snapshots.add("ExternalPool/Applications@auto-20220328-150000");
+//        snapshots.add("ExternalPool/Books@auto-20220326-150000");
+//        snapshots.add("ExternalPool/Books@auto-2022.03.27-06.00.00");
+//        snapshots.add("ExternalPool/Books@auto-20220327-150000");
+//        snapshots.add("ExternalPool/Books@auto-20220328-150000");
+//        snapshots.add("ExternalPool/Containers@auto-20220328-150000");
+//        snapshots.add("ExternalPool/Containers@auto-20220329-150000");
+//        snapshots.add("ExternalPool/VMs@auto-20220328-150000");
+//        snapshots.add("ExternalPool@auto-20220326-150000");
+//        snapshots.add("ExternalPool@auto-2022.03.27-06.00.00");
+//        snapshots.add("ExternalPool@auto-20220327-150000");
+//        snapshots.add("ExternalPool@auto-20220328-150000");
+//        return snapshots;
+//    }
+//
+//    private List<ZFSStreamTest> prepareZFSStreams() {
+//        List<ZFSStreamTest> zfsStreamTests = new ArrayList<>();
+//
+//
+//        // ExternalPool/Applications/virtual_box
+//        zfsStreamTests.add(new ZFSStreamTest(1500));
+//        zfsStreamTests.add(new ZFSStreamTest(1500));
+//
+//        // ExternalPool/Applications
+//        zfsStreamTests.add(new ZFSStreamTest(1500));
+//        zfsStreamTests.add(new ZFSStreamTest(1500));
+//        zfsStreamTests.add(new ZFSStreamTest(1500));
+//        zfsStreamTests.add(new ZFSStreamTest(1500));
+//
+//        // ExternalPool/Books
+//        zfsStreamTests.add(new ZFSStreamTest(1500));
+//        zfsStreamTests.add(new ZFSStreamTest(1500));
+//        zfsStreamTests.add(new ZFSStreamTest(1500));
+//        zfsStreamTests.add(new ZFSStreamTest(1500));
+//
+//        // ExternalPool/Containers
+//        zfsStreamTests.add(new ZFSStreamTest(1500));
+//        zfsStreamTests.add(new ZFSStreamTest(1500));
+//
+//        // ExternalPool/VMs
+//        zfsStreamTests.add(new ZFSStreamTest(1500));
+//
+//        // ExternalPool
+//        zfsStreamTests.add(new ZFSStreamTest(250));
+//        zfsStreamTests.add(new ZFSStreamTest(250));
+//        zfsStreamTests.add(new ZFSStreamTest(250));
+//        zfsStreamTests.add(new ZFSStreamTest(200));
+//
+//        return zfsStreamTests;
+//    }
 //
 //    @Test
 //    void shouldBackupRestore(@TempDir Path tempDirBackup, @TempDir Path tempDirRestore) throws IOException, InterruptedException {
