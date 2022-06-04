@@ -1,5 +1,6 @@
 package ru.rerumu.backups.services;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
@@ -17,11 +18,12 @@ import ru.rerumu.backups.zfs_api.ZFSSend;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
 
 public class TestSnapshotSender {
 
     @Test
-    void shouldSendOneFile() throws CompressorException, IOException, InterruptedException, EncryptException, FileHitSizeLimitException, ZFSStreamEndedException {
+    void shouldSendOneFile() throws CompressorException, IOException, InterruptedException, EncryptException, FileHitSizeLimitException, ZFSStreamEndedException, NoSuchAlgorithmException {
         FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
         S3Loader s3Loader = Mockito.mock(S3Loader.class);
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
@@ -50,7 +52,7 @@ public class TestSnapshotSender {
     }
 
     @Test
-    void shouldSendTwoFiles() throws CompressorException, IOException, InterruptedException, EncryptException, FileHitSizeLimitException, ZFSStreamEndedException {
+    void shouldSendTwoFiles() throws CompressorException, IOException, InterruptedException, EncryptException, FileHitSizeLimitException, ZFSStreamEndedException, NoSuchAlgorithmException {
         FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
         S3Loader s3Loader = Mockito.mock(S3Loader.class);
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
@@ -84,7 +86,7 @@ public class TestSnapshotSender {
 
 
     @Test
-    void shouldSendIncremental() throws IOException, FileHitSizeLimitException, CompressorException, ZFSStreamEndedException, EncryptException, InterruptedException {
+    void shouldSendIncremental() throws IOException, FileHitSizeLimitException, CompressorException, ZFSStreamEndedException, EncryptException, InterruptedException, NoSuchAlgorithmException {
         FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
         S3Loader s3Loader = Mockito.mock(S3Loader.class);
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
@@ -113,5 +115,56 @@ public class TestSnapshotSender {
         );
 
 
+    }
+
+    @Test
+    void shouldThrowExceptionBase() throws IOException, CompressorException, InterruptedException, EncryptException, FileHitSizeLimitException, ZFSStreamEndedException {
+        FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
+        S3Loader s3Loader = Mockito.mock(S3Loader.class);
+        ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
+        ZFSFileWriterFactory zfsFileWriterFactory = Mockito.mock(ZFSFileWriterFactory.class);
+        ZFSSend zfsSend = Mockito.mock(ZFSSend.class);
+        ZFSFileWriter zfsFileWriter = Mockito.mock(ZFSFileWriter.class);
+
+        Mockito.when(zfsProcessFactory.getZFSSendFull(Mockito.any())).thenReturn(zfsSend);
+        Mockito.when(zfsFileWriterFactory.getZFSFileWriter()).thenReturn(zfsFileWriter);
+        Mockito.doThrow(new IOException()).when(zfsFileWriter).write(Mockito.any(), Mockito.any());
+
+        SnapshotSender snapshotSender = new SnapshotSenderImpl(filePartRepository, s3Loader, zfsProcessFactory, zfsFileWriterFactory);
+        Snapshot baseSnapshot = new Snapshot("ExternalPool/Applications@auto-20220326-150000");
+
+        Assertions.assertThrows(Exception.class,()->snapshotSender.sendBaseSnapshot(baseSnapshot, s3Loader, true));
+
+        InOrder inOrder = Mockito.inOrder(zfsProcessFactory,zfsSend);
+
+        inOrder.verify(zfsProcessFactory).getZFSSendFull(Mockito.any());
+        inOrder.verify(zfsSend).kill();
+        inOrder.verify(zfsSend).close();
+    }
+
+    @Test
+    void shouldThrowExceptionBaseIncr() throws IOException, CompressorException, InterruptedException, EncryptException, FileHitSizeLimitException, ZFSStreamEndedException {
+        FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
+        S3Loader s3Loader = Mockito.mock(S3Loader.class);
+        ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
+        ZFSFileWriterFactory zfsFileWriterFactory = Mockito.mock(ZFSFileWriterFactory.class);
+        ZFSSend zfsSend = Mockito.mock(ZFSSend.class);
+        ZFSFileWriter zfsFileWriter = Mockito.mock(ZFSFileWriter.class);
+
+        Mockito.when(zfsProcessFactory.getZFSSendIncremental(Mockito.any(),Mockito.any())).thenReturn(zfsSend);
+        Mockito.when(zfsFileWriterFactory.getZFSFileWriter()).thenReturn(zfsFileWriter);
+        Mockito.doThrow(new IOException()).when(zfsFileWriter).write(Mockito.any(), Mockito.any());
+
+        SnapshotSender snapshotSender = new SnapshotSenderImpl(filePartRepository, s3Loader, zfsProcessFactory, zfsFileWriterFactory);
+        Snapshot baseSnapshot = new Snapshot("ExternalPool/Applications@auto-20220326-150000");
+        Snapshot incrementalSnapshot = new Snapshot("ExternalPool/Applications@auto-20220327-150000");
+
+        Assertions.assertThrows(Exception.class,()->snapshotSender.sendIncrementalSnapshot(baseSnapshot, incrementalSnapshot,s3Loader, true));
+
+        InOrder inOrder = Mockito.inOrder(zfsProcessFactory,zfsSend);
+
+        inOrder.verify(zfsProcessFactory).getZFSSendIncremental(Mockito.any(),Mockito.any());
+        inOrder.verify(zfsSend).kill();
+        inOrder.verify(zfsSend).close();
     }
 }

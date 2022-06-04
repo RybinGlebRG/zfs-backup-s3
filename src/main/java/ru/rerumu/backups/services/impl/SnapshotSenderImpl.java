@@ -19,6 +19,7 @@ import ru.rerumu.backups.zfs_api.ZFSSend;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 public class SnapshotSenderImpl implements SnapshotSender {
@@ -47,7 +48,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
 
     private void processCreatedFile(boolean isLoadS3,
                                     String datasetName,
-                                    Path path) throws IOException, InterruptedException {
+                                    Path path) throws IOException, InterruptedException, NoSuchAlgorithmException {
         if (isLoadS3) {
             s3Loader.upload(datasetName, path);
             filePartRepository.delete(path);
@@ -63,7 +64,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
     private void sendSingleSnapshot(ZFSSend zfsSend,
                                     String streamMark,
                                     String datasetName,
-                                    boolean isLoadS3) throws InterruptedException, CompressorException, IOException, EncryptException {
+                                    boolean isLoadS3) throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException {
         int n = 0;
         ZFSFileWriter zfsFileWriter = zfsFileWriterFactory.getZFSFileWriter();
         while (true) {
@@ -90,7 +91,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
 
     @Override
     public void sendBaseSnapshot(Snapshot baseSnapshot, S3Loader s3Loader, boolean isLoadS3)
-            throws InterruptedException, CompressorException, IOException, EncryptException {
+            throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException {
         String streamMark = escapeSymbols(baseSnapshot.getDataset()) + "@" + baseSnapshot.getName();
         ZFSSend zfsSend = null;
         String datasetName = escapeSymbols(baseSnapshot.getDataset());
@@ -116,7 +117,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
 
     @Override
     public void sendIncrementalSnapshot(Snapshot baseSnapshot, Snapshot incrementalSnapshot, S3Loader s3Loader, boolean isLoadS3)
-            throws InterruptedException, CompressorException, IOException, EncryptException {
+            throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException {
         String streamMark = escapeSymbols(baseSnapshot.getDataset())
                 + "@" + baseSnapshot.getName()
                 + "__" + escapeSymbols(incrementalSnapshot.getDataset())

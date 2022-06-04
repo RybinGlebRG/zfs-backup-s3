@@ -32,6 +32,7 @@ import java.io.*;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -239,7 +240,7 @@ public class TestZFSBackupService {
 //    }
 
     @Test
-    void shouldBackupInOrder() throws CompressorException, IOException, InterruptedException, EncryptException, IllegalArgumentException, BaseSnapshotNotFoundException {
+    void shouldBackupInOrder() throws CompressorException, IOException, InterruptedException, EncryptException, IllegalArgumentException, BaseSnapshotNotFoundException, NoSuchAlgorithmException {
         ZFSFileSystemRepository mockedZfsFileSystemRepository = Mockito.mock(ZFSFileSystemRepository.class);
 
         List<ZFSFileSystem> zfsFileSystemList = new ArrayList<>();
@@ -303,7 +304,7 @@ public class TestZFSBackupService {
     }
 
     @Test
-    void shouldBackupOnlyBase() throws IOException, InterruptedException, CompressorException, EncryptException, BaseSnapshotNotFoundException {
+    void shouldBackupOnlyBase() throws IOException, InterruptedException, CompressorException, EncryptException, BaseSnapshotNotFoundException, NoSuchAlgorithmException {
         ZFSFileSystemRepository mockedZfsFileSystemRepository = Mockito.mock(ZFSFileSystemRepository.class);
 
         List<ZFSFileSystem> zfsFileSystemList = new ArrayList<>();
@@ -353,7 +354,7 @@ public class TestZFSBackupService {
     }
 
     @Test
-    void shouldNotBackupAny() throws IOException, InterruptedException, CompressorException, EncryptException, BaseSnapshotNotFoundException {
+    void shouldNotBackupAny() throws IOException, InterruptedException, CompressorException, EncryptException, BaseSnapshotNotFoundException, NoSuchAlgorithmException {
         ZFSFileSystemRepository mockedZfsFileSystemRepository = Mockito.mock(ZFSFileSystemRepository.class);
 
         List<ZFSFileSystem> zfsFileSystemList = new ArrayList<>();
@@ -391,7 +392,7 @@ public class TestZFSBackupService {
     }
 
     @Test
-    void shouldNotBackupAny1() throws IOException, InterruptedException, CompressorException, EncryptException, BaseSnapshotNotFoundException {
+    void shouldNotBackupAny1() throws IOException, InterruptedException, CompressorException, EncryptException, BaseSnapshotNotFoundException, NoSuchAlgorithmException {
         ZFSFileSystemRepository mockedZfsFileSystemRepository = Mockito.mock(ZFSFileSystemRepository.class);
 
         List<ZFSFileSystem> zfsFileSystemList = new ArrayList<>();

@@ -8,13 +8,18 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 //import software.amazon.awssdk.transfer.s3.*;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.*;
-import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest;
-import software.amazon.awssdk.services.s3.model.CreateMultipartUploadResponse;
-import software.amazon.awssdk.services.s3.model.UploadPartRequest;
+import software.amazon.awssdk.services.s3.model.*;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 public class S3LoaderImpl implements S3Loader {
@@ -27,13 +32,27 @@ public class S3LoaderImpl implements S3Loader {
         storages.add(s3Storage);
     }
 
+    private String getMD5(Path path) throws NoSuchAlgorithmException, IOException {
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        try(InputStream inputStream = Files.newInputStream(path);
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream)){
+            byte[] buf = bufferedInputStream.readAllBytes();
+            byte[] digest = md.digest(buf);
+            logger.info(String.format("Pure MD5: '%s'",new String(digest, StandardCharsets.UTF_8)));
+            String md5 = Base64.getEncoder().encodeToString(digest);
+            logger.info(String.format("Base64 MD5: '%s'",md5));
+            return md5;
+        }
+    }
+
     @Override
-    public void upload(String datasetName, Path path) throws IOException {
+    public void upload(String datasetName, Path path) throws IOException, NoSuchAlgorithmException {
         // TODO: Check we have storages added
         for (S3Storage s3Storage:storages ) {
             logger.info(String.format("Uploading file %s",path.toString()));
             String key = s3Storage.getPrefix().toString()+"/"+datasetName+"/"+path.getFileName().toString();
             logger.info(String.format("Target: %s",key));
+            String md5 = getMD5(path);
 
 
 
@@ -43,58 +62,15 @@ public class S3LoaderImpl implements S3Loader {
                     .credentialsProvider(StaticCredentialsProvider.create(s3Storage.getCredentials()))
                     .build();
 
-            CreateMultipartUploadRequest createMultipartUploadRequest = CreateMultipartUploadRequest.builder()
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(s3Storage.getBucketName())
                     .key(key)
                     .storageClass(s3Storage.getStorageClass())
+                    .contentMD5(md5)
                     .build();
 
-            CreateMultipartUploadResponse response = s3Client.createMultipartUpload(createMultipartUploadRequest);
-            String uploadId = response.uploadId();
-            String abortRuleId = response.abortRuleId();
-            logger.info(String.format("UploadId = '%s'",uploadId));
-
-            int n =1;
-            UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
-                    .bucket(s3Storage.getBucketName())
-                    .key(key)
-                    .uploadId(uploadId)
-                    .partNumber(n)
-                    .build();
-
-//            String etag = s3Client.uploadPart(
-//                    uploadPartRequest,
-//                    RequestBody.fromByteBuffer(getRandomByteBuffer(5 * mB))
-//            ).eTag();
-//
-//
-//            S3ClientConfiguration s3ClientConfiguration = S3ClientConfiguration.builder()
-//                    .credentialsProvider(StaticCredentialsProvider.create(s3Storage.getCredentials()))
-//                    .region(s3Storage.getRegion())
-//                    .endpointOverride(s3Storage.getEndpoint())
-//                    .maxConcurrency(1)
-//                    .build();
-//
-//            S3TransferManager s3TransferManager = S3TransferManager.builder()
-//                    .s3ClientConfiguration(s3ClientConfiguration)
-//                    .build();
-//
-//            FileUpload fileUpload = s3TransferManager
-//                    .uploadFile(request -> request
-//                            .source(path)
-//                            .putObjectRequest(p -> p
-//                                .bucket(s3Storage.getBucketName())
-//                                .key(key)
-//                                .storageClass(s3Storage.getStorageClass())
-//                            )
-//                    );
-//
-//            CompletedFileUpload completedfileUpload = fileUpload.completionFuture().join();
-//            logger.info(String.format("Status code: %d",completedfileUpload.response().sdkHttpResponse().statusCode()));
-//            if (completedfileUpload.response().sdkHttpResponse().statusCode()!=200){
-//                throw new IOException();
-//            }
-//            logger.info(completedfileUpload.response().toString());
+            PutObjectResponse putObjectResponse = s3Client.putObject(putObjectRequest,path);
+            logger.info(String.format("Uploaded file '%s'. ETag='%s'",path.toString(),putObjectResponse.eTag()));
         }
     }
 }

@@ -19,6 +19,7 @@ import ru.rerumu.backups.zfs_api.ZFSSend;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +39,7 @@ public class ZFSBackupService {
     }
 
     private void sendIncrementalSnapshots(Snapshot baseSnapshot, List<Snapshot> incrementalSnapshots, S3Loader s3Loader)
-            throws IOException, CompressorException, InterruptedException, EncryptException {
+            throws IOException, CompressorException, InterruptedException, EncryptException, NoSuchAlgorithmException {
         for (Snapshot incrementalSnapshot : incrementalSnapshots) {
             logger.debug(String.format(
                     "Sending incremental snapshot '%s'. Base snapshot - '%s'",
@@ -58,7 +59,7 @@ public class ZFSBackupService {
             InterruptedException,
             CompressorException,
             EncryptException,
-            BaseSnapshotNotFoundException {
+            BaseSnapshotNotFoundException, NoSuchAlgorithmException {
 
         List<ZFSFileSystem> zfsFileSystemList = zfsFileSystemRepository.getFilesystemsTreeList(parentDatasetName);
 
