@@ -19,4 +19,9 @@ public interface SnapshotSender {
             throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException;
 
     void checkSent(List<Snapshot> snapshotList, S3Loader s3Loader);
+
+    void sendStartingFromFull(List<Snapshot> snapshotList)
+            throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException;
+    void sendStartingFromIncremental(List<Snapshot> snapshotList)
+            throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException;
 }

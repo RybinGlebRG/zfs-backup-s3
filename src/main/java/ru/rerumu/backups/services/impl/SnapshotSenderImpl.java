@@ -26,17 +26,20 @@ public class SnapshotSenderImpl implements SnapshotSender {
     private final S3Loader s3Loader;
     private final ZFSProcessFactory zfsProcessFactory;
     private final ZFSFileWriterFactory zfsFileWriterFactory;
+    private final boolean isLoadS3;
 
     public SnapshotSenderImpl(
             FilePartRepository filePartRepository,
             S3Loader s3Loader,
             ZFSProcessFactory zfsProcessFactory,
-            ZFSFileWriterFactory zfsFileWriterFactory
+            ZFSFileWriterFactory zfsFileWriterFactory,
+            boolean isLoadS3
     ) {
         this.filePartRepository = filePartRepository;
         this.s3Loader = s3Loader;
         this.zfsProcessFactory = zfsProcessFactory;
         this.zfsFileWriterFactory = zfsFileWriterFactory;
+        this.isLoadS3 = isLoadS3;
     }
 
     private String escapeSymbols(String srcString) {
@@ -140,9 +143,39 @@ public class SnapshotSenderImpl implements SnapshotSender {
         }
     }
 
-    //TODO
     @Override
-    public void checkSent(List<Snapshot> snapshotList, S3Loader s3Loader) {
+    public void sendStartingFromFull(List<Snapshot> snapshotList) throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException {
+        boolean isBaseSent = false;
 
+        Snapshot previousSnapshot = null;
+        for (Snapshot snapshot : snapshotList) {
+            if (!isBaseSent) {
+                sendBaseSnapshot(snapshot, s3Loader, isLoadS3);
+                isBaseSent = true;
+                previousSnapshot = snapshot;
+                continue;
+            }
+            sendIncrementalSnapshot(previousSnapshot, snapshot, s3Loader, isLoadS3);
+            previousSnapshot = snapshot;
+
+        }
     }
+
+    @Override
+    public void sendStartingFromIncremental(List<Snapshot> snapshotList) throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException {
+        boolean isBaseSkipped = false;
+
+        Snapshot previousSnapshot = null;
+        for (Snapshot snapshot : snapshotList) {
+            if (!isBaseSkipped) {
+                isBaseSkipped = true;
+                previousSnapshot = snapshot;
+                continue;
+            }
+            sendIncrementalSnapshot(previousSnapshot, snapshot, s3Loader, isLoadS3);
+            previousSnapshot = snapshot;
+
+        }
+    }
+
 }
