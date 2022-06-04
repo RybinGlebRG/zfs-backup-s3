@@ -1,5 +1,6 @@
 package ru.rerumu.backups.io;
 
+import ru.rerumu.backups.exceptions.IncorrectHashException;
 import ru.rerumu.backups.models.S3Storage;
 
 import java.io.IOException;
@@ -8,5 +9,5 @@ import java.security.NoSuchAlgorithmException;
 
 public interface S3Loader {
     void addStorage(S3Storage s3Storage);
-    void upload(String datasetName,Path path) throws IOException, InterruptedException, NoSuchAlgorithmException;
+    void upload(String datasetName,Path path) throws IOException, InterruptedException, NoSuchAlgorithmException, IncorrectHashException;
 }

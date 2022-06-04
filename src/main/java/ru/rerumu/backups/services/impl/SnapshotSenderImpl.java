@@ -2,10 +2,7 @@ package ru.rerumu.backups.services.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.backups.exceptions.CompressorException;
-import ru.rerumu.backups.exceptions.EncryptException;
-import ru.rerumu.backups.exceptions.FileHitSizeLimitException;
-import ru.rerumu.backups.exceptions.ZFSStreamEndedException;
+import ru.rerumu.backups.exceptions.*;
 import ru.rerumu.backups.io.S3Loader;
 import ru.rerumu.backups.io.ZFSFileWriter;
 import ru.rerumu.backups.io.ZFSFileWriterFactory;
@@ -48,7 +45,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
 
     private void processCreatedFile(boolean isLoadS3,
                                     String datasetName,
-                                    Path path) throws IOException, InterruptedException, NoSuchAlgorithmException {
+                                    Path path) throws IOException, InterruptedException, NoSuchAlgorithmException, IncorrectHashException {
         if (isLoadS3) {
             s3Loader.upload(datasetName, path);
             filePartRepository.delete(path);
@@ -64,7 +61,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
     private void sendSingleSnapshot(ZFSSend zfsSend,
                                     String streamMark,
                                     String datasetName,
-                                    boolean isLoadS3) throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException {
+                                    boolean isLoadS3) throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException {
         int n = 0;
         ZFSFileWriter zfsFileWriter = zfsFileWriterFactory.getZFSFileWriter();
         while (true) {
@@ -91,7 +88,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
 
     @Override
     public void sendBaseSnapshot(Snapshot baseSnapshot, S3Loader s3Loader, boolean isLoadS3)
-            throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException {
+            throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException {
         String streamMark = escapeSymbols(baseSnapshot.getDataset()) + "@" + baseSnapshot.getName();
         ZFSSend zfsSend = null;
         String datasetName = escapeSymbols(baseSnapshot.getDataset());
@@ -117,7 +114,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
 
     @Override
     public void sendIncrementalSnapshot(Snapshot baseSnapshot, Snapshot incrementalSnapshot, S3Loader s3Loader, boolean isLoadS3)
-            throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException {
+            throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException {
         String streamMark = escapeSymbols(baseSnapshot.getDataset())
                 + "@" + baseSnapshot.getName()
                 + "__" + escapeSymbols(incrementalSnapshot.getDataset())

@@ -2,6 +2,7 @@ package ru.rerumu.backups.io.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.rerumu.backups.exceptions.IncorrectHashException;
 import ru.rerumu.backups.models.S3Storage;
 import ru.rerumu.backups.io.S3Loader;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -9,6 +10,8 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.*;
 import software.amazon.awssdk.services.s3.model.*;
+import org.apache.commons.codec.binary.Hex;
+
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -36,17 +39,14 @@ public class S3LoaderImpl implements S3Loader {
         MessageDigest md = MessageDigest.getInstance("MD5");
         try(InputStream inputStream = Files.newInputStream(path);
             BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream)){
-            byte[] buf = bufferedInputStream.readAllBytes();
-            byte[] digest = md.digest(buf);
-            logger.info(String.format("Pure MD5: '%s'",new String(digest, StandardCharsets.UTF_8)));
-            String md5 = Base64.getEncoder().encodeToString(digest);
-            logger.info(String.format("Base64 MD5: '%s'",md5));
+            String md5 = '"'+Hex.encodeHexString(md.digest(bufferedInputStream.readAllBytes()))+'"';
+            logger.info(String.format("Hex MD5: '%s'",md5));
             return md5;
         }
     }
 
     @Override
-    public void upload(String datasetName, Path path) throws IOException, NoSuchAlgorithmException {
+    public void upload(String datasetName, Path path) throws IOException, NoSuchAlgorithmException, IncorrectHashException {
         // TODO: Check we have storages added
         for (S3Storage s3Storage:storages ) {
             logger.info(String.format("Uploading file %s",path.toString()));
@@ -66,11 +66,15 @@ public class S3LoaderImpl implements S3Loader {
                     .bucket(s3Storage.getBucketName())
                     .key(key)
                     .storageClass(s3Storage.getStorageClass())
-                    .contentMD5(md5)
                     .build();
 
             PutObjectResponse putObjectResponse = s3Client.putObject(putObjectRequest,path);
-            logger.info(String.format("Uploaded file '%s'. ETag='%s'",path.toString(),putObjectResponse.eTag()));
+            String eTag= putObjectResponse.eTag();
+            logger.info(String.format("Uploaded file '%s'",path.toString()));
+            logger.info(String.format("ETag='%s'",eTag));
+            if (!(eTag.equals(md5))){
+                throw new IncorrectHashException();
+            }
         }
     }
 }

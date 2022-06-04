@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.BaseSnapshotNotFoundException;
 import ru.rerumu.backups.exceptions.CompressorException;
 import ru.rerumu.backups.exceptions.EncryptException;
+import ru.rerumu.backups.exceptions.IncorrectHashException;
 import ru.rerumu.backups.io.S3Loader;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSFileSystem;
@@ -240,7 +241,7 @@ public class TestZFSBackupService {
 //    }
 
     @Test
-    void shouldBackupInOrder() throws CompressorException, IOException, InterruptedException, EncryptException, IllegalArgumentException, BaseSnapshotNotFoundException, NoSuchAlgorithmException {
+    void shouldBackupInOrder() throws CompressorException, IOException, InterruptedException, EncryptException, IllegalArgumentException, BaseSnapshotNotFoundException, NoSuchAlgorithmException, IncorrectHashException {
         ZFSFileSystemRepository mockedZfsFileSystemRepository = Mockito.mock(ZFSFileSystemRepository.class);
 
         List<ZFSFileSystem> zfsFileSystemList = new ArrayList<>();
@@ -304,7 +305,7 @@ public class TestZFSBackupService {
     }
 
     @Test
-    void shouldBackupOnlyBase() throws IOException, InterruptedException, CompressorException, EncryptException, BaseSnapshotNotFoundException, NoSuchAlgorithmException {
+    void shouldBackupOnlyBase() throws IOException, InterruptedException, CompressorException, EncryptException, BaseSnapshotNotFoundException, NoSuchAlgorithmException, IncorrectHashException {
         ZFSFileSystemRepository mockedZfsFileSystemRepository = Mockito.mock(ZFSFileSystemRepository.class);
 
         List<ZFSFileSystem> zfsFileSystemList = new ArrayList<>();
@@ -354,7 +355,7 @@ public class TestZFSBackupService {
     }
 
     @Test
-    void shouldNotBackupAny() throws IOException, InterruptedException, CompressorException, EncryptException, BaseSnapshotNotFoundException, NoSuchAlgorithmException {
+    void shouldNotBackupAny() throws IOException, InterruptedException, CompressorException, EncryptException, BaseSnapshotNotFoundException, NoSuchAlgorithmException, IncorrectHashException {
         ZFSFileSystemRepository mockedZfsFileSystemRepository = Mockito.mock(ZFSFileSystemRepository.class);
 
         List<ZFSFileSystem> zfsFileSystemList = new ArrayList<>();
@@ -392,7 +393,7 @@ public class TestZFSBackupService {
     }
 
     @Test
-    void shouldNotBackupAny1() throws IOException, InterruptedException, CompressorException, EncryptException, BaseSnapshotNotFoundException, NoSuchAlgorithmException {
+    void shouldNotBackupAny1() throws IOException, InterruptedException, CompressorException, EncryptException, BaseSnapshotNotFoundException, NoSuchAlgorithmException, IncorrectHashException {
         ZFSFileSystemRepository mockedZfsFileSystemRepository = Mockito.mock(ZFSFileSystemRepository.class);
 
         List<ZFSFileSystem> zfsFileSystemList = new ArrayList<>();

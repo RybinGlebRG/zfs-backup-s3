@@ -39,7 +39,7 @@ public class ZFSBackupService {
     }
 
     private void sendIncrementalSnapshots(Snapshot baseSnapshot, List<Snapshot> incrementalSnapshots, S3Loader s3Loader)
-            throws IOException, CompressorException, InterruptedException, EncryptException, NoSuchAlgorithmException {
+            throws IOException, CompressorException, InterruptedException, EncryptException, NoSuchAlgorithmException, IncorrectHashException {
         for (Snapshot incrementalSnapshot : incrementalSnapshots) {
             logger.debug(String.format(
                     "Sending incremental snapshot '%s'. Base snapshot - '%s'",
@@ -59,7 +59,7 @@ public class ZFSBackupService {
             InterruptedException,
             CompressorException,
             EncryptException,
-            BaseSnapshotNotFoundException, NoSuchAlgorithmException {
+            BaseSnapshotNotFoundException, NoSuchAlgorithmException, IncorrectHashException {
 
         List<ZFSFileSystem> zfsFileSystemList = zfsFileSystemRepository.getFilesystemsTreeList(parentDatasetName);
 

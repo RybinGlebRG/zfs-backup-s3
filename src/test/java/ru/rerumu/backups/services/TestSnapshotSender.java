@@ -4,10 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
-import ru.rerumu.backups.exceptions.CompressorException;
-import ru.rerumu.backups.exceptions.EncryptException;
-import ru.rerumu.backups.exceptions.FileHitSizeLimitException;
-import ru.rerumu.backups.exceptions.ZFSStreamEndedException;
+import ru.rerumu.backups.exceptions.*;
 import ru.rerumu.backups.io.S3Loader;
 import ru.rerumu.backups.io.ZFSFileWriter;
 import ru.rerumu.backups.io.ZFSFileWriterFactory;
@@ -23,7 +20,7 @@ import java.security.NoSuchAlgorithmException;
 public class TestSnapshotSender {
 
     @Test
-    void shouldSendOneFile() throws CompressorException, IOException, InterruptedException, EncryptException, FileHitSizeLimitException, ZFSStreamEndedException, NoSuchAlgorithmException {
+    void shouldSendOneFile() throws CompressorException, IOException, InterruptedException, EncryptException, FileHitSizeLimitException, ZFSStreamEndedException, NoSuchAlgorithmException, IncorrectHashException {
         FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
         S3Loader s3Loader = Mockito.mock(S3Loader.class);
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
@@ -52,7 +49,7 @@ public class TestSnapshotSender {
     }
 
     @Test
-    void shouldSendTwoFiles() throws CompressorException, IOException, InterruptedException, EncryptException, FileHitSizeLimitException, ZFSStreamEndedException, NoSuchAlgorithmException {
+    void shouldSendTwoFiles() throws CompressorException, IOException, InterruptedException, EncryptException, FileHitSizeLimitException, ZFSStreamEndedException, NoSuchAlgorithmException, IncorrectHashException {
         FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
         S3Loader s3Loader = Mockito.mock(S3Loader.class);
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
@@ -86,7 +83,7 @@ public class TestSnapshotSender {
 
 
     @Test
-    void shouldSendIncremental() throws IOException, FileHitSizeLimitException, CompressorException, ZFSStreamEndedException, EncryptException, InterruptedException, NoSuchAlgorithmException {
+    void shouldSendIncremental() throws IOException, FileHitSizeLimitException, CompressorException, ZFSStreamEndedException, EncryptException, InterruptedException, NoSuchAlgorithmException, IncorrectHashException {
         FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
         S3Loader s3Loader = Mockito.mock(S3Loader.class);
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
