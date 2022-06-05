@@ -153,6 +153,4 @@ public class TestZFSFileSystem {
         Assertions.assertThrows(BaseSnapshotNotFoundException.class, zfsFileSystem::getBaseSnapshot);
 
     }
-
-
 }

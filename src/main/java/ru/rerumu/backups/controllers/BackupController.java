@@ -46,7 +46,7 @@ public class BackupController {
             ZFSSnapshotRepository zfsSnapshotRepository = new ZFSSnapshotRepositoryImpl(zfsProcessFactory);
             ZFSFileSystemRepository zfsFileSystemRepository = new ZFSFileSystemRepositoryImpl(zfsProcessFactory,zfsSnapshotRepository);
             ZFSFileWriterFactory zfsFileWriterFactory = new ZFSFileWriterFactoryImpl(password, chunkSize, filePartSize);
-            SnapshotSender snapshotSender = new SnapshotSenderImpl(filePartRepository, s3Loader,zfsProcessFactory,zfsFileWriterFactory);
+            SnapshotSender snapshotSender = new SnapshotSenderImpl(filePartRepository, s3Loader,zfsProcessFactory,zfsFileWriterFactory,isLoadAWS);
 
             ZFSBackupService zfsBackupService = new ZFSBackupService(
                     isLoadAWS,

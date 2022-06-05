@@ -13,6 +13,7 @@ import ru.rerumu.backups.services.SnapshotSender;
 import ru.rerumu.backups.services.ZFSProcessFactory;
 import ru.rerumu.backups.zfs_api.ZFSSend;
 
+import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -143,6 +144,13 @@ public class SnapshotSenderImpl implements SnapshotSender {
         }
     }
 
+    // TODO: Test
+    @Override
+    public void checkSent(List<Snapshot> snapshotList, S3Loader s3Loader) {
+
+    }
+
+    // TODO: Test
     @Override
     public void sendStartingFromFull(List<Snapshot> snapshotList) throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException {
         boolean isBaseSent = false;
@@ -161,6 +169,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
         }
     }
 
+    // TODO: Test
     @Override
     public void sendStartingFromIncremental(List<Snapshot> snapshotList) throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException {
         boolean isBaseSkipped = false;

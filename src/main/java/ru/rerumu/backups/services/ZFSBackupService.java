@@ -28,19 +28,19 @@ public class ZFSBackupService {
         this.snapshotSender = snapshotSender;
     }
 
-    private void sendIncrementalSnapshots(Snapshot baseSnapshot, List<Snapshot> incrementalSnapshots, S3Loader s3Loader)
-            throws IOException, CompressorException, InterruptedException, EncryptException, NoSuchAlgorithmException, IncorrectHashException {
-        for (Snapshot incrementalSnapshot : incrementalSnapshots) {
-            logger.debug(String.format(
-                    "Sending incremental snapshot '%s'. Base snapshot - '%s'",
-                    incrementalSnapshot.getFullName(),
-                    baseSnapshot.getFullName()));
-
-            snapshotSender.sendIncrementalSnapshot(baseSnapshot, incrementalSnapshot, s3Loader, isLoadS3);
-
-            baseSnapshot = incrementalSnapshot;
-        }
-    }
+//    private void sendIncrementalSnapshots(Snapshot baseSnapshot, List<Snapshot> incrementalSnapshots, S3Loader s3Loader)
+//            throws IOException, CompressorException, InterruptedException, EncryptException, NoSuchAlgorithmException, IncorrectHashException {
+//        for (Snapshot incrementalSnapshot : incrementalSnapshots) {
+//            logger.debug(String.format(
+//                    "Sending incremental snapshot '%s'. Base snapshot - '%s'",
+//                    incrementalSnapshot.getFullName(),
+//                    baseSnapshot.getFullName()));
+//
+//            snapshotSender.sendIncrementalSnapshot(baseSnapshot, incrementalSnapshot, s3Loader, isLoadS3);
+//
+//            baseSnapshot = incrementalSnapshot;
+//        }
+//    }
 
     public void zfsBackupFull(S3Loader s3Loader,
                               String targetSnapshotName,

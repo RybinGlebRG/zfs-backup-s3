@@ -20,8 +20,8 @@ public class ZFSStreamPart {
     public ZFSStreamPart(Path fullPath) throws IncorrectFilePartNameException {
         this.fullPath = fullPath;
         this.filename = fullPath.getFileName();
-        this.partNumber = parsePartNumber(filename);
         this.streamName = parsePrefix(filename);
+        this.partNumber = parsePartNumber(filename);
     }
 
     private int parsePartNumber(Path path) {

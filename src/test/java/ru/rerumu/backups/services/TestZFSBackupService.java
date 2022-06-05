@@ -276,24 +276,13 @@ public class TestZFSBackupService {
                 "ExternalPool"
         );
 
+        inOrder.verify(mockedSnapshotSender).sendStartingFromFull(List.of(
+                new Snapshot("ExternalPool@auto-20220326-150000"),
+                new Snapshot("ExternalPool@auto-20220327-060000"),
+                new Snapshot("ExternalPool@auto-20220327-150000")
+        ));
 
-        inOrder.verify(mockedSnapshotSender).sendBaseSnapshot(
-                new Snapshot("ExternalPool@auto-20220326-150000"),
-                mockedS3Loader,
-                true
-        );
-        inOrder.verify(mockedSnapshotSender).sendIncrementalSnapshot(
-                new Snapshot("ExternalPool@auto-20220326-150000"),
-                new Snapshot("ExternalPool@auto-20220327-060000"),
-                mockedS3Loader,
-                true
-        );
-        inOrder.verify(mockedSnapshotSender).sendIncrementalSnapshot(
-                new Snapshot("ExternalPool@auto-20220327-060000"),
-                new Snapshot("ExternalPool@auto-20220327-150000"),
-                mockedS3Loader,
-                true
-        );
+
         inOrder.verify(mockedSnapshotSender).checkSent(
                 List.of(
                         new Snapshot("ExternalPool@auto-20220326-150000"),
@@ -340,12 +329,10 @@ public class TestZFSBackupService {
                 "ExternalPool"
         );
 
-        inOrder.verify(mockedSnapshotSender).sendBaseSnapshot(
-                new Snapshot("ExternalPool@auto-20220326-150000"),
-                mockedS3Loader,
-                true
-        );
-        Mockito.verify(mockedSnapshotSender,Mockito.never()).sendIncrementalSnapshot(any(),any(),any(),anyBoolean());
+        inOrder.verify(mockedSnapshotSender).sendStartingFromFull(List.of(
+                new Snapshot("ExternalPool@auto-20220326-150000")
+        ));
+
         inOrder.verify(mockedSnapshotSender).checkSent(
                 List.of(
                         new Snapshot("ExternalPool@auto-20220326-150000")
@@ -387,8 +374,7 @@ public class TestZFSBackupService {
                 "auto-20220325-150000",
                 "ExternalPool"
         );
-        Mockito.verify(mockedSnapshotSender,Mockito.never()).sendBaseSnapshot(any(),any(),anyBoolean());
-        Mockito.verify(mockedSnapshotSender,Mockito.never()).sendIncrementalSnapshot(any(),any(),any(),anyBoolean());
+        Mockito.verify(mockedSnapshotSender,Mockito.never()).sendStartingFromFull(Mockito.any());
         Mockito.verify(mockedSnapshotSender,Mockito.never()).checkSent(any(),any());
     }
 
@@ -420,8 +406,7 @@ public class TestZFSBackupService {
                 "auto-20220326-150000",
                 "ExternalPool"
         );
-        Mockito.verify(mockedSnapshotSender,Mockito.never()).sendBaseSnapshot(any(),any(),anyBoolean());
-        Mockito.verify(mockedSnapshotSender,Mockito.never()).sendIncrementalSnapshot(any(),any(),any(),anyBoolean());
+        Mockito.verify(mockedSnapshotSender,Mockito.never()).sendStartingFromFull(Mockito.any());
         Mockito.verify(mockedSnapshotSender,Mockito.never()).checkSent(any(),any());
     }
 }

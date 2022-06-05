@@ -36,7 +36,7 @@ public class TestSnapshotSender {
         });
         Mockito.doThrow(new ZFSStreamEndedException()).when(zfsFileWriter).write(Mockito.any(), Mockito.any());
 
-        SnapshotSender snapshotSender = new SnapshotSenderImpl(filePartRepository, s3Loader, zfsProcessFactory, zfsFileWriterFactory);
+        SnapshotSender snapshotSender = new SnapshotSenderImpl(filePartRepository, s3Loader, zfsProcessFactory, zfsFileWriterFactory,true);
         Snapshot baseSnapshot = new Snapshot("ExternalPool/Applications@auto-20220326-150000");
         snapshotSender.sendBaseSnapshot(baseSnapshot, s3Loader, true);
 
@@ -68,7 +68,7 @@ public class TestSnapshotSender {
                 .doThrow(new ZFSStreamEndedException())
                 .when(zfsFileWriter).write(Mockito.any(), Mockito.any());
 
-        SnapshotSender snapshotSender = new SnapshotSenderImpl(filePartRepository, s3Loader, zfsProcessFactory, zfsFileWriterFactory);
+        SnapshotSender snapshotSender = new SnapshotSenderImpl(filePartRepository, s3Loader, zfsProcessFactory, zfsFileWriterFactory,true);
         Snapshot baseSnapshot = new Snapshot("ExternalPool/Applications@auto-20220326-150000");
         snapshotSender.sendBaseSnapshot(baseSnapshot, s3Loader, true);
 
@@ -99,7 +99,7 @@ public class TestSnapshotSender {
         });
         Mockito.doThrow(new ZFSStreamEndedException()).when(zfsFileWriter).write(Mockito.any(), Mockito.any());
 
-        SnapshotSender snapshotSender = new SnapshotSenderImpl(filePartRepository, s3Loader, zfsProcessFactory, zfsFileWriterFactory);
+        SnapshotSender snapshotSender = new SnapshotSenderImpl(filePartRepository, s3Loader, zfsProcessFactory, zfsFileWriterFactory,true);
         Snapshot baseSnapshot = new Snapshot("ExternalPool/Applications@auto-20220326-150000");
         Snapshot incrementalSnapshot = new Snapshot("ExternalPool/Applications@auto-20220327-150000");
         snapshotSender.sendIncrementalSnapshot(baseSnapshot,incrementalSnapshot, s3Loader, true);
@@ -127,7 +127,7 @@ public class TestSnapshotSender {
         Mockito.when(zfsFileWriterFactory.getZFSFileWriter()).thenReturn(zfsFileWriter);
         Mockito.doThrow(new IOException()).when(zfsFileWriter).write(Mockito.any(), Mockito.any());
 
-        SnapshotSender snapshotSender = new SnapshotSenderImpl(filePartRepository, s3Loader, zfsProcessFactory, zfsFileWriterFactory);
+        SnapshotSender snapshotSender = new SnapshotSenderImpl(filePartRepository, s3Loader, zfsProcessFactory, zfsFileWriterFactory,true);
         Snapshot baseSnapshot = new Snapshot("ExternalPool/Applications@auto-20220326-150000");
 
         Assertions.assertThrows(Exception.class,()->snapshotSender.sendBaseSnapshot(baseSnapshot, s3Loader, true));
@@ -152,7 +152,7 @@ public class TestSnapshotSender {
         Mockito.when(zfsFileWriterFactory.getZFSFileWriter()).thenReturn(zfsFileWriter);
         Mockito.doThrow(new IOException()).when(zfsFileWriter).write(Mockito.any(), Mockito.any());
 
-        SnapshotSender snapshotSender = new SnapshotSenderImpl(filePartRepository, s3Loader, zfsProcessFactory, zfsFileWriterFactory);
+        SnapshotSender snapshotSender = new SnapshotSenderImpl(filePartRepository, s3Loader, zfsProcessFactory, zfsFileWriterFactory,true);
         Snapshot baseSnapshot = new Snapshot("ExternalPool/Applications@auto-20220326-150000");
         Snapshot incrementalSnapshot = new Snapshot("ExternalPool/Applications@auto-20220327-150000");
 

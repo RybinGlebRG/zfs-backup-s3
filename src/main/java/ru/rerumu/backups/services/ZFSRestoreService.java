@@ -3,12 +3,15 @@ package ru.rerumu.backups.services;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.*;
+import ru.rerumu.backups.io.ZFSFileReader;
+import ru.rerumu.backups.io.impl.ZFSFileReaderFull;
 import ru.rerumu.backups.models.CryptoMessage;
 import ru.rerumu.backups.models.ZFSPool;
 import ru.rerumu.backups.models.ZFSStreamPart;
 import ru.rerumu.backups.repositories.FilePartRepository;
 import ru.rerumu.backups.services.impl.AESCryptor;
 import ru.rerumu.backups.services.impl.GZIPCompressor;
+import ru.rerumu.backups.services.impl.SnapshotReceiverImpl;
 import ru.rerumu.backups.zfs_api.ZFSReceive;
 
 import java.io.*;
@@ -22,15 +25,18 @@ public class ZFSRestoreService {
     private final ZFSProcessFactory zfsProcessFactory;
     private final boolean isDelete;
     private final FilePartRepository filePartRepository;
+    private final SnapshotReceiver snapshotReceiver;
 
     public ZFSRestoreService(String password,
                              ZFSProcessFactory zfsProcessFactory,
                              boolean isDelete,
-                             FilePartRepository filePartRepository) {
+                             FilePartRepository filePartRepository,
+                             SnapshotReceiver snapshotReceiver) {
         this.password = password;
         this.zfsProcessFactory = zfsProcessFactory;
         this.isDelete = isDelete;
         this.filePartRepository = filePartRepository;
+        this.snapshotReceiver = snapshotReceiver;
     }
 
     private void processReceivedFile(Path path) throws IOException {
@@ -43,49 +49,49 @@ public class ZFSRestoreService {
         logger.info(String.format("Finished processing of file '%s'",path.toString()));
     }
 
-    private void readZFSStream(ZFSReceive zfsReceive, ZFSStreamPart zfsStreamPart)
-            throws
-            IOException,
-            ClassNotFoundException,
-            NoMorePartsException,
-            FinishedFlagException,
-            TooManyPartsException,
-            EncryptException,
-            CompressorException,
-            EOFException {
-        logger.info(String.format("Starting reading from file '%s'", zfsStreamPart.getFullPath().toString()));
-        Cryptor cryptor = new AESCryptor(password);
-        Compressor compressor = new GZIPCompressor();
-
-
-        try (InputStream inputStream = Files.newInputStream(zfsStreamPart.getFullPath());
-             ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)) {
-            logger.info(String.format("Reading file '%s'", zfsStreamPart.getFullPath().toString()));
-            while (true) {
-                logger.trace("Reading object from stream");
-                Object object = objectInputStream.readUnshared();
-                if (object instanceof CryptoMessage) {
-                    logger.trace("Trying to cast to CryptoMessage");
-                    CryptoMessage cryptoMessage = (CryptoMessage) object;
-
-                    logger.trace("Trying to decrypt chunk");
-                    byte[] tmp = cryptor.decryptChunk(cryptoMessage);
-
-                    logger.trace("Trying to decompress chunk");
-                    tmp = compressor.decompressChunk(tmp);
-
-                    logger.trace("Writing chunk to stream");
-                    zfsReceive.getBufferedOutputStream().write(tmp);
-                    logger.trace("End writing chunk to stream");
-                } else {
-                    logger.error("Object is not instance of CryptoMessage");
-                    throw new IOException();
-                }
-
-            }
-
-        }
-    }
+//    private void readZFSStream(ZFSReceive zfsReceive, ZFSStreamPart zfsStreamPart)
+//            throws
+//            IOException,
+//            ClassNotFoundException,
+//            NoMorePartsException,
+//            FinishedFlagException,
+//            TooManyPartsException,
+//            EncryptException,
+//            CompressorException,
+//            EOFException {
+//        logger.info(String.format("Starting reading from file '%s'", zfsStreamPart.getFullPath().toString()));
+//        Cryptor cryptor = new AESCryptor(password);
+//        Compressor compressor = new GZIPCompressor();
+//
+//
+//        try (InputStream inputStream = Files.newInputStream(zfsStreamPart.getFullPath());
+//             ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)) {
+//            logger.info(String.format("Reading file '%s'", zfsStreamPart.getFullPath().toString()));
+//            while (true) {
+//                logger.trace("Reading object from stream");
+//                Object object = objectInputStream.readUnshared();
+//                if (object instanceof CryptoMessage) {
+//                    logger.trace("Trying to cast to CryptoMessage");
+//                    CryptoMessage cryptoMessage = (CryptoMessage) object;
+//
+//                    logger.trace("Trying to decrypt chunk");
+//                    byte[] tmp = cryptor.decryptChunk(cryptoMessage);
+//
+//                    logger.trace("Trying to decompress chunk");
+//                    tmp = compressor.decompressChunk(tmp);
+//
+//                    logger.trace("Writing chunk to stream");
+//                    zfsReceive.getBufferedOutputStream().write(tmp);
+//                    logger.trace("End writing chunk to stream");
+//                } else {
+//                    logger.error("Object is not instance of CryptoMessage");
+//                    throw new IOException();
+//                }
+//
+//            }
+//
+//        }
+//    }
 
     private boolean isNextPart(ZFSStreamPart previousStream, ZFSStreamPart nextStream){
         logger.info("isNextPart");
@@ -122,7 +128,9 @@ public class ZFSRestoreService {
                     logger.info("Stream ended");
                     throw new ZFSStreamEndedException();
                 }
-                readZFSStream(zfsReceive,nextStream);
+                ZFSFileReader zfsFileReader = new ZFSFileReaderFull(zfsReceive.getBufferedOutputStream(), nextStream.getFullPath(),password);
+                zfsFileReader.read();
+//                readZFSStream(zfsReceive,nextStream);
             } catch (EOFException e) {
                 logger.info(String.format("End of file '%s'", nextStream.getFullPath().toString()));
                 processReceivedFile(nextStream.getFullPath());
@@ -171,5 +179,24 @@ public class ZFSRestoreService {
         }
 
         logger.debug("Finished restore");
+    }
+
+    private void receive() throws FinishedFlagException, NoMorePartsException, IOException, TooManyPartsException, IncorrectFilePartNameException, CompressorException, ClassNotFoundException, EncryptException, InterruptedException {
+
+        while (true){
+            try {
+                Path nextPath = filePartRepository.getNextInputPath();
+                snapshotReceiver.receiveSnapshotPart(nextPath);
+            } catch (NoMorePartsException e) {
+                logger.debug("No acceptable files found. Waiting 1 second before retry");
+                Thread.sleep(1000);
+            } catch (FinishedFlagException e) {
+                logger.info("Finish flag found. Exiting loop");
+                break;
+            } finally {
+                snapshotReceiver.finish();
+            }
+        }
+
     }
 }

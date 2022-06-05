@@ -17,10 +17,6 @@ public class ZFSFileSystem {
         this.snapshotList = snapshotList;
     }
 
-    public List<Snapshot> getSnapshotList() {
-        return snapshotList;
-    }
-
     public String getName() {
         return name;
     }
