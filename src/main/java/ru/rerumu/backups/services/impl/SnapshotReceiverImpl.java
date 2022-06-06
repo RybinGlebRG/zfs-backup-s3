@@ -70,21 +70,17 @@ public class SnapshotReceiverImpl implements SnapshotReceiver {
         return false;
     }
 
-    private void startReceiveSnapshot() throws IOException {
-        zfsReceive = zfsProcessFactory.getZFSReceive(zfsPool);
-    }
-
     @Override
     public void receiveSnapshotPart(Path path) throws IncorrectFilePartNameException, CompressorException, IOException, ClassNotFoundException, EncryptException, InterruptedException {
         if (zfsReceive==null){
             zfsReceive = zfsProcessFactory.getZFSReceive(zfsPool);
         }
+        nextStream = new ZFSStreamPart(path);
         if (previousStream != null && !isNextPart(previousStream,nextStream)){
             logger.info("Stream ended");
-            finishReceiveSnapshot();
-            startReceiveSnapshot();
+            zfsReceive.close();
+            zfsReceive = zfsProcessFactory.getZFSReceive(zfsPool);
         }
-        nextStream = new ZFSStreamPart(path);
         logger.info(String.format("Got next stream - %s", nextStream.toString()));
         ZFSFileReader zfsFileReader = zfsFileReaderFactory.getZFSFileReader(zfsReceive.getBufferedOutputStream(), nextStream.getFullPath());
         try {
@@ -94,10 +90,6 @@ public class SnapshotReceiverImpl implements SnapshotReceiver {
             processReceivedFile(nextStream.getFullPath());
             previousStream = nextStream;
         }
-    }
-
-    private void finishReceiveSnapshot() throws IOException, InterruptedException {
-        zfsReceive.close();
     }
 
     @Override

@@ -39,7 +39,7 @@ public class RestoreController {
                     filePartRepository,
                     snapshotReceiver);
 
-            zfsRestoreService.zfsReceive(zfsPool);
+            zfsRestoreService.zfsReceive();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
