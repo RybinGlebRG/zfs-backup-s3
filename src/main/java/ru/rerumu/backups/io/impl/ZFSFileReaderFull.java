@@ -28,7 +28,7 @@ public class ZFSFileReaderFull implements ZFSFileReader {
     }
 
     @Override
-    public void read() throws IOException, ClassNotFoundException, EncryptException, CompressorException {
+    public void read() throws IOException, ClassNotFoundException, EncryptException, CompressorException, EOFException {
         logger.info(String.format("Starting reading from file '%s'", path.toString()));
         Cryptor cryptor = new AESCryptor(password);
         Compressor compressor = new GZIPCompressor();

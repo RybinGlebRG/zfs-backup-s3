@@ -12,6 +12,7 @@ import ru.rerumu.backups.services.impl.SnapshotPickerImpl;
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class ZFSBackupService {
 
@@ -49,7 +50,7 @@ public class ZFSBackupService {
             InterruptedException,
             CompressorException,
             EncryptException,
-            BaseSnapshotNotFoundException, NoSuchAlgorithmException, IncorrectHashException {
+            BaseSnapshotNotFoundException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException {
 
         List<ZFSFileSystem> zfsFileSystemList = zfsFileSystemRepository.getFilesystemsTreeList(parentDatasetName);
 

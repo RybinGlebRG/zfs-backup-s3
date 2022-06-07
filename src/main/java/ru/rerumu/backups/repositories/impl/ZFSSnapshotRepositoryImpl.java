@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class ZFSSnapshotRepositoryImpl implements ZFSSnapshotRepository {
 
@@ -25,7 +26,7 @@ public class ZFSSnapshotRepositoryImpl implements ZFSSnapshotRepository {
     }
 
     @Override
-    public List<Snapshot> getAllSnapshotsOrdered(String fileSystemName) throws IOException, InterruptedException {
+    public List<Snapshot> getAllSnapshotsOrdered(String fileSystemName) throws IOException, InterruptedException, ExecutionException {
         ProcessWrapper zfsListSnapshots = zfsProcessFactory.getZFSListSnapshots(fileSystemName);
         byte[] buf = zfsListSnapshots.getBufferedInputStream().readAllBytes();
         zfsListSnapshots.close();

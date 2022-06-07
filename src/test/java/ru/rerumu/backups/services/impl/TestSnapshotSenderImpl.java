@@ -1,4 +1,4 @@
-package ru.rerumu.backups.services;
+package ru.rerumu.backups.services.impl;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -10,17 +10,20 @@ import ru.rerumu.backups.io.ZFSFileWriter;
 import ru.rerumu.backups.io.ZFSFileWriterFactory;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.repositories.FilePartRepository;
+import ru.rerumu.backups.services.SnapshotSender;
+import ru.rerumu.backups.services.ZFSProcessFactory;
 import ru.rerumu.backups.services.impl.SnapshotSenderImpl;
 import ru.rerumu.backups.zfs_api.ZFSSend;
 
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.ExecutionException;
 
-public class TestSnapshotSender {
+public class TestSnapshotSenderImpl {
 
     @Test
-    void shouldSendOneFile() throws CompressorException, IOException, InterruptedException, EncryptException, FileHitSizeLimitException, ZFSStreamEndedException, NoSuchAlgorithmException, IncorrectHashException {
+    void shouldSendOneFile() throws CompressorException, IOException, InterruptedException, EncryptException, FileHitSizeLimitException, ZFSStreamEndedException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException {
         FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
         S3Loader s3Loader = Mockito.mock(S3Loader.class);
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
@@ -49,7 +52,7 @@ public class TestSnapshotSender {
     }
 
     @Test
-    void shouldSendTwoFiles() throws CompressorException, IOException, InterruptedException, EncryptException, FileHitSizeLimitException, ZFSStreamEndedException, NoSuchAlgorithmException, IncorrectHashException {
+    void shouldSendTwoFiles() throws CompressorException, IOException, InterruptedException, EncryptException, FileHitSizeLimitException, ZFSStreamEndedException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException {
         FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
         S3Loader s3Loader = Mockito.mock(S3Loader.class);
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
@@ -83,7 +86,7 @@ public class TestSnapshotSender {
 
 
     @Test
-    void shouldSendIncremental() throws IOException, FileHitSizeLimitException, CompressorException, ZFSStreamEndedException, EncryptException, InterruptedException, NoSuchAlgorithmException, IncorrectHashException {
+    void shouldSendIncremental() throws IOException, FileHitSizeLimitException, CompressorException, ZFSStreamEndedException, EncryptException, InterruptedException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException {
         FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
         S3Loader s3Loader = Mockito.mock(S3Loader.class);
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
@@ -115,7 +118,7 @@ public class TestSnapshotSender {
     }
 
     @Test
-    void shouldThrowExceptionBase() throws IOException, CompressorException, InterruptedException, EncryptException, FileHitSizeLimitException, ZFSStreamEndedException {
+    void shouldThrowExceptionBase() throws IOException, CompressorException, InterruptedException, EncryptException, FileHitSizeLimitException, ZFSStreamEndedException, ExecutionException {
         FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
         S3Loader s3Loader = Mockito.mock(S3Loader.class);
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
@@ -140,7 +143,7 @@ public class TestSnapshotSender {
     }
 
     @Test
-    void shouldThrowExceptionBaseIncr() throws IOException, CompressorException, InterruptedException, EncryptException, FileHitSizeLimitException, ZFSStreamEndedException {
+    void shouldThrowExceptionBaseIncr() throws IOException, CompressorException, InterruptedException, EncryptException, FileHitSizeLimitException, ZFSStreamEndedException, ExecutionException {
         FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
         S3Loader s3Loader = Mockito.mock(S3Loader.class);
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);

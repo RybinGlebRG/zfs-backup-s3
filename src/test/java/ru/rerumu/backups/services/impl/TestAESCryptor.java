@@ -1,8 +1,9 @@
-package ru.rerumu.backups.services;
+package ru.rerumu.backups.services.impl;
 
 
 import org.junit.jupiter.api.*;
 import ru.rerumu.backups.models.CryptoMessage;
+import ru.rerumu.backups.services.Cryptor;
 import ru.rerumu.backups.services.impl.AESCryptor;
 
 import java.io.*;

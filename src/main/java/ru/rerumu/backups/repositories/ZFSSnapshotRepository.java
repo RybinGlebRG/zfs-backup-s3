@@ -5,9 +5,10 @@ import ru.rerumu.backups.models.ZFSFileSystem;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public interface ZFSSnapshotRepository {
 
-    List<Snapshot> getAllSnapshotsOrdered(String fileSystemName) throws IOException, InterruptedException;
+    List<Snapshot> getAllSnapshotsOrdered(String fileSystemName) throws IOException, InterruptedException, ExecutionException;
 
 }

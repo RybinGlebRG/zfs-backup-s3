@@ -1,4 +1,4 @@
-package ru.rerumu.backups.services;
+package ru.rerumu.backups.services.impl;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -6,6 +6,7 @@ import ru.rerumu.backups.exceptions.BaseSnapshotNotFoundException;
 import ru.rerumu.backups.exceptions.SnapshotNotFoundException;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSFileSystem;
+import ru.rerumu.backups.services.SnapshotPicker;
 import ru.rerumu.backups.services.impl.SnapshotPickerImpl;
 
 import java.util.ArrayList;

@@ -17,6 +17,7 @@ import ru.rerumu.backups.zfs_api.ZFSReceive;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.ExecutionException;
 
 public class ZFSRestoreService {
 
@@ -39,7 +40,7 @@ public class ZFSRestoreService {
         this.snapshotReceiver = snapshotReceiver;
     }
 
-    public void zfsReceive() throws FinishedFlagException, NoMorePartsException, IOException, TooManyPartsException, IncorrectFilePartNameException, CompressorException, ClassNotFoundException, EncryptException, InterruptedException {
+    public void zfsReceive() throws FinishedFlagException, NoMorePartsException, IOException, TooManyPartsException, IncorrectFilePartNameException, CompressorException, ClassNotFoundException, EncryptException, InterruptedException, ExecutionException {
 
         try {
             while (true) {

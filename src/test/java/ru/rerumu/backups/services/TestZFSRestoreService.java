@@ -7,13 +7,14 @@ import ru.rerumu.backups.exceptions.*;
 import ru.rerumu.backups.repositories.FilePartRepository;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class TestZFSRestoreService {
 
     @Test
-    void shouldRestoreOneFile() throws FinishedFlagException, IncorrectFilePartNameException, CompressorException, NoMorePartsException, IOException, TooManyPartsException, ClassNotFoundException, InterruptedException, EncryptException {
+    void shouldRestoreOneFile() throws FinishedFlagException, IncorrectFilePartNameException, CompressorException, NoMorePartsException, IOException, TooManyPartsException, ClassNotFoundException, InterruptedException, EncryptException, ExecutionException {
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
         FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
         SnapshotReceiver snapshotReceiver = Mockito.mock(SnapshotReceiver.class);
@@ -40,7 +41,7 @@ class TestZFSRestoreService {
     }
 
     @Test
-    void shouldRestoreTwoFiles() throws FinishedFlagException, NoMorePartsException, IOException, TooManyPartsException, IncorrectFilePartNameException, CompressorException, ClassNotFoundException, InterruptedException, EncryptException {
+    void shouldRestoreTwoFiles() throws FinishedFlagException, NoMorePartsException, IOException, TooManyPartsException, IncorrectFilePartNameException, CompressorException, ClassNotFoundException, InterruptedException, EncryptException, ExecutionException {
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
         FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
         SnapshotReceiver snapshotReceiver = Mockito.mock(SnapshotReceiver.class);
@@ -67,7 +68,7 @@ class TestZFSRestoreService {
     }
 
     @Test
-    void shouldWaitForParts() throws FinishedFlagException, IncorrectFilePartNameException, CompressorException, NoMorePartsException, IOException, TooManyPartsException, ClassNotFoundException, InterruptedException, EncryptException {
+    void shouldWaitForParts() throws FinishedFlagException, IncorrectFilePartNameException, CompressorException, NoMorePartsException, IOException, TooManyPartsException, ClassNotFoundException, InterruptedException, EncryptException, ExecutionException {
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
         FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
         SnapshotReceiver snapshotReceiver = Mockito.mock(SnapshotReceiver.class);

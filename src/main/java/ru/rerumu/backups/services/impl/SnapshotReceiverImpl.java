@@ -19,6 +19,7 @@ import ru.rerumu.backups.zfs_api.ZFSReceive;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.concurrent.ExecutionException;
 
 // TODO: Test
 public class SnapshotReceiverImpl implements SnapshotReceiver {
@@ -71,7 +72,7 @@ public class SnapshotReceiverImpl implements SnapshotReceiver {
     }
 
     @Override
-    public void receiveSnapshotPart(Path path) throws IncorrectFilePartNameException, CompressorException, IOException, ClassNotFoundException, EncryptException, InterruptedException {
+    public void receiveSnapshotPart(Path path) throws IncorrectFilePartNameException, CompressorException, IOException, ClassNotFoundException, EncryptException, InterruptedException, ExecutionException {
         if (zfsReceive==null){
             zfsReceive = zfsProcessFactory.getZFSReceive(zfsPool);
         }
@@ -93,7 +94,7 @@ public class SnapshotReceiverImpl implements SnapshotReceiver {
     }
 
     @Override
-    public void finish() throws IOException, InterruptedException {
+    public void finish() throws IOException, InterruptedException, ExecutionException {
         zfsReceive.close();
     }
 }

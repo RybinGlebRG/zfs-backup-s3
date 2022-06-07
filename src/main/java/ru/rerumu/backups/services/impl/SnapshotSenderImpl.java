@@ -19,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class SnapshotSenderImpl implements SnapshotSender {
     private final Logger logger = LoggerFactory.getLogger(SnapshotSenderImpl.class);
@@ -92,7 +93,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
 
     @Override
     public void sendBaseSnapshot(Snapshot baseSnapshot, S3Loader s3Loader, boolean isLoadS3)
-            throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException {
+            throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException {
         String streamMark = escapeSymbols(baseSnapshot.getDataset()) + "@" + baseSnapshot.getName();
         ZFSSend zfsSend = null;
         String datasetName = escapeSymbols(baseSnapshot.getDataset());
@@ -118,7 +119,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
 
     @Override
     public void sendIncrementalSnapshot(Snapshot baseSnapshot, Snapshot incrementalSnapshot, S3Loader s3Loader, boolean isLoadS3)
-            throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException {
+            throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException {
         String streamMark = escapeSymbols(baseSnapshot.getDataset())
                 + "@" + baseSnapshot.getName()
                 + "__" + escapeSymbols(incrementalSnapshot.getDataset())
@@ -152,7 +153,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
 
     // TODO: Test
     @Override
-    public void sendStartingFromFull(List<Snapshot> snapshotList) throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException {
+    public void sendStartingFromFull(List<Snapshot> snapshotList) throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException {
         boolean isBaseSent = false;
 
         Snapshot previousSnapshot = null;
@@ -171,7 +172,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
 
     // TODO: Test
     @Override
-    public void sendStartingFromIncremental(List<Snapshot> snapshotList) throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException {
+    public void sendStartingFromIncremental(List<Snapshot> snapshotList) throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException {
         boolean isBaseSkipped = false;
 
         Snapshot previousSnapshot = null;

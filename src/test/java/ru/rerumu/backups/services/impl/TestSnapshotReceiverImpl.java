@@ -17,11 +17,12 @@ import ru.rerumu.backups.zfs_api.ZFSReceive;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.concurrent.ExecutionException;
 
 class TestSnapshotReceiverImpl {
 
     @Test
-    void shouldReceiveOne() throws IOException, CompressorException, ClassNotFoundException, EncryptException, IncorrectFilePartNameException, InterruptedException {
+    void shouldReceiveOne() throws IOException, CompressorException, ClassNotFoundException, EncryptException, IncorrectFilePartNameException, InterruptedException, ExecutionException {
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
         FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
         ZFSPool zfsPool = Mockito.mock(ZFSPool.class);
@@ -56,7 +57,7 @@ class TestSnapshotReceiverImpl {
     }
 
     @Test
-    void shouldReceiveTwo() throws CompressorException, IOException, ClassNotFoundException, EncryptException, IncorrectFilePartNameException, InterruptedException {
+    void shouldReceiveTwo() throws CompressorException, IOException, ClassNotFoundException, EncryptException, IncorrectFilePartNameException, InterruptedException, ExecutionException {
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
         FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
         ZFSPool zfsPool = Mockito.mock(ZFSPool.class);
@@ -101,7 +102,7 @@ class TestSnapshotReceiverImpl {
     }
 
     @Test
-    void shouldReceiveMultipart() throws CompressorException, IOException, ClassNotFoundException, EncryptException, IncorrectFilePartNameException, InterruptedException {
+    void shouldReceiveMultipart() throws CompressorException, IOException, ClassNotFoundException, EncryptException, IncorrectFilePartNameException, InterruptedException, ExecutionException {
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
         FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
         ZFSPool zfsPool = Mockito.mock(ZFSPool.class);
