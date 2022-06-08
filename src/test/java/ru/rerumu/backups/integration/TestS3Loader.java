@@ -1,4 +1,4 @@
-package ru.rerumu.backups.services;
+package ru.rerumu.backups.integration;
 
 import ch.qos.logback.classic.Level;
 import org.junit.jupiter.api.Disabled;

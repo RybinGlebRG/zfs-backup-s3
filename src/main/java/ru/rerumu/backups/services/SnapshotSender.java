@@ -3,6 +3,7 @@ package ru.rerumu.backups.services;
 import ru.rerumu.backups.exceptions.CompressorException;
 import ru.rerumu.backups.exceptions.EncryptException;
 import ru.rerumu.backups.exceptions.IncorrectHashException;
+import ru.rerumu.backups.exceptions.S3MissesFileException;
 import ru.rerumu.backups.io.S3Loader;
 import ru.rerumu.backups.models.Snapshot;
 
@@ -19,10 +20,8 @@ public interface SnapshotSender {
     void sendIncrementalSnapshot(Snapshot baseSnapshot, Snapshot incrementalSnapshot, S3Loader s3Loader, boolean isLoadS3)
             throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException;
 
-    void checkSent(List<Snapshot> snapshotList, S3Loader s3Loader);
-
-    void sendStartingFromFull(List<Snapshot> snapshotList)
-            throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException;
-    void sendStartingFromIncremental(List<Snapshot> snapshotList)
+    void sendStartingFromFull(String datasetName, List<Snapshot> snapshotList)
+            throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException, S3MissesFileException;
+    void sendStartingFromIncremental(String datasetName, List<Snapshot> snapshotList)
             throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException;
 }

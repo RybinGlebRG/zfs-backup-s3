@@ -2,6 +2,7 @@ package ru.rerumu.backups.controllers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.rerumu.backups.Generated;
 import ru.rerumu.backups.io.ZFSFileReaderFactory;
 import ru.rerumu.backups.io.impl.ZFSFileReaderFactoryImpl;
 import ru.rerumu.backups.models.ZFSPool;
@@ -15,6 +16,7 @@ import ru.rerumu.backups.services.ZFSRestoreService;
 
 import java.nio.file.Paths;
 
+@Generated
 public class RestoreController {
     private final Logger logger = LoggerFactory.getLogger(RestoreController.class);
 

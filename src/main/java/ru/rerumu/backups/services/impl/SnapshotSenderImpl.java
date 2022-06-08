@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -29,6 +30,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
     private final ZFSProcessFactory zfsProcessFactory;
     private final ZFSFileWriterFactory zfsFileWriterFactory;
     private final boolean isLoadS3;
+    private final List<String> sentFiles = new ArrayList<>();
 
     public SnapshotSenderImpl(
             FilePartRepository filePartRepository,
@@ -53,6 +55,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
                                     Path path) throws IOException, InterruptedException, NoSuchAlgorithmException, IncorrectHashException {
         if (isLoadS3) {
             s3Loader.upload(datasetName, path);
+            sentFiles.add(path.toString());
             filePartRepository.delete(path);
         } else {
             Path readyPath = filePartRepository.markReady(path);
@@ -61,6 +64,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
                 Thread.sleep(1000);
             }
         }
+
     }
 
     private void sendSingleSnapshot(ZFSSend zfsSend,
@@ -145,15 +149,16 @@ public class SnapshotSenderImpl implements SnapshotSender {
         }
     }
 
-    // TODO: Test
-    @Override
-    public void checkSent(List<Snapshot> snapshotList, S3Loader s3Loader) {
-
+    private void checkSent(String datasetName) throws S3MissesFileException {
+        List<String> files = s3Loader.objectsList(datasetName);
+        if (!files.containsAll(sentFiles)){
+            throw new S3MissesFileException();
+        }
     }
 
     // TODO: Test
     @Override
-    public void sendStartingFromFull(List<Snapshot> snapshotList) throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException {
+    public void sendStartingFromFull(String datasetName, List<Snapshot> snapshotList) throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException, S3MissesFileException {
         boolean isBaseSent = false;
 
         Snapshot previousSnapshot = null;
@@ -168,11 +173,12 @@ public class SnapshotSenderImpl implements SnapshotSender {
             previousSnapshot = snapshot;
 
         }
+        checkSent(escapeSymbols(datasetName));
     }
 
     // TODO: Test
     @Override
-    public void sendStartingFromIncremental(List<Snapshot> snapshotList) throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException {
+    public void sendStartingFromIncremental(String datasetName,List<Snapshot> snapshotList) throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException {
         boolean isBaseSkipped = false;
 
         Snapshot previousSnapshot = null;

@@ -2,6 +2,7 @@ package ru.rerumu.backups.controllers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.rerumu.backups.Generated;
 import ru.rerumu.backups.io.S3Loader;
 import ru.rerumu.backups.io.ZFSFileWriterFactory;
 import ru.rerumu.backups.io.impl.ZFSFileWriterFactoryImpl;
@@ -20,6 +21,7 @@ import ru.rerumu.backups.services.impl.ZFSProcessFactoryImpl;
 
 import java.nio.file.Paths;
 
+@Generated
 public class BackupController {
 
     private final Logger logger = LoggerFactory.getLogger(BackupController.class);

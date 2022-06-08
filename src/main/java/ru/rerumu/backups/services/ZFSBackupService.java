@@ -50,7 +50,7 @@ public class ZFSBackupService {
             InterruptedException,
             CompressorException,
             EncryptException,
-            BaseSnapshotNotFoundException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException {
+            BaseSnapshotNotFoundException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException, S3MissesFileException {
 
         List<ZFSFileSystem> zfsFileSystemList = zfsFileSystemRepository.getFilesystemsTreeList(parentDatasetName);
 
@@ -58,8 +58,7 @@ public class ZFSBackupService {
             try {
                 SnapshotPicker snapshotPicker = new SnapshotPickerImpl();
                 List<Snapshot> pickedSnapshots = snapshotPicker.pick(zfsFileSystem, targetSnapshotName);
-                snapshotSender.sendStartingFromFull(pickedSnapshots);
-                snapshotSender.checkSent(pickedSnapshots, s3Loader);
+                snapshotSender.sendStartingFromFull(zfsFileSystem.getName(),pickedSnapshots);
             } catch (SnapshotNotFoundException e){
                 logger.warn(String.format("Skipping filesystem '%s'. No acceptable snapshots", zfsFileSystem.getName()));
             }
