@@ -24,5 +24,5 @@ public interface SnapshotSender {
     void sendStartingFromFull(String datasetName, List<Snapshot> snapshotList)
             throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException, S3MissesFileException;
     void sendStartingFromIncremental(String datasetName, List<Snapshot> snapshotList)
-            throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException;
+            throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException, S3MissesFileException;
 }

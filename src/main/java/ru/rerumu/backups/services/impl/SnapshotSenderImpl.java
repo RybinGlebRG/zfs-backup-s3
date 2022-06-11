@@ -175,7 +175,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
 
     // TODO: Test
     @Override
-    public void sendStartingFromIncremental(String datasetName,List<Snapshot> snapshotList) throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException {
+    public void sendStartingFromIncremental(String datasetName,List<Snapshot> snapshotList) throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException, S3MissesFileException {
         boolean isBaseSkipped = false;
 
         Snapshot previousSnapshot = null;
@@ -189,6 +189,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
             previousSnapshot = snapshot;
 
         }
+        checkSent(escapeSymbols(datasetName));
     }
 
 }
