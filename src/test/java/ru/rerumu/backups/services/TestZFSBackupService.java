@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 import ru.rerumu.backups.exceptions.*;
-import ru.rerumu.backups.io.S3Loader;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSFileSystem;
 import ru.rerumu.backups.repositories.ZFSFileSystemRepository;
@@ -14,8 +13,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-
-import static org.mockito.Matchers.*;
 
 public class TestZFSBackupService {
 
@@ -43,7 +40,7 @@ public class TestZFSBackupService {
         InOrder inOrder = Mockito.inOrder(mockedSnapshotSender);
 
 
-        S3Loader mockedS3Loader = Mockito.mock(S3Loader.class);
+//        S3Loader mockedS3Loader = Mockito.mock(S3Loader.class);
 
         ZFSBackupService zfsBackupService = new ZFSBackupService(
                 true,
@@ -52,7 +49,6 @@ public class TestZFSBackupService {
         );
 
         zfsBackupService.zfsBackupFull(
-                mockedS3Loader,
                 "auto-20220327-150000",
                 "ExternalPool"
         );
@@ -97,7 +93,7 @@ public class TestZFSBackupService {
         InOrder inOrder = Mockito.inOrder(mockedSnapshotSender);
 
 
-        S3Loader mockedS3Loader = Mockito.mock(S3Loader.class);
+//        S3Loader mockedS3Loader = Mockito.mock(S3Loader.class);
 
         ZFSBackupService zfsBackupService = new ZFSBackupService(
                 true,
@@ -106,7 +102,6 @@ public class TestZFSBackupService {
         );
 
         zfsBackupService.zfsBackupFull(
-                mockedS3Loader,
                 "auto-20220326-150000",
                 "ExternalPool"
         );
@@ -144,7 +139,7 @@ public class TestZFSBackupService {
 
         SnapshotSender mockedSnapshotSender = Mockito.mock(SnapshotSender.class);
 
-        S3Loader mockedS3Loader = Mockito.mock(S3Loader.class);
+//        S3Loader mockedS3Loader = Mockito.mock(S3Loader.class);
 
         ZFSBackupService zfsBackupService = new ZFSBackupService(
                 true,
@@ -153,7 +148,6 @@ public class TestZFSBackupService {
         );
 
         zfsBackupService.zfsBackupFull(
-                mockedS3Loader,
                 "auto-20220325-150000",
                 "ExternalPool"
         );
@@ -176,7 +170,7 @@ public class TestZFSBackupService {
 
         SnapshotSender mockedSnapshotSender = Mockito.mock(SnapshotSender.class);
 
-        S3Loader mockedS3Loader = Mockito.mock(S3Loader.class);
+//        S3Loader mockedS3Loader = Mockito.mock(S3Loader.class);
 
         ZFSBackupService zfsBackupService = new ZFSBackupService(
                 true,
@@ -185,7 +179,6 @@ public class TestZFSBackupService {
         );
 
         zfsBackupService.zfsBackupFull(
-                mockedS3Loader,
                 "auto-20220326-150000",
                 "ExternalPool"
         );

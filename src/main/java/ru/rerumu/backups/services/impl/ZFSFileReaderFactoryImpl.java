@@ -1,7 +1,7 @@
-package ru.rerumu.backups.io.impl;
+package ru.rerumu.backups.services.impl;
 
-import ru.rerumu.backups.io.ZFSFileReader;
-import ru.rerumu.backups.io.ZFSFileReaderFactory;
+import ru.rerumu.backups.services.ZFSFileReader;
+import ru.rerumu.backups.services.ZFSFileReaderFactory;
 
 import java.io.BufferedOutputStream;
 import java.nio.file.Path;

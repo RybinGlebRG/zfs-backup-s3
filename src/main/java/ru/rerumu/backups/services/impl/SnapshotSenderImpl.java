@@ -3,17 +3,15 @@ package ru.rerumu.backups.services.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.*;
-import ru.rerumu.backups.io.S3Loader;
-import ru.rerumu.backups.io.ZFSFileWriter;
-import ru.rerumu.backups.io.ZFSFileWriterFactory;
-import ru.rerumu.backups.io.impl.ZFSFileWriterFull;
+import ru.rerumu.backups.services.S3Loader;
+import ru.rerumu.backups.services.ZFSFileWriter;
+import ru.rerumu.backups.services.ZFSFileWriterFactory;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.repositories.FilePartRepository;
 import ru.rerumu.backups.services.SnapshotSender;
 import ru.rerumu.backups.services.ZFSProcessFactory;
 import ru.rerumu.backups.zfs_api.ZFSSend;
 
-import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -95,8 +93,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
         }
     }
 
-    @Override
-    public void sendBaseSnapshot(Snapshot baseSnapshot, S3Loader s3Loader, boolean isLoadS3)
+    private void sendBaseSnapshot(Snapshot baseSnapshot, S3Loader s3Loader, boolean isLoadS3)
             throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException {
         String streamMark = escapeSymbols(baseSnapshot.getDataset()) + "@" + baseSnapshot.getName();
         ZFSSend zfsSend = null;
@@ -121,8 +118,8 @@ public class SnapshotSenderImpl implements SnapshotSender {
 
     }
 
-    @Override
-    public void sendIncrementalSnapshot(Snapshot baseSnapshot, Snapshot incrementalSnapshot, S3Loader s3Loader, boolean isLoadS3)
+
+    private void sendIncrementalSnapshot(Snapshot baseSnapshot, Snapshot incrementalSnapshot, S3Loader s3Loader, boolean isLoadS3)
             throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException {
         String streamMark = escapeSymbols(baseSnapshot.getDataset())
                 + "@" + baseSnapshot.getName()
@@ -150,7 +147,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
     }
 
     private void checkSent(String datasetName) throws S3MissesFileException {
-        List<String> files = s3Loader.objectsList(datasetName);
+        List<String> files = s3Loader.objectsListForDataset(datasetName);
         if (!files.containsAll(sentFiles)){
             throw new S3MissesFileException();
         }

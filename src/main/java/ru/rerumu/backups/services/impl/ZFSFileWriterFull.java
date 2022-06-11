@@ -1,4 +1,4 @@
-package ru.rerumu.backups.io.impl;
+package ru.rerumu.backups.services.impl;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
@@ -7,13 +7,10 @@ import ru.rerumu.backups.exceptions.CompressorException;
 import ru.rerumu.backups.exceptions.EncryptException;
 import ru.rerumu.backups.exceptions.FileHitSizeLimitException;
 import ru.rerumu.backups.exceptions.ZFSStreamEndedException;
-import ru.rerumu.backups.io.ZFSFileWriter;
+import ru.rerumu.backups.services.ZFSFileWriter;
 import ru.rerumu.backups.models.CryptoMessage;
 import ru.rerumu.backups.services.Compressor;
 import ru.rerumu.backups.services.Cryptor;
-import ru.rerumu.backups.services.impl.AESCryptor;
-import ru.rerumu.backups.services.impl.GZIPCompressor;
-import ru.rerumu.backups.zfs_api.ZFSSend;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;

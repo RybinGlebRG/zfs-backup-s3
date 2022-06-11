@@ -1,6 +1,8 @@
 package ru.rerumu.backups.integration;
 
 import ch.qos.logback.classic.Level;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -8,18 +10,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.IncorrectHashException;
 import ru.rerumu.backups.models.S3Storage;
-import ru.rerumu.backups.io.impl.S3LoaderImpl;
+import ru.rerumu.backups.services.impl.S3LoaderImpl;
 import software.amazon.awssdk.regions.Region;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class TestS3Loader {
@@ -43,11 +46,20 @@ public class TestS3Loader {
 
         byte[] srcByte = new byte[5431];
         new Random().nextBytes(srcByte);
-        Path path = Files.createFile(tempDir.resolve("test"));
+        String datasetName = RandomStringUtils.random(10, true, false)
+                +"-"+RandomStringUtils.random(10, true, false);
+        String generatedString = datasetName+"@auto-20200321-173000__"
+                +datasetName+"@auto-20200322-173000.part0";
+        List<String> srcFiles = new ArrayList<>();
+        srcFiles.add(generatedString);
+
+        Path path = Files.createFile(tempDir.resolve(generatedString));
 
         try(BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(Files.newOutputStream(path))){
             bufferedOutputStream.write(srcByte);
         }
-        s3Loader.upload("Test",path);
+        s3Loader.upload(datasetName,path);
+        List<String> resFiles = s3Loader.objectsListForDataset(datasetName);
+        Assertions.assertEquals(srcFiles,resFiles);
     }
 }

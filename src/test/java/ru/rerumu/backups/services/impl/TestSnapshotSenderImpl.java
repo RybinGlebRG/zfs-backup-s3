@@ -5,14 +5,13 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 import ru.rerumu.backups.exceptions.*;
-import ru.rerumu.backups.io.S3Loader;
-import ru.rerumu.backups.io.ZFSFileWriter;
-import ru.rerumu.backups.io.ZFSFileWriterFactory;
+import ru.rerumu.backups.services.S3Loader;
+import ru.rerumu.backups.services.ZFSFileWriter;
+import ru.rerumu.backups.services.ZFSFileWriterFactory;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.repositories.FilePartRepository;
 import ru.rerumu.backups.services.SnapshotSender;
 import ru.rerumu.backups.services.ZFSProcessFactory;
-import ru.rerumu.backups.services.impl.SnapshotSenderImpl;
 import ru.rerumu.backups.zfs_api.ZFSSend;
 
 import java.io.IOException;
@@ -166,5 +165,25 @@ public class TestSnapshotSenderImpl {
         inOrder.verify(zfsProcessFactory).getZFSSendIncremental(Mockito.any(),Mockito.any());
         inOrder.verify(zfsSend).kill();
         inOrder.verify(zfsSend).close();
+    }
+
+    @Test
+    void shouldSendBase(){
+
+    }
+
+    @Test
+    void shouldSendBaseAndIncremental(){
+
+    }
+
+    @Test
+    void shouldSendMultipart(){
+
+    }
+
+    @Test
+    void shouldSendIncremental(){
+
     }
 }

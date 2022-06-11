@@ -1,13 +1,12 @@
-package ru.rerumu.backups.io.impl;
+package ru.rerumu.backups.services.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.IncorrectHashException;
 import ru.rerumu.backups.models.S3Storage;
-import ru.rerumu.backups.io.S3Loader;
+import ru.rerumu.backups.services.S3Loader;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 //import software.amazon.awssdk.transfer.s3.*;
-import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.*;
 import software.amazon.awssdk.services.s3.model.*;
 import org.apache.commons.codec.binary.Hex;
@@ -16,13 +15,12 @@ import org.apache.commons.codec.binary.Hex;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 
 public class S3LoaderImpl implements S3Loader {
@@ -77,14 +75,17 @@ public class S3LoaderImpl implements S3Loader {
         }
     }
 
-    public List<String> objectsList(String prefix) {
+    public List<String> objectsListForDataset(String datasetName) {
         List<String> objects = new ArrayList<>();
+
         for (S3Storage s3Storage : storages) {
             S3Client s3Client = S3Client.builder()
                     .region(s3Storage.getRegion())
                     .endpointOverride(s3Storage.getEndpoint())
                     .credentialsProvider(StaticCredentialsProvider.create(s3Storage.getCredentials()))
                     .build();
+
+            String prefix = s3Storage.getPrefix().toString() +"/"+datasetName;
 
             ListObjectsRequest listObjects = ListObjectsRequest.builder()
                     .bucket(s3Storage.getBucketName())
@@ -96,7 +97,8 @@ public class S3LoaderImpl implements S3Loader {
 
 
             for (S3Object s3Object : s3Objects) {
-                objects.add(s3Object.key());
+                String tmp = Paths.get(s3Object.key()).getFileName().toString();
+                objects.add(tmp);
             }
 
         }

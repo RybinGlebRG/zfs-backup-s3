@@ -1,4 +1,4 @@
-package ru.rerumu.backups.io;
+package ru.rerumu.backups.services;
 
 public interface ZFSFileWriterFactory {
     ZFSFileWriter getZFSFileWriter();

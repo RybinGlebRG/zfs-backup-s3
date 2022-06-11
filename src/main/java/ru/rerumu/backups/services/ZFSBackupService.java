@@ -3,7 +3,6 @@ package ru.rerumu.backups.services;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.*;
-import ru.rerumu.backups.io.S3Loader;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSFileSystem;
 import ru.rerumu.backups.repositories.ZFSFileSystemRepository;
@@ -43,8 +42,7 @@ public class ZFSBackupService {
 //        }
 //    }
 
-    public void zfsBackupFull(S3Loader s3Loader,
-                              String targetSnapshotName,
+    public void zfsBackupFull(String targetSnapshotName,
                               String parentDatasetName) throws
             IOException,
             InterruptedException,
