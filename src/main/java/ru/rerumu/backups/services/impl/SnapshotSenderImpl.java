@@ -155,7 +155,6 @@ public class SnapshotSenderImpl implements SnapshotSender {
         }
     }
 
-    // TODO: Test
     @Override
     public void sendStartingFromFull(String datasetName, List<Snapshot> snapshotList) throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException, S3MissesFileException {
         boolean isBaseSent = false;
@@ -176,7 +175,6 @@ public class SnapshotSenderImpl implements SnapshotSender {
         sentFiles.clear();
     }
 
-    // TODO: Test
     @Override
     public void sendStartingFromIncremental(String datasetName,List<Snapshot> snapshotList) throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException, S3MissesFileException {
         boolean isBaseSkipped = false;

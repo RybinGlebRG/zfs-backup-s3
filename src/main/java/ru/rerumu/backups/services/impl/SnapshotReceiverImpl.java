@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutionException;
 
-// TODO: Test
 public class SnapshotReceiverImpl implements SnapshotReceiver {
     private final Logger logger = LoggerFactory.getLogger(SnapshotReceiverImpl.class);
 
