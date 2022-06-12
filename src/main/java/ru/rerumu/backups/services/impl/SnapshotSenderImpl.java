@@ -53,7 +53,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
                                     Path path) throws IOException, InterruptedException, NoSuchAlgorithmException, IncorrectHashException {
         if (isLoadS3) {
             s3Loader.upload(datasetName, path);
-            sentFiles.add(path.toString());
+            sentFiles.add(path.getFileName().toString());
             filePartRepository.delete(path);
         } else {
             Path readyPath = filePartRepository.markReady(path);
@@ -148,6 +148,8 @@ public class SnapshotSenderImpl implements SnapshotSender {
 
     private void checkSent(String datasetName) throws S3MissesFileException {
         List<String> files = s3Loader.objectsListForDataset(datasetName);
+        logger.info(String.format("Sent files: %s",sentFiles));
+        logger.info(String.format("Found files on S3: %s",files));
         if (!files.containsAll(sentFiles)){
             throw new S3MissesFileException();
         }
@@ -171,6 +173,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
 
         }
         checkSent(escapeSymbols(datasetName));
+        sentFiles.clear();
     }
 
     // TODO: Test
@@ -190,6 +193,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
 
         }
         checkSent(escapeSymbols(datasetName));
+        sentFiles.clear();
     }
 
 }
