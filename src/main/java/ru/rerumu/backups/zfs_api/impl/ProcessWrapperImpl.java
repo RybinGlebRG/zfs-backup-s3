@@ -3,14 +3,12 @@ package ru.rerumu.backups.zfs_api.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.zfs_api.ProcessWrapper;
-import ru.rerumu.backups.zfs_api.StderrLogger;
-import ru.rerumu.backups.zfs_api.ZFSSend;
+import ru.rerumu.backups.zfs_api.StdProcessor;
+import ru.rerumu.backups.zfs_api.StdProcessorRunnable;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -23,10 +21,8 @@ public class ProcessWrapperImpl implements ProcessWrapper {
     protected final BufferedInputStream bufferedInputStream;
     protected final BufferedInputStream bufferedErrorStream;
     protected final BufferedOutputStream bufferedOutputStream;
-    protected Thread errThread;
-    protected Thread outThread;
     protected boolean isKilled = false;
-    protected ExecutorService executorService;
+    protected final ExecutorService executorService;
     protected final List<Future<?>> futureList;
 
     public ProcessWrapperImpl(List<String> args) throws IOException {
@@ -38,6 +34,14 @@ public class ProcessWrapperImpl implements ProcessWrapper {
         bufferedOutputStream = new BufferedOutputStream(process.getOutputStream());
         executorService = Executors.newCachedThreadPool();
         futureList = new ArrayList<>();
+    }
+
+    public void setStderrProcessor(StdProcessor stderrProcessor){
+        futureList.add(executorService.submit(new StdProcessorRunnable(bufferedErrorStream,stderrProcessor)));
+    }
+
+    public void setStdinProcessor(StdProcessor stdinProcessor){
+        futureList.add(executorService.submit(new StdProcessorRunnable(bufferedInputStream,stdinProcessor)));
     }
 
 
@@ -59,12 +63,6 @@ public class ProcessWrapperImpl implements ProcessWrapper {
         for (Future<?> future: futureList){
             future.get();
         }
-//        if (errThread!=null){
-//            errThread.join();
-//        }
-//        if (outThread!=null){
-//            outThread.join();
-//        }
 
         if (exitCode != 0) {
             logger.info("Process closed with error");
@@ -83,12 +81,6 @@ public class ProcessWrapperImpl implements ProcessWrapper {
         for (Future<?> future: futureList){
             future.get();
         }
-//        if (errThread!=null){
-//            errThread.join();
-//        }
-//        if (outThread!=null){
-//            outThread.join();
-//        }
         isKilled = true;
         logger.info("Process killed");
     }
