@@ -1,5 +1,6 @@
 package ru.rerumu.backups.models;
 
+import ru.rerumu.backups.Generated;
 import ru.rerumu.backups.exceptions.BaseSnapshotNotFoundException;
 import ru.rerumu.backups.exceptions.SnapshotNotFoundException;
 
@@ -15,10 +16,6 @@ public class ZFSFileSystem {
     public ZFSFileSystem(String name, List<Snapshot> snapshotList){
         this.name = name;
         this.snapshotList = snapshotList;
-    }
-
-    public List<Snapshot> getSnapshotList() {
-        return snapshotList;
     }
 
     public String getName() {
@@ -90,6 +87,7 @@ public class ZFSFileSystem {
         return false;
     }
 
+    @Generated
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -98,6 +96,7 @@ public class ZFSFileSystem {
         return name.equals(that.name) && snapshotList.equals(that.snapshotList);
     }
 
+    @Generated
     @Override
     public int hashCode() {
         return Objects.hash(name, snapshotList);

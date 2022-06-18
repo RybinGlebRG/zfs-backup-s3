@@ -1,5 +1,7 @@
 package ru.rerumu.backups.models;
 
+import ru.rerumu.backups.Generated;
+
 import java.util.Objects;
 
 public class Snapshot {
@@ -33,6 +35,7 @@ public class Snapshot {
         return name;
     }
 
+    @Generated
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -41,11 +44,13 @@ public class Snapshot {
         return name.equals(snapshot.name) && dataset.equals(snapshot.dataset) && fullName.equals(snapshot.fullName);
     }
 
+    @Generated
     @Override
     public int hashCode() {
         return Objects.hash(name, dataset, fullName);
     }
 
+    @Generated
     @Override
     public String toString() {
         return "Snapshot{" +

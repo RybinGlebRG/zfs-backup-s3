@@ -50,4 +50,17 @@ public class TestZFSStreamPart {
     }
 
 
+    @Test
+    void shouldNotParse() throws IncorrectFilePartNameException {
+        Path path = Paths.get("/tmp/MainPool-VMs@tmp_14.02.2022_23.05");
+        Assertions.assertThrows(IncorrectFilePartNameException.class,()->new ZFSStreamPart(path));
+
+    }
+
+    @Test
+    void shouldGetFullPath() throws IncorrectFilePartNameException {
+        Path path = Paths.get("/tmp/MainPool-VMs@tmp_14.02.2022_23.05.part1");
+        ZFSStreamPart zfsStreamPart = new ZFSStreamPart(path);
+        Assertions.assertEquals(path,zfsStreamPart.getFullPath());
+    }
 }
