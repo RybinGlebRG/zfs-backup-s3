@@ -2,6 +2,7 @@ package ru.rerumu.backups.models;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.rerumu.backups.Generated;
 import ru.rerumu.backups.exceptions.IncorrectFilePartNameException;
 
 import java.nio.file.Path;
@@ -20,8 +21,8 @@ public class ZFSStreamPart {
     public ZFSStreamPart(Path fullPath) throws IncorrectFilePartNameException {
         this.fullPath = fullPath;
         this.filename = fullPath.getFileName();
-        this.partNumber = parsePartNumber(filename);
         this.streamName = parsePrefix(filename);
+        this.partNumber = parsePartNumber(filename);
     }
 
     private int parsePartNumber(Path path) {
@@ -71,6 +72,7 @@ public class ZFSStreamPart {
         return filename;
     }
 
+    @Generated
     @Override
     public String toString() {
         return "ZFSStreamPart{" +

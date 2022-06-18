@@ -3,60 +3,23 @@ package ru.rerumu.backups.zfs_api.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.models.Snapshot;
-import ru.rerumu.backups.zfs_api.InputStreamLogger;
 import ru.rerumu.backups.zfs_api.ZFSSend;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
-public class ZFSSendFull implements ZFSSend {
-
-    private final Logger logger = LoggerFactory.getLogger(ZFSSendFull.class);
-    private final Process process;
-    private final BufferedInputStream bufferedInputStream;
-    private final BufferedInputStream bufferedErrorStream;
-    private final Thread errThread;
-    private boolean isKilled = false;
+public class ZFSSendFull extends ProcessWrapperImpl implements ZFSSend {
+    protected final Logger logger = LoggerFactory.getLogger(ZFSSendFull.class);
 
     public ZFSSendFull(Snapshot fullSnapshot) throws IOException {
-        logger.info(String.format("Sending snapshot '%s'",fullSnapshot.getFullName()));
-        ProcessBuilder pb = new ProcessBuilder(Arrays.asList("zfs","send","-vpP",fullSnapshot.getFullName()));
-        process = pb.start();
-        bufferedInputStream = new BufferedInputStream(process.getInputStream());
-        bufferedErrorStream = new BufferedInputStream(process.getErrorStream());
-        // TODO: Log exception
-        errThread = new Thread(new InputStreamLogger(bufferedErrorStream, LoggerFactory.getLogger(InputStreamLogger.class)));
-        errThread.start();
-    }
+        super(Arrays.asList("zfs","send","-vpP",fullSnapshot.getFullName()));
 
-    public BufferedInputStream getBufferedInputStream() {
-        return bufferedInputStream;
-    }
-
-    public void close() throws InterruptedException, IOException {
-        if (isKilled){
-            logger.info("Already killed");
-            return;
-        }
-        logger.info("Closing process");
-        int exitCode = process.waitFor();
-        errThread.join();
-//        bufferedInputStream.close();
-//        bufferedErrorStream.close();
-        if (exitCode != 0) {
-            logger.info("Process closed with error");
-            throw new IOException();
-        }
-        logger.info("Process closed");
+        setStderrProcessor(logger::debug);
     }
 
     @Override
-    public void kill() throws InterruptedException {
-        logger.info("Killing process");
-        process.destroy();
-        errThread.join();
-        isKilled = true;
-        logger.info("Process killed");
+    public BufferedInputStream getBufferedInputStream() {
+        return bufferedInputStream;
     }
 }

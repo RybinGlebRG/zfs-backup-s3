@@ -26,7 +26,7 @@ public class ZFSProcessFactoryImpl implements ZFSProcessFactory {
         return new ZFSReceiveImpl(zfsPool.getName());
     }
 
-    public ZFSListFilesystems getZFSListFilesystems(String parentFileSystem) throws IOException {
+    public ProcessWrapper getZFSListFilesystems(String parentFileSystem) throws IOException {
         return new ZFSListFilesystems(parentFileSystem);
     }
 

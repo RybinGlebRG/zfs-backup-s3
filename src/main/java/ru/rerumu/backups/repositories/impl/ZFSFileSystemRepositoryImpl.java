@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class ZFSFileSystemRepositoryImpl implements ZFSFileSystemRepository {
 
@@ -30,7 +31,7 @@ public class ZFSFileSystemRepositoryImpl implements ZFSFileSystemRepository {
     }
 
     @Override
-    public List<ZFSFileSystem> getFilesystemsTreeList(String fileSystemName) throws IOException, InterruptedException {
+    public List<ZFSFileSystem> getFilesystemsTreeList(String fileSystemName) throws IOException, InterruptedException, ExecutionException {
         ProcessWrapper zfsListFilesystems = zfsProcessFactory.getZFSListFilesystems(fileSystemName);
         byte[] buf = zfsListFilesystems.getBufferedInputStream().readAllBytes();
         zfsListFilesystems.close();
