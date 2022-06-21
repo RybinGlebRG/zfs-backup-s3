@@ -13,20 +13,28 @@ import java.io.IOException;
 
 public class ZFSProcessFactoryImpl implements ZFSProcessFactory {
     private final boolean isMultiIncremental;
+    private final boolean isNativeEncrypted;
 
-    public ZFSProcessFactoryImpl(boolean isMultiIncremental){
+    public ZFSProcessFactoryImpl(boolean isMultiIncremental,boolean isNativeEncrypted){
         this.isMultiIncremental = isMultiIncremental;
+        this.isNativeEncrypted = isNativeEncrypted;
     }
 
     @Override
     public ZFSSend getZFSSendFull(Snapshot snapshot) throws IOException {
-        return new ZFSSendFull(snapshot);
+        if (isNativeEncrypted){
+            return new ZFSSendFullEncrypted(snapshot);
+        } else {
+            return new ZFSSendFull(snapshot);
+        }
     }
 
     @Override
     public ZFSSend getZFSSendIncremental(Snapshot baseSnapshot, Snapshot incrementalSnapshot) throws IOException {
         if (isMultiIncremental){
             return new ZFSSendMultiIncremental(baseSnapshot, incrementalSnapshot);
+        } else if (isNativeEncrypted) {
+            return new ZFSSendIncrementalEncrypted(baseSnapshot,incrementalSnapshot);
         } else {
             return new ZFSSendIncremental(baseSnapshot, incrementalSnapshot);
         }
