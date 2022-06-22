@@ -8,6 +8,11 @@ import ru.rerumu.backups.controllers.BackupController;
 import ru.rerumu.backups.controllers.RestoreController;
 import ru.rerumu.backups.exceptions.IncorrectHashException;
 import ru.rerumu.backups.exceptions.S3MissesFileException;
+import ru.rerumu.backups.factories.ZFSFileReaderFactory;
+import ru.rerumu.backups.factories.ZFSFileWriterFactory;
+import ru.rerumu.backups.factories.ZFSProcessFactory;
+import ru.rerumu.backups.factories.impl.ZFSFileReaderFactoryImpl;
+import ru.rerumu.backups.factories.impl.ZFSFileWriterFactoryImpl;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSPool;
 import ru.rerumu.backups.repositories.FilePartRepository;
@@ -381,7 +386,7 @@ public class TestBackupRestore {
                 "84fBS1KsChnuaV0",
                 1070,
                 1024);
-        SnapshotSender snapshotSender = new SnapshotSenderImpl(filePartRepository, remoteBackupRepository, zfsProcessFactory, zfsFileWriterFactory,
+        SnapshotSender snapshotSender = new SnapshotSenderBySnapshot(filePartRepository, remoteBackupRepository, zfsProcessFactory, zfsFileWriterFactory,
                 true);
         ZFSBackupService zfsBackupService = new ZFSBackupService(
                 true,

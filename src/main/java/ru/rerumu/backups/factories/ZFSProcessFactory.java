@@ -1,4 +1,4 @@
-package ru.rerumu.backups.services;
+package ru.rerumu.backups.factories;
 
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSFileSystem;

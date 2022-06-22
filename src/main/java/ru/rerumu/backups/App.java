@@ -5,6 +5,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.controllers.BackupController;
 import ru.rerumu.backups.controllers.RestoreController;
+import ru.rerumu.backups.factories.ZFSFileReaderFactory;
+import ru.rerumu.backups.factories.ZFSFileWriterFactory;
+import ru.rerumu.backups.factories.ZFSProcessFactory;
+import ru.rerumu.backups.factories.impl.ZFSFileReaderFactoryImpl;
+import ru.rerumu.backups.factories.impl.ZFSFileWriterFactoryImpl;
+import ru.rerumu.backups.factories.impl.ZFSProcessFactoryImpl;
 import ru.rerumu.backups.models.S3Storage;
 import ru.rerumu.backups.models.ZFSPool;
 import ru.rerumu.backups.repositories.FilePartRepository;
@@ -14,7 +20,6 @@ import ru.rerumu.backups.repositories.impl.FilePartRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.S3Repository;
 import ru.rerumu.backups.repositories.impl.ZFSFileSystemRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.ZFSSnapshotRepositoryImpl;
-import ru.rerumu.backups.repositories.RemoteBackupRepository;
 import ru.rerumu.backups.services.*;
 import ru.rerumu.backups.services.impl.*;
 import software.amazon.awssdk.regions.Region;
@@ -60,7 +65,7 @@ public class App {
                             configuration.getProperty("password"),
                             Integer.parseInt(configuration.getProperty("chunk.size")),
                             Long.parseLong(configuration.getProperty("file.part.size")));
-                    SnapshotSender snapshotSender = new SnapshotSenderImpl(filePartRepository, s3Repository,zfsProcessFactory,zfsFileWriterFactory,
+                    SnapshotSender snapshotSender = new SnapshotSenderBySnapshot(filePartRepository, s3Repository,zfsProcessFactory,zfsFileWriterFactory,
                             Boolean.parseBoolean(configuration.getProperty("is.load.aws")));
 
                     ZFSBackupService zfsBackupService = new ZFSBackupService(

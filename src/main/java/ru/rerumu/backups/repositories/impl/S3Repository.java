@@ -52,7 +52,9 @@ public class S3Repository implements RemoteBackupRepository {
             IOException,
             NoSuchAlgorithmException,
             IncorrectHashException {
-        // TODO: Check we have storages added
+        if (storages.size()==0){
+            throw new IllegalArgumentException();
+        }
         for (S3Storage s3Storage : storages) {
             logger.info(String.format("Uploading file %s", path.toString()));
             String key = s3Storage.getPrefix().toString() + "/" + datasetName + "/" + path.getFileName().toString();

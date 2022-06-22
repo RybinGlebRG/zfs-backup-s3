@@ -6,7 +6,7 @@ import org.mockito.Mockito;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSFileSystem;
 import ru.rerumu.backups.repositories.impl.ZFSFileSystemRepositoryImpl;
-import ru.rerumu.backups.services.ZFSProcessFactory;
+import ru.rerumu.backups.factories.ZFSProcessFactory;
 import ru.rerumu.backups.zfs_api.ProcessWrapper;
 
 import java.io.BufferedInputStream;
