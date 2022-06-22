@@ -7,6 +7,7 @@ import org.mockito.Mockito;
 import ru.rerumu.backups.controllers.BackupController;
 import ru.rerumu.backups.controllers.RestoreController;
 import ru.rerumu.backups.exceptions.IncorrectHashException;
+import ru.rerumu.backups.exceptions.S3MissesFileException;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSPool;
 import ru.rerumu.backups.repositories.FilePartRepository;
@@ -15,6 +16,7 @@ import ru.rerumu.backups.repositories.ZFSSnapshotRepository;
 import ru.rerumu.backups.repositories.impl.FilePartRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.ZFSFileSystemRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.ZFSSnapshotRepositoryImpl;
+import ru.rerumu.backups.repositories.RemoteBackupRepository;
 import ru.rerumu.backups.services.*;
 import ru.rerumu.backups.services.impl.*;
 import ru.rerumu.backups.zfs_api.ProcessWrapper;
@@ -244,11 +246,11 @@ public class TestBackupRestore {
 //    private List<ByteArrayOutputStream> byteArrayOutputStreamList;
     private List<byte[]> resBytes;
 
-    private BackupController setupBackup(Path backupDir, Path restoreDir) throws IOException, NoSuchAlgorithmException, InterruptedException, IncorrectHashException {
+    private BackupController setupBackup(Path backupDir, Path restoreDir) throws IOException, NoSuchAlgorithmException, InterruptedException, IncorrectHashException, S3MissesFileException {
         FilePartRepository filePartRepository = new FilePartRepositoryImpl(backupDir);
 
         // s3Loader
-        S3Loader s3Loader = Mockito.mock(S3Loader.class);
+        RemoteBackupRepository remoteBackupRepository = Mockito.mock(RemoteBackupRepository.class);
 //        List<String> sentFiles = new ArrayList<>();
 
         Mockito.doAnswer(invocationOnMock -> {
@@ -259,24 +261,24 @@ public class TestBackupRestore {
                 Thread.sleep(1000);
             }
             return null;
-        }).when(s3Loader).upload(Mockito.any(), Mockito.any());
-        Mockito.when(s3Loader.objectsListForDataset("ExternalPool"))
-                .thenReturn(
-                        List.of(
-                                "ExternalPool@auto-20220326-150000.part0",
-                                "ExternalPool@auto-20220326-150000__ExternalPool@auto-2022.03.27-06.00.00.part0",
-                                "ExternalPool@auto-2022.03.27-06.00.00__ExternalPool@auto-20220327-150000.part0"
-                        )
-                );
-        Mockito.when(s3Loader.objectsListForDataset("ExternalPool-Applications"))
-                .thenReturn(
-                        List.of(
-                                "ExternalPool-Applications@auto-20220326-150000.part0",
-                                "ExternalPool-Applications@auto-20220326-150000.part1",
-                                "ExternalPool-Applications@auto-20220326-150000__ExternalPool-Applications@auto-2022.03.27-06.00.00.part0",
-                                "ExternalPool-Applications@auto-2022.03.27-06.00.00__ExternalPool-Applications@auto-20220327-150000.part0"
-                        )
-                );
+        }).when(remoteBackupRepository).add(Mockito.any(), Mockito.any());
+//        Mockito.when(remoteBackupRepository.objectsListForDataset("ExternalPool"))
+//                .thenReturn(
+//                        List.of(
+//                                "ExternalPool@auto-20220326-150000.part0",
+//                                "ExternalPool@auto-20220326-150000__ExternalPool@auto-2022.03.27-06.00.00.part0",
+//                                "ExternalPool@auto-2022.03.27-06.00.00__ExternalPool@auto-20220327-150000.part0"
+//                        )
+//                );
+//        Mockito.when(remoteBackupRepository.objectsListForDataset("ExternalPool-Applications"))
+//                .thenReturn(
+//                        List.of(
+//                                "ExternalPool-Applications@auto-20220326-150000.part0",
+//                                "ExternalPool-Applications@auto-20220326-150000.part1",
+//                                "ExternalPool-Applications@auto-20220326-150000__ExternalPool-Applications@auto-2022.03.27-06.00.00.part0",
+//                                "ExternalPool-Applications@auto-2022.03.27-06.00.00__ExternalPool-Applications@auto-20220327-150000.part0"
+//                        )
+//                );
 
 
         // zfsListFilesystems
@@ -379,7 +381,7 @@ public class TestBackupRestore {
                 "84fBS1KsChnuaV0",
                 1070,
                 1024);
-        SnapshotSender snapshotSender = new SnapshotSenderImpl(filePartRepository, s3Loader, zfsProcessFactory, zfsFileWriterFactory,
+        SnapshotSender snapshotSender = new SnapshotSenderImpl(filePartRepository, remoteBackupRepository, zfsProcessFactory, zfsFileWriterFactory,
                 true);
         ZFSBackupService zfsBackupService = new ZFSBackupService(
                 true,
@@ -451,7 +453,7 @@ public class TestBackupRestore {
     }
 
     @Test
-    void shouldBackupRestore(@TempDir Path backupDir, @TempDir Path restoreDir) throws IOException, NoSuchAlgorithmException, InterruptedException, IncorrectHashException, ExecutionException {
+    void shouldBackupRestore(@TempDir Path backupDir, @TempDir Path restoreDir) throws IOException, NoSuchAlgorithmException, InterruptedException, IncorrectHashException, ExecutionException, S3MissesFileException {
 
         BackupController backupController = setupBackup(backupDir,restoreDir);
         RestoreController restoreController = setupRestore(restoreDir);
