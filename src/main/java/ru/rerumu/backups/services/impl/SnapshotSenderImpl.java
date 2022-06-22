@@ -3,7 +3,7 @@ package ru.rerumu.backups.services.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.*;
-import ru.rerumu.backups.services.S3Loader;
+import ru.rerumu.backups.repositories.RemoteBackupRepository;
 import ru.rerumu.backups.services.ZFSFileWriter;
 import ru.rerumu.backups.services.ZFSFileWriterFactory;
 import ru.rerumu.backups.models.Snapshot;
@@ -24,7 +24,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
     private final Logger logger = LoggerFactory.getLogger(SnapshotSenderImpl.class);
 
     private final FilePartRepository filePartRepository;
-    private final S3Loader s3Loader;
+    private final RemoteBackupRepository remoteBackupRepository;
     private final ZFSProcessFactory zfsProcessFactory;
     private final ZFSFileWriterFactory zfsFileWriterFactory;
     private final boolean isLoadS3;
@@ -32,13 +32,13 @@ public class SnapshotSenderImpl implements SnapshotSender {
 
     public SnapshotSenderImpl(
             FilePartRepository filePartRepository,
-            S3Loader s3Loader,
+            RemoteBackupRepository remoteBackupRepository,
             ZFSProcessFactory zfsProcessFactory,
             ZFSFileWriterFactory zfsFileWriterFactory,
             boolean isLoadS3
     ) {
         this.filePartRepository = filePartRepository;
-        this.s3Loader = s3Loader;
+        this.remoteBackupRepository = remoteBackupRepository;
         this.zfsProcessFactory = zfsProcessFactory;
         this.zfsFileWriterFactory = zfsFileWriterFactory;
         this.isLoadS3 = isLoadS3;
@@ -50,10 +50,17 @@ public class SnapshotSenderImpl implements SnapshotSender {
 
     private void processCreatedFile(boolean isLoadS3,
                                     String datasetName,
-                                    Path path) throws IOException, InterruptedException, NoSuchAlgorithmException, IncorrectHashException {
+                                    Path path)
+            throws
+            IOException,
+            InterruptedException,
+            NoSuchAlgorithmException,
+            IncorrectHashException,
+            S3MissesFileException {
         if (isLoadS3) {
-            s3Loader.upload(datasetName, path);
-            sentFiles.add(path.getFileName().toString());
+//            s3Loader.upload(datasetName, path);
+            remoteBackupRepository.add(datasetName, path);
+//            sentFiles.add(path.getFileName().toString());
             filePartRepository.delete(path);
         } else {
             Path readyPath = filePartRepository.markReady(path);
@@ -68,7 +75,7 @@ public class SnapshotSenderImpl implements SnapshotSender {
     private void sendSingleSnapshot(ZFSSend zfsSend,
                                     String streamMark,
                                     String datasetName,
-                                    boolean isLoadS3) throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException {
+                                    boolean isLoadS3) throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
         int n = 0;
         ZFSFileWriter zfsFileWriter = zfsFileWriterFactory.getZFSFileWriter();
         while (true) {
@@ -93,8 +100,8 @@ public class SnapshotSenderImpl implements SnapshotSender {
         }
     }
 
-    private void sendBaseSnapshot(Snapshot baseSnapshot, S3Loader s3Loader, boolean isLoadS3)
-            throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException {
+    private void sendBaseSnapshot(Snapshot baseSnapshot, RemoteBackupRepository remoteBackupRepository, boolean isLoadS3)
+            throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException, S3MissesFileException {
         String streamMark = escapeSymbols(baseSnapshot.getDataset()) + "@" + baseSnapshot.getName();
         ZFSSend zfsSend = null;
         String datasetName = escapeSymbols(baseSnapshot.getDataset());
@@ -119,8 +126,8 @@ public class SnapshotSenderImpl implements SnapshotSender {
     }
 
 
-    private void sendIncrementalSnapshot(Snapshot baseSnapshot, Snapshot incrementalSnapshot, S3Loader s3Loader, boolean isLoadS3)
-            throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException {
+    private void sendIncrementalSnapshot(Snapshot baseSnapshot, Snapshot incrementalSnapshot, RemoteBackupRepository remoteBackupRepository, boolean isLoadS3)
+            throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException, S3MissesFileException {
         String streamMark = escapeSymbols(baseSnapshot.getDataset())
                 + "@" + baseSnapshot.getName()
                 + "__" + escapeSymbols(incrementalSnapshot.getDataset())
@@ -146,14 +153,14 @@ public class SnapshotSenderImpl implements SnapshotSender {
         }
     }
 
-    private void checkSent(String datasetName) throws S3MissesFileException {
-        List<String> files = s3Loader.objectsListForDataset(datasetName);
-        logger.info(String.format("Sent files: %s",sentFiles));
-        logger.info(String.format("Found files on S3: %s",files));
-        if (!files.containsAll(sentFiles)){
-            throw new S3MissesFileException();
-        }
-    }
+//    private void checkSent(String datasetName) throws S3MissesFileException {
+//        List<String> files = s3Loader.objectsListForDataset(datasetName);
+//        logger.info(String.format("Sent files: %s",sentFiles));
+//        logger.info(String.format("Found files on S3: %s",files));
+//        if (!files.containsAll(sentFiles)){
+//            throw new S3MissesFileException();
+//        }
+//    }
 
     @Override
     public void sendStartingFromFull(String datasetName, List<Snapshot> snapshotList) throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException, S3MissesFileException {
@@ -162,17 +169,17 @@ public class SnapshotSenderImpl implements SnapshotSender {
         Snapshot previousSnapshot = null;
         for (Snapshot snapshot : snapshotList) {
             if (!isBaseSent) {
-                sendBaseSnapshot(snapshot, s3Loader, isLoadS3);
+                sendBaseSnapshot(snapshot, remoteBackupRepository, isLoadS3);
                 isBaseSent = true;
                 previousSnapshot = snapshot;
                 continue;
             }
-            sendIncrementalSnapshot(previousSnapshot, snapshot, s3Loader, isLoadS3);
+            sendIncrementalSnapshot(previousSnapshot, snapshot, remoteBackupRepository, isLoadS3);
             previousSnapshot = snapshot;
 
         }
-        checkSent(escapeSymbols(datasetName));
-        sentFiles.clear();
+//        checkSent(escapeSymbols(datasetName));
+//        sentFiles.clear();
     }
 
     @Override
@@ -186,12 +193,12 @@ public class SnapshotSenderImpl implements SnapshotSender {
                 previousSnapshot = snapshot;
                 continue;
             }
-            sendIncrementalSnapshot(previousSnapshot, snapshot, s3Loader, isLoadS3);
+            sendIncrementalSnapshot(previousSnapshot, snapshot, remoteBackupRepository, isLoadS3);
             previousSnapshot = snapshot;
 
         }
-        checkSent(escapeSymbols(datasetName));
-        sentFiles.clear();
+//        checkSent(escapeSymbols(datasetName));
+//        sentFiles.clear();
     }
 
 }

@@ -1,14 +1,18 @@
-package ru.rerumu.backups.services.impl;
+package ru.rerumu.backups.repositories.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.IncorrectHashException;
+import ru.rerumu.backups.exceptions.S3MissesFileException;
 import ru.rerumu.backups.models.S3Storage;
-import ru.rerumu.backups.services.S3Loader;
+import ru.rerumu.backups.repositories.RemoteBackupRepository;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-//import software.amazon.awssdk.transfer.s3.*;
-import software.amazon.awssdk.services.s3.*;
-import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
+import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
+import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
+import software.amazon.awssdk.services.s3.model.S3Object;
 import org.apache.commons.codec.binary.Hex;
 
 
@@ -20,20 +24,20 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.List;
 
-public class S3LoaderImpl implements S3Loader {
+public class S3Repository implements RemoteBackupRepository {
 
-    private final List<S3Storage> storages = new ArrayList<>();
-    private final Logger logger = LoggerFactory.getLogger(S3LoaderImpl.class);
+    private final List<S3Storage> storages;
+    private final Logger logger = LoggerFactory.getLogger(S3Repository.class);
 
-    @Override
-    public void addStorage(S3Storage s3Storage) {
-        storages.add(s3Storage);
+    public S3Repository(final List<S3Storage> s3Storages) {
+        this.storages = s3Storages;
     }
 
-    private String getMD5(Path path) throws NoSuchAlgorithmException, IOException {
+    private String getMD5(final Path path)
+            throws NoSuchAlgorithmException,
+            IOException {
         MessageDigest md = MessageDigest.getInstance("MD5");
         try (InputStream inputStream = Files.newInputStream(path);
              BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream)) {
@@ -43,8 +47,11 @@ public class S3LoaderImpl implements S3Loader {
         }
     }
 
-    @Override
-    public void upload(String datasetName, Path path) throws IOException, NoSuchAlgorithmException, IncorrectHashException {
+    private void upload(final String datasetName, final Path path)
+            throws
+            IOException,
+            NoSuchAlgorithmException,
+            IncorrectHashException {
         // TODO: Check we have storages added
         for (S3Storage s3Storage : storages) {
             logger.info(String.format("Uploading file %s", path.toString()));
@@ -75,8 +82,24 @@ public class S3LoaderImpl implements S3Loader {
         }
     }
 
-    public List<String> objectsListForDataset(String datasetName) {
-        List<String> objects = new ArrayList<>();
+    @Override
+    public void add(final String datasetName, final Path path)
+            throws
+            IOException,
+            NoSuchAlgorithmException,
+            IncorrectHashException,
+            S3MissesFileException {
+        upload(datasetName, path);
+        logger.info(String.format("Checking sent file '%s'", path.getFileName().toString()));
+        if (!isFileExists(datasetName, path.getFileName().toString())) {
+            logger.error(String.format("File '%s' not found on S3", path.getFileName().toString()));
+            throw new S3MissesFileException();
+        }
+        logger.info(String.format("File '%s' found on S3", path.getFileName().toString()));
+    }
+
+    @Override
+    public boolean isFileExists(final String datasetName, final String filename) {
 
         for (S3Storage s3Storage : storages) {
             S3Client s3Client = S3Client.builder()
@@ -85,7 +108,7 @@ public class S3LoaderImpl implements S3Loader {
                     .credentialsProvider(StaticCredentialsProvider.create(s3Storage.getCredentials()))
                     .build();
 
-            String prefix = s3Storage.getPrefix().toString() +"/"+datasetName;
+            String prefix = s3Storage.getPrefix().toString() + "/" + datasetName + "/" + filename;
 
             ListObjectsRequest listObjects = ListObjectsRequest.builder()
                     .bucket(s3Storage.getBucketName())
@@ -94,14 +117,21 @@ public class S3LoaderImpl implements S3Loader {
 
             ListObjectsResponse res = s3Client.listObjects(listObjects);
             List<S3Object> s3Objects = res.contents();
+            logger.info(String.format("Found on S3:\n'%s'", s3Objects));
 
+            if (s3Objects.size() > 1) {
+                throw new IllegalArgumentException();
+            }
 
             for (S3Object s3Object : s3Objects) {
                 String tmp = Paths.get(s3Object.key()).getFileName().toString();
-                objects.add(tmp);
+                if (tmp.equals(filename)) {
+                    return true;
+                }
             }
 
         }
-        return objects;
+        return false;
     }
+
 }

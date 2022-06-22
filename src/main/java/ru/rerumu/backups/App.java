@@ -11,8 +11,10 @@ import ru.rerumu.backups.repositories.FilePartRepository;
 import ru.rerumu.backups.repositories.ZFSFileSystemRepository;
 import ru.rerumu.backups.repositories.ZFSSnapshotRepository;
 import ru.rerumu.backups.repositories.impl.FilePartRepositoryImpl;
+import ru.rerumu.backups.repositories.impl.S3Repository;
 import ru.rerumu.backups.repositories.impl.ZFSFileSystemRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.ZFSSnapshotRepositoryImpl;
+import ru.rerumu.backups.repositories.RemoteBackupRepository;
 import ru.rerumu.backups.services.*;
 import ru.rerumu.backups.services.impl.*;
 import software.amazon.awssdk.regions.Region;
@@ -49,10 +51,8 @@ public class App {
                             new URI(configuration.getProperty("s3.endpoint_url")),
                             configuration.getProperty("s3.full.storage_class")
                     ));
-                    S3Loader s3Loader = new S3LoaderImpl();
-                    for (S3Storage s3Storage : s3StorageList) {
-                        s3Loader.addStorage(s3Storage);
-                    }
+                    S3Repository s3Repository = new S3Repository(s3StorageList);
+
                     ZFSProcessFactory zfsProcessFactory = new ZFSProcessFactoryImpl();
                     ZFSSnapshotRepository zfsSnapshotRepository = new ZFSSnapshotRepositoryImpl(zfsProcessFactory);
                     ZFSFileSystemRepository zfsFileSystemRepository = new ZFSFileSystemRepositoryImpl(zfsProcessFactory,zfsSnapshotRepository);
@@ -60,7 +60,7 @@ public class App {
                             configuration.getProperty("password"),
                             Integer.parseInt(configuration.getProperty("chunk.size")),
                             Long.parseLong(configuration.getProperty("file.part.size")));
-                    SnapshotSender snapshotSender = new SnapshotSenderImpl(filePartRepository, s3Loader,zfsProcessFactory,zfsFileWriterFactory,
+                    SnapshotSender snapshotSender = new SnapshotSenderImpl(filePartRepository, s3Repository,zfsProcessFactory,zfsFileWriterFactory,
                             Boolean.parseBoolean(configuration.getProperty("is.load.aws")));
 
                     ZFSBackupService zfsBackupService = new ZFSBackupService(
