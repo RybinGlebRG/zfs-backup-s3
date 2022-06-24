@@ -16,8 +16,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 // TODO: Test stream read after closed
 class TestStdProcessorRunnable {
 

@@ -28,7 +28,7 @@ import java.util.Random;
 
 public class TestS3Repository {
 
-//    @Disabled
+    @Disabled
     @Test
     void shouldSend(@TempDir Path tempDir) throws URISyntaxException, IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
@@ -69,7 +69,7 @@ public class TestS3Repository {
         Assertions.assertTrue(s3Repository.isFileExists(datasetName,generatedString1));
     }
 
-//    @Disabled
+    @Disabled
     @Test
     void shouldNotFind(@TempDir Path tempDir) throws URISyntaxException, IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
