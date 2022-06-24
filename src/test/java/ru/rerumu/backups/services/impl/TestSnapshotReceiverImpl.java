@@ -7,11 +7,11 @@ import ru.rerumu.backups.exceptions.CompressorException;
 import ru.rerumu.backups.exceptions.EncryptException;
 import ru.rerumu.backups.exceptions.IncorrectFilePartNameException;
 import ru.rerumu.backups.services.ZFSFileReader;
-import ru.rerumu.backups.services.ZFSFileReaderFactory;
+import ru.rerumu.backups.factories.ZFSFileReaderFactory;
 import ru.rerumu.backups.models.ZFSPool;
 import ru.rerumu.backups.repositories.FilePartRepository;
 import ru.rerumu.backups.services.SnapshotReceiver;
-import ru.rerumu.backups.services.ZFSProcessFactory;
+import ru.rerumu.backups.factories.ZFSProcessFactory;
 import ru.rerumu.backups.zfs_api.ZFSReceive;
 
 import java.io.EOFException;

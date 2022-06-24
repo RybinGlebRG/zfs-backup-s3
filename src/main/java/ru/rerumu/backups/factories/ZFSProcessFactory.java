@@ -1,4 +1,4 @@
-package ru.rerumu.backups.services;
+package ru.rerumu.backups.factories;
 
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSFileSystem;
@@ -15,5 +15,6 @@ public interface ZFSProcessFactory {
     ProcessWrapper getZFSListFilesystems(String parentFileSystem) throws IOException;
     ZFSReceive getZFSReceive(ZFSPool zfsPool) throws IOException;
     ZFSSend getZFSSendIncremental(Snapshot baseSnapshot, Snapshot incrementalSnapshot) throws IOException;
+//    ZFSSend getZFSSendMultiIncremental(Snapshot baseSnapshot, Snapshot incrementalSnapshot) throws IOException;
     ZFSSend getZFSSendFull(Snapshot snapshot) throws IOException;
 }

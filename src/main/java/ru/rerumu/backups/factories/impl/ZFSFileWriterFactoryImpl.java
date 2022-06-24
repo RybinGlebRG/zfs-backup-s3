@@ -1,7 +1,8 @@
-package ru.rerumu.backups.services.impl;
+package ru.rerumu.backups.factories.impl;
 
 import ru.rerumu.backups.services.ZFSFileWriter;
-import ru.rerumu.backups.services.ZFSFileWriterFactory;
+import ru.rerumu.backups.factories.ZFSFileWriterFactory;
+import ru.rerumu.backups.services.impl.ZFSFileWriterFull;
 
 public class ZFSFileWriterFactoryImpl implements ZFSFileWriterFactory {
     private final String password;

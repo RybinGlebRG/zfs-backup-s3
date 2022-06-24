@@ -6,15 +6,12 @@ import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSFileSystem;
 import ru.rerumu.backups.repositories.ZFSFileSystemRepository;
 import ru.rerumu.backups.repositories.ZFSSnapshotRepository;
-import ru.rerumu.backups.services.ZFSProcessFactory;
-import ru.rerumu.backups.services.impl.ZFSProcessFactoryImpl;
+import ru.rerumu.backups.factories.ZFSProcessFactory;
 import ru.rerumu.backups.zfs_api.ProcessWrapper;
-import ru.rerumu.backups.zfs_api.ZFSListFilesystems;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
