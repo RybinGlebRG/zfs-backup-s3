@@ -27,6 +27,11 @@ public class ZFSProcessFactoryImpl implements ZFSProcessFactory {
     }
 
     @Override
+    public ZFSGetDatasetProperty getZFSGetDatasetProperty(String datasetName, String propertyName) throws IOException {
+        return new ZFSGetDatasetPropertyImpl(propertyName, datasetName);
+    }
+
+    @Override
     public ZFSSend getZFSSendIncremental(Snapshot baseSnapshot, Snapshot incrementalSnapshot) throws IOException {
         if (isMultiIncremental){
             if (isNativeEncrypted) {

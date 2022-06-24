@@ -3,6 +3,7 @@ package ru.rerumu.backups.models;
 import ru.rerumu.backups.Generated;
 import ru.rerumu.backups.exceptions.BaseSnapshotNotFoundException;
 import ru.rerumu.backups.exceptions.SnapshotNotFoundException;
+import ru.rerumu.backups.models.zfs_dataset_properties.EncryptionProperty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,11 +13,17 @@ public class ZFSDataset {
 
     private final String name;
     private final List<Snapshot> snapshotList;
-    private boolean isEncrypted;
+    private EncryptionProperty encryption;
 
+    @Deprecated
     public ZFSDataset(String name, List<Snapshot> snapshotList){
         this.name = name;
         this.snapshotList = snapshotList;
+    }
+    public ZFSDataset(String name, List<Snapshot> snapshotList,EncryptionProperty encryptionProperty){
+        this.name = name;
+        this.snapshotList = snapshotList;
+        this.encryption = encryptionProperty;
     }
 
     public String getName() {
@@ -88,8 +95,12 @@ public class ZFSDataset {
         return false;
     }
 
-    public boolean isEncrypted() {
-        return isEncrypted;
+    public boolean isEncryptionEnabled() {
+        return encryption.equals(EncryptionProperty.ON);
+    }
+
+    public void setEncryption(EncryptionProperty encryption) {
+        this.encryption = encryption;
     }
 
     @Generated
@@ -98,6 +109,7 @@ public class ZFSDataset {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ZFSDataset that = (ZFSDataset) o;
+        // TODO: Should check encryption
         return name.equals(that.name) && snapshotList.equals(that.snapshotList);
     }
 

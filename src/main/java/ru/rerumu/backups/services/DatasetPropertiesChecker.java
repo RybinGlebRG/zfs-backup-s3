@@ -11,7 +11,7 @@ public class DatasetPropertiesChecker {
     }
 
     public void check(ZFSDataset zfsDataset) throws IncompatibleDatasetException {
-        if (isNativeEncrypted && !zfsDataset.isEncrypted()){
+        if (isNativeEncrypted && !zfsDataset.isEncryptionEnabled()){
             throw new IncompatibleDatasetException();
         }
     }
