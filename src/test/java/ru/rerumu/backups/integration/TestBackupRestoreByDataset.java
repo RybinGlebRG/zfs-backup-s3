@@ -18,14 +18,16 @@ import ru.rerumu.backups.factories.impl.ZFSFileWriterFactoryImpl;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSPool;
 import ru.rerumu.backups.repositories.FilePartRepository;
+import ru.rerumu.backups.repositories.RemoteBackupRepository;
 import ru.rerumu.backups.repositories.ZFSFileSystemRepository;
 import ru.rerumu.backups.repositories.ZFSSnapshotRepository;
 import ru.rerumu.backups.repositories.impl.FilePartRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.ZFSFileSystemRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.ZFSSnapshotRepositoryImpl;
-import ru.rerumu.backups.repositories.RemoteBackupRepository;
-import ru.rerumu.backups.services.*;
-import ru.rerumu.backups.services.impl.*;
+import ru.rerumu.backups.services.SnapshotReceiver;
+import ru.rerumu.backups.services.ZFSBackupService;
+import ru.rerumu.backups.services.ZFSRestoreService;
+import ru.rerumu.backups.services.impl.SnapshotReceiverImpl;
 import ru.rerumu.backups.zfs_api.ProcessWrapper;
 import ru.rerumu.backups.zfs_api.ZFSReceive;
 import ru.rerumu.backups.zfs_api.ZFSSend;
@@ -44,7 +46,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-public class TestBackupRestore {
+public class TestBackupRestoreByDataset {
 
     private byte[] randomBytes(int n) {
         byte[] bytes = new byte[n];
@@ -107,9 +109,7 @@ public class TestBackupRestore {
         // ExternalPool
         zfsSendList.add(Mockito.mock(ZFSSend.class));
         zfsSendList.add(Mockito.mock(ZFSSend.class));
-        zfsSendList.add(Mockito.mock(ZFSSend.class));
         // ExternalPool/Applications
-        zfsSendList.add(Mockito.mock(ZFSSend.class));
         zfsSendList.add(Mockito.mock(ZFSSend.class));
         zfsSendList.add(Mockito.mock(ZFSSend.class));
 
@@ -117,10 +117,8 @@ public class TestBackupRestore {
         // ExternalPool
         srcBytesList.add(randomBytes(250));
         srcBytesList.add(randomBytes(250));
-        srcBytesList.add(randomBytes(250));
         // ExternalPool/Applications
         srcBytesList.add(randomBytes(2000));
-        srcBytesList.add(randomBytes(250));
         srcBytesList.add(randomBytes(250));
 
         for (int i = 0; i < zfsSendList.size(); i++) {
@@ -146,24 +144,17 @@ public class TestBackupRestore {
         )).thenReturn(zfsSendList.get(0));
         Mockito.when(zfsProcessFactory.getZFSSendIncremental(
                 new Snapshot("ExternalPool@auto-20220326-150000"),
-                new Snapshot("ExternalPool@auto-2022.03.27-06.00.00")
-        )).thenReturn(zfsSendList.get(1));
-        Mockito.when(zfsProcessFactory.getZFSSendIncremental(
-                new Snapshot("ExternalPool@auto-2022.03.27-06.00.00"),
                 new Snapshot("ExternalPool@auto-20220327-150000")
-        )).thenReturn(zfsSendList.get(2));
+        )).thenReturn(zfsSendList.get(1));
+
 
         Mockito.when(zfsProcessFactory.getZFSSendFull(
                 new Snapshot("ExternalPool/Applications@auto-20220326-150000")
-        )).thenReturn(zfsSendList.get(3));
+        )).thenReturn(zfsSendList.get(2));
         Mockito.when(zfsProcessFactory.getZFSSendIncremental(
                 new Snapshot("ExternalPool/Applications@auto-20220326-150000"),
-                new Snapshot("ExternalPool/Applications@auto-2022.03.27-06.00.00")
-        )).thenReturn(zfsSendList.get(4));
-        Mockito.when(zfsProcessFactory.getZFSSendIncremental(
-                new Snapshot("ExternalPool/Applications@auto-2022.03.27-06.00.00"),
                 new Snapshot("ExternalPool/Applications@auto-20220327-150000")
-        )).thenReturn(zfsSendList.get(5));
+        )).thenReturn(zfsSendList.get(3));
 
 
         ZFSSnapshotRepository zfsSnapshotRepository = new ZFSSnapshotRepositoryImpl(zfsProcessFactory);
@@ -246,10 +237,12 @@ public class TestBackupRestore {
         return restoreController;
     }
 
-    @Test
-    void shouldBackupRestoreBySnapshot(@TempDir Path backupDir, @TempDir Path restoreDir) throws IOException, NoSuchAlgorithmException, InterruptedException, IncorrectHashException, ExecutionException, S3MissesFileException {
 
-        BackupController backupController = setupBackup(backupDir,restoreDir,false);
+
+    @Test
+    void shouldBackupRestoreByDataset(@TempDir Path backupDir, @TempDir Path restoreDir) throws IOException, NoSuchAlgorithmException, InterruptedException, IncorrectHashException, ExecutionException, S3MissesFileException {
+
+        BackupController backupController = setupBackup(backupDir,restoreDir,true);
         RestoreController restoreController = setupRestore(restoreDir);
 
         ExecutorService executorService = Executors.newFixedThreadPool(2);
@@ -257,9 +250,7 @@ public class TestBackupRestore {
             backupController.backupFull("ExternalPool@auto-20220327-150000");
         });
 
-        Future<?> restoreFuture = executorService.submit( () -> {
-            restoreController.restore();
-        });
+        Future<?> restoreFuture = executorService.submit(restoreController::restore);
 
         backupFuture.get();
 

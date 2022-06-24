@@ -42,12 +42,19 @@ public abstract class AbstractSnapshotSender implements SnapshotSender {
         this.isLoadS3 = isLoadS3;
     }
 
-    protected String escapeSymbols(String srcString) {
+    private String escapeSymbols(final String srcString) {
         return srcString.replace('/', '-');
     }
 
-    protected void processCreatedFile(String datasetName,
-                                      Path path) throws IOException, InterruptedException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
+    private void processCreatedFile(
+            final String datasetName,
+            final Path path
+    )
+            throws IOException,
+            InterruptedException,
+            NoSuchAlgorithmException,
+            IncorrectHashException,
+            S3MissesFileException {
         if (isLoadS3) {
             remoteBackupRepository.add(datasetName, path);
             filePartRepository.delete(path);
@@ -61,9 +68,18 @@ public abstract class AbstractSnapshotSender implements SnapshotSender {
 
     }
 
-    protected void sendStream(ZFSSend zfsSend,
-                              String streamMark,
-                              String datasetName) throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
+    private void sendStream(
+            final ZFSSend zfsSend,
+            final String streamMark,
+            final String datasetName
+    )
+            throws InterruptedException,
+            CompressorException,
+            IOException,
+            EncryptException,
+            NoSuchAlgorithmException,
+            IncorrectHashException,
+            S3MissesFileException {
         int n = 0;
         ZFSFileWriter zfsFileWriter = zfsFileWriterFactory.getZFSFileWriter();
         while (true) {
@@ -88,7 +104,7 @@ public abstract class AbstractSnapshotSender implements SnapshotSender {
         }
     }
 
-    protected void sendBaseSnapshot(Snapshot baseSnapshot)
+    protected void sendBaseSnapshot(final Snapshot baseSnapshot)
             throws InterruptedException,
             CompressorException,
             IOException,
@@ -121,8 +137,8 @@ public abstract class AbstractSnapshotSender implements SnapshotSender {
 
 
     protected void sendIncrementalSnapshot(
-            Snapshot baseSnapshot,
-            Snapshot incrementalSnapshot
+            final Snapshot baseSnapshot,
+            final Snapshot incrementalSnapshot
     )
             throws InterruptedException,
             CompressorException,
@@ -156,7 +172,7 @@ public abstract class AbstractSnapshotSender implements SnapshotSender {
         }
     }
 
-    protected ZFSSend getIncrementalProcess(Snapshot baseSnapshot, Snapshot incrementalSnapshot) throws IOException {
+    protected ZFSSend getIncrementalProcess(Snapshot baseSnapshot, Snapshot incrementalSnapshot) throws IOException{
         return zfsProcessFactory.getZFSSendIncremental(baseSnapshot, incrementalSnapshot);
     }
 
@@ -172,7 +188,7 @@ public abstract class AbstractSnapshotSender implements SnapshotSender {
             S3MissesFileException;
 
     @Override
-    public abstract void sendStartingFromIncremental(String datasetName,List<Snapshot> snapshotList)
+    public abstract void sendStartingFromIncremental(String datasetName, List<Snapshot> snapshotList)
             throws InterruptedException,
             CompressorException,
             IOException,

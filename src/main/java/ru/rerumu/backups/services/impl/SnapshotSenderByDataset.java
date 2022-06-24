@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 
-// TODO: Test
 public class SnapshotSenderByDataset extends AbstractSnapshotSender {
     private final Logger logger = LoggerFactory.getLogger(SnapshotSenderByDataset.class);
 
@@ -38,44 +37,52 @@ public class SnapshotSenderByDataset extends AbstractSnapshotSender {
     }
 
     @Override
-    protected ZFSSend getIncrementalProcess(Snapshot baseSnapshot, Snapshot incrementalSnapshot) throws IOException {
-        // TODO: MultiIncremental
-        return super.getIncrementalProcess(baseSnapshot, incrementalSnapshot);
-    }
+    public void sendStartingFromFull(String datasetName, List<Snapshot> snapshotList)
+            throws InterruptedException,
+            CompressorException,
+            IOException,
+            EncryptException,
+            NoSuchAlgorithmException,
+            IncorrectHashException,
+            ExecutionException,
+            S3MissesFileException {
 
-    @Override
-    public void sendStartingFromFull(String datasetName, List<Snapshot> snapshotList) throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException, S3MissesFileException {
-        boolean isBaseSent = false;
+        if (snapshotList.size() <1){
+            throw new IllegalArgumentException();
+        }
 
-        Snapshot previousSnapshot = null;
-        for (Snapshot snapshot : snapshotList) {
-            if (!isBaseSent) {
-                sendBaseSnapshot(snapshot);
-                isBaseSent = true;
-                previousSnapshot = snapshot;
-                continue;
-            }
-            sendIncrementalSnapshot(previousSnapshot, snapshot);
-            previousSnapshot = snapshot;
+        Snapshot baseSnapshot = snapshotList.get(0);
+        Snapshot lastIncrementalSnapshot = null;
 
+        if (snapshotList.size()>1){
+            lastIncrementalSnapshot = snapshotList.get(snapshotList.size()-1);
+        }
+
+        sendBaseSnapshot(baseSnapshot);
+        if (lastIncrementalSnapshot!=null){
+            sendIncrementalSnapshot(baseSnapshot, lastIncrementalSnapshot);
         }
     }
 
     @Override
-    public void sendStartingFromIncremental(String datasetName,List<Snapshot> snapshotList) throws InterruptedException, CompressorException, IOException, EncryptException, NoSuchAlgorithmException, IncorrectHashException, ExecutionException, S3MissesFileException {
-        boolean isBaseSkipped = false;
+    public void sendStartingFromIncremental(String datasetName,List<Snapshot> snapshotList)
+            throws InterruptedException,
+            CompressorException,
+            IOException,
+            EncryptException,
+            NoSuchAlgorithmException,
+            IncorrectHashException,
+            ExecutionException,
+            S3MissesFileException {
 
-        Snapshot previousSnapshot = null;
-        for (Snapshot snapshot : snapshotList) {
-            if (!isBaseSkipped) {
-                isBaseSkipped = true;
-                previousSnapshot = snapshot;
-                continue;
-            }
-            sendIncrementalSnapshot(previousSnapshot, snapshot);
-            previousSnapshot = snapshot;
-
+        if (snapshotList.size() <2){
+            throw new IllegalArgumentException();
         }
+
+        Snapshot baseSnapshot = snapshotList.get(0);
+        Snapshot lastIncrementalSnapshot = snapshotList.get(snapshotList.size()-1);
+
+        sendIncrementalSnapshot(baseSnapshot, lastIncrementalSnapshot);
     }
 
 }
