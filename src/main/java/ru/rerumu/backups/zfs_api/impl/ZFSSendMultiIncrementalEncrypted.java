@@ -9,11 +9,11 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
-public class ZFSSendIncrementalEncrypted extends ProcessWrapperImpl implements ZFSSend {
-    protected final Logger logger = LoggerFactory.getLogger(ZFSSendIncrementalEncrypted.class);
+public class ZFSSendMultiIncrementalEncrypted extends ProcessWrapperImpl implements ZFSSend {
+    protected final Logger logger = LoggerFactory.getLogger(ZFSSendMultiIncrementalEncrypted.class);
 
-    public ZFSSendIncrementalEncrypted(Snapshot baseSnapshot, Snapshot incrementalSnapshot) throws IOException {
-        super(Arrays.asList("zfs", "send", "-vpPiw", baseSnapshot.getFullName(), incrementalSnapshot.getFullName()));
+    public ZFSSendMultiIncrementalEncrypted(Snapshot baseSnapshot, Snapshot incrementalSnapshot) throws IOException {
+        super(Arrays.asList("zfs", "send", "-vpPIw", baseSnapshot.getFullName(), incrementalSnapshot.getFullName()));
 
         setStderrProcessor(logger::debug);
     }

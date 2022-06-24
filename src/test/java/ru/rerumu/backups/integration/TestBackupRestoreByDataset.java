@@ -24,6 +24,7 @@ import ru.rerumu.backups.repositories.ZFSSnapshotRepository;
 import ru.rerumu.backups.repositories.impl.FilePartRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.ZFSFileSystemRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.ZFSSnapshotRepositoryImpl;
+import ru.rerumu.backups.services.DatasetPropertiesChecker;
 import ru.rerumu.backups.services.SnapshotReceiver;
 import ru.rerumu.backups.services.ZFSBackupService;
 import ru.rerumu.backups.services.ZFSRestoreService;
@@ -169,9 +170,9 @@ public class TestBackupRestoreByDataset {
                 true
         );
         ZFSBackupService zfsBackupService = new ZFSBackupService(
-                true,
                 zfsFileSystemRepository,
-                snapshotSenderFactory.getSnapshotSender()
+                snapshotSenderFactory.getSnapshotSender(),
+                new DatasetPropertiesChecker(false)
         );
         BackupController backupController = new BackupController(zfsBackupService);
         return backupController;

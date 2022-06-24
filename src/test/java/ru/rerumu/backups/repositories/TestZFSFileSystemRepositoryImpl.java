@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import ru.rerumu.backups.models.Snapshot;
-import ru.rerumu.backups.models.ZFSFileSystem;
+import ru.rerumu.backups.models.ZFSDataset;
 import ru.rerumu.backups.repositories.impl.ZFSFileSystemRepositoryImpl;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
 import ru.rerumu.backups.zfs_api.ProcessWrapper;
@@ -55,7 +55,7 @@ public class TestZFSFileSystemRepositoryImpl {
                 zfsProcessFactory,
                 zfsSnapshotRepository);
 
-        List<ZFSFileSystem> zfsFileSystemList = zfsFileSystemRepository.getFilesystemsTreeList("ExternalPool/Applications");
+        List<ZFSDataset> zfsDatasetList = zfsFileSystemRepository.getFilesystemsTreeList("ExternalPool/Applications");
 
 
 
@@ -69,11 +69,11 @@ public class TestZFSFileSystemRepositoryImpl {
         src2.add(new Snapshot("ExternalPool/Applications@auto-20210106-060000"));
         src2.add(new Snapshot("ExternalPool/Applications@auto-20210106-150000"));
 
-        List<ZFSFileSystem> src = new ArrayList<>();
-        src.add(new ZFSFileSystem("ExternalPool/Applications",src2));
-        src.add(new ZFSFileSystem("ExternalPool/Applications/virtual_box",src1));
+        List<ZFSDataset> src = new ArrayList<>();
+        src.add(new ZFSDataset("ExternalPool/Applications",src2));
+        src.add(new ZFSDataset("ExternalPool/Applications/virtual_box",src1));
 
 
-        Assertions.assertEquals(src,zfsFileSystemList);
+        Assertions.assertEquals(src, zfsDatasetList);
     }
 }

@@ -4,10 +4,7 @@ import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSPool;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
 import ru.rerumu.backups.zfs_api.*;
-import ru.rerumu.backups.zfs_api.impl.ZFSReceiveImpl;
-import ru.rerumu.backups.zfs_api.impl.ZFSSendFull;
-import ru.rerumu.backups.zfs_api.impl.ZFSSendIncremental;
-import ru.rerumu.backups.zfs_api.impl.ZFSSendMultiIncremental;
+import ru.rerumu.backups.zfs_api.impl.*;
 
 import java.io.IOException;
 
@@ -32,11 +29,17 @@ public class ZFSProcessFactoryImpl implements ZFSProcessFactory {
     @Override
     public ZFSSend getZFSSendIncremental(Snapshot baseSnapshot, Snapshot incrementalSnapshot) throws IOException {
         if (isMultiIncremental){
-            return new ZFSSendMultiIncremental(baseSnapshot, incrementalSnapshot);
-        } else if (isNativeEncrypted) {
-            return new ZFSSendIncrementalEncrypted(baseSnapshot,incrementalSnapshot);
+            if (isNativeEncrypted) {
+                return new ZFSSendMultiIncrementalEncrypted(baseSnapshot,incrementalSnapshot);
+            } else {
+                return new ZFSSendMultiIncremental(baseSnapshot, incrementalSnapshot);
+            }
         } else {
-            return new ZFSSendIncremental(baseSnapshot, incrementalSnapshot);
+            if (isNativeEncrypted){
+                throw new IllegalArgumentException();
+            } else {
+                return new ZFSSendIncremental(baseSnapshot, incrementalSnapshot);
+            }
         }
     }
 

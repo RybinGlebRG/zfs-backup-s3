@@ -8,12 +8,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class ZFSFileSystem {
+public class ZFSDataset {
 
     private final String name;
     private final List<Snapshot> snapshotList;
+    private boolean isEncrypted;
 
-    public ZFSFileSystem(String name, List<Snapshot> snapshotList){
+    public ZFSDataset(String name, List<Snapshot> snapshotList){
         this.name = name;
         this.snapshotList = snapshotList;
     }
@@ -87,12 +88,16 @@ public class ZFSFileSystem {
         return false;
     }
 
+    public boolean isEncrypted() {
+        return isEncrypted;
+    }
+
     @Generated
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ZFSFileSystem that = (ZFSFileSystem) o;
+        ZFSDataset that = (ZFSDataset) o;
         return name.equals(that.name) && snapshotList.equals(that.snapshotList);
     }
 

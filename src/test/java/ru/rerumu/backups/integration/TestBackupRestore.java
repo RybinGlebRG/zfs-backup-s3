@@ -183,9 +183,9 @@ public class TestBackupRestore {
                 true
         );
         ZFSBackupService zfsBackupService = new ZFSBackupService(
-                true,
                 zfsFileSystemRepository,
-                snapshotSenderFactory.getSnapshotSender()
+                snapshotSenderFactory.getSnapshotSender(),
+                new DatasetPropertiesChecker(false)
         );
         BackupController backupController = new BackupController(zfsBackupService);
         return backupController;

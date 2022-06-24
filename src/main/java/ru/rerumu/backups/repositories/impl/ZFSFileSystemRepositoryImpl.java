@@ -3,7 +3,7 @@ package ru.rerumu.backups.repositories.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.models.Snapshot;
-import ru.rerumu.backups.models.ZFSFileSystem;
+import ru.rerumu.backups.models.ZFSDataset;
 import ru.rerumu.backups.repositories.ZFSFileSystemRepository;
 import ru.rerumu.backups.repositories.ZFSSnapshotRepository;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
@@ -28,7 +28,7 @@ public class ZFSFileSystemRepositoryImpl implements ZFSFileSystemRepository {
     }
 
     @Override
-    public List<ZFSFileSystem> getFilesystemsTreeList(String fileSystemName) throws IOException, InterruptedException, ExecutionException {
+    public List<ZFSDataset> getFilesystemsTreeList(String fileSystemName) throws IOException, InterruptedException, ExecutionException {
         ProcessWrapper zfsListFilesystems = zfsProcessFactory.getZFSListFilesystems(fileSystemName);
         byte[] buf = zfsListFilesystems.getBufferedInputStream().readAllBytes();
         zfsListFilesystems.close();
@@ -37,16 +37,16 @@ public class ZFSFileSystemRepositoryImpl implements ZFSFileSystemRepository {
         logger.debug(String.format("Got filesystems: \n%s",str));
         String[] lines = str.split("\\n");
 
-        List<ZFSFileSystem> zfsFileSystemList = new ArrayList<>();
+        List<ZFSDataset> zfsDatasetList = new ArrayList<>();
 
         // Already sorted
         for (String line: lines){
             logger.debug(String.format("Getting snapshots for filesystem '%s'",line));
             List<Snapshot> snapshotList = zfsSnapshotRepository.getAllSnapshotsOrdered(line);
             logger.debug(String.format("Got snapshots: \n%s",snapshotList));
-            zfsFileSystemList.add(new ZFSFileSystem(line,snapshotList));
+            zfsDatasetList.add(new ZFSDataset(line,snapshotList));
         }
 
-        return zfsFileSystemList;
+        return zfsDatasetList;
     }
 }

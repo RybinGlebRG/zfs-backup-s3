@@ -8,7 +8,7 @@ import ru.rerumu.backups.exceptions.SnapshotNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TestZFSFileSystem {
+public class TestZFSDataset {
 
     @Test
     void shouldGetBaseSnapshot() throws BaseSnapshotNotFoundException {
@@ -18,8 +18,8 @@ public class TestZFSFileSystem {
         snapshotList.add(new Snapshot("ExternalPool/Applications@auto-20210106-060000"));
         snapshotList.add(new Snapshot("ExternalPool/Applications@auto-20210106-150000"));
 
-        ZFSFileSystem zfsFileSystem = new ZFSFileSystem(fileSystemName, snapshotList);
-        Snapshot baseSnapshot = zfsFileSystem.getBaseSnapshot();
+        ZFSDataset zfsDataset = new ZFSDataset(fileSystemName, snapshotList);
+        Snapshot baseSnapshot = zfsDataset.getBaseSnapshot();
         Assertions.assertEquals(baseSnapshot, new Snapshot("ExternalPool/Applications@auto-20200321-173000"));
     }
 
@@ -32,9 +32,9 @@ public class TestZFSFileSystem {
         snapshotList.add(new Snapshot("ExternalPool/Applications@auto-20210106-150000"));
         snapshotList.add(new Snapshot("ExternalPool/Applications@auto-20210107-150000"));
         snapshotList.add(new Snapshot("ExternalPool/Applications@auto-20210108-150000"));
-        ZFSFileSystem zfsFileSystem = new ZFSFileSystem(fileSystemName, snapshotList);
+        ZFSDataset zfsDataset = new ZFSDataset(fileSystemName, snapshotList);
 
-        List<Snapshot> upperLimited = zfsFileSystem.getIncrementalSnapshots("auto-20210107-150000");
+        List<Snapshot> upperLimited = zfsDataset.getIncrementalSnapshots("auto-20210107-150000");
 
         List<Snapshot> should = new ArrayList<>();
         should.add(new Snapshot("ExternalPool/Applications@auto-20210106-060000"));
@@ -54,9 +54,9 @@ public class TestZFSFileSystem {
         snapshotList.add(new Snapshot("ExternalPool/Applications@auto-20210106-150000"));
         snapshotList.add(new Snapshot("ExternalPool/Applications@auto-20210107-150000"));
         snapshotList.add(new Snapshot("ExternalPool/Applications@auto-20210108-150000"));
-        ZFSFileSystem zfsFileSystem = new ZFSFileSystem(fileSystemName, snapshotList);
+        ZFSDataset zfsDataset = new ZFSDataset(fileSystemName, snapshotList);
 
-        List<Snapshot> upperLimited = zfsFileSystem.getIncrementalSnapshots(
+        List<Snapshot> upperLimited = zfsDataset.getIncrementalSnapshots(
                 "auto-20210106-150000",
                 "auto-20210107-150000");
 
@@ -77,12 +77,12 @@ public class TestZFSFileSystem {
         snapshotList.add(new Snapshot("ExternalPool/Applications@auto-20210106-150000"));
         snapshotList.add(new Snapshot("ExternalPool/Applications@auto-20210107-150000"));
         snapshotList.add(new Snapshot("ExternalPool/Applications@auto-20210108-150000"));
-        ZFSFileSystem zfsFileSystem = new ZFSFileSystem(fileSystemName, snapshotList);
+        ZFSDataset zfsDataset = new ZFSDataset(fileSystemName, snapshotList);
 
 
 
         Assertions.assertThrows(SnapshotNotFoundException.class, () -> {
-            zfsFileSystem.getIncrementalSnapshots("ExternalPool/Applications@auto-20210107-1500001");
+            zfsDataset.getIncrementalSnapshots("ExternalPool/Applications@auto-20210107-1500001");
         });
 
     }
@@ -96,10 +96,10 @@ public class TestZFSFileSystem {
         snapshotList.add(new Snapshot("ExternalPool/Applications@auto-20210106-150000"));
         snapshotList.add(new Snapshot("ExternalPool/Applications@auto-20210107-150000"));
         snapshotList.add(new Snapshot("ExternalPool/Applications@auto-20210108-150000"));
-        ZFSFileSystem zfsFileSystem = new ZFSFileSystem(fileSystemName, snapshotList);
+        ZFSDataset zfsDataset = new ZFSDataset(fileSystemName, snapshotList);
 
         Assertions.assertThrows(SnapshotNotFoundException.class, () -> {
-            zfsFileSystem.getIncrementalSnapshots(
+            zfsDataset.getIncrementalSnapshots(
                     "ExternalPool/Applications@auto-20210106-150000",
                     "ExternalPool/Applications@auto-20210107-1500008");
         });
@@ -115,10 +115,10 @@ public class TestZFSFileSystem {
         snapshotList.add(new Snapshot("ExternalPool/Applications@auto-20210106-150000"));
         snapshotList.add(new Snapshot("ExternalPool/Applications@auto-20210107-150000"));
         snapshotList.add(new Snapshot("ExternalPool/Applications@auto-20210108-150000"));
-        ZFSFileSystem zfsFileSystem = new ZFSFileSystem(fileSystemName, snapshotList);
+        ZFSDataset zfsDataset = new ZFSDataset(fileSystemName, snapshotList);
 
         Assertions.assertThrows(SnapshotNotFoundException.class, () -> {
-            zfsFileSystem.getIncrementalSnapshots(
+            zfsDataset.getIncrementalSnapshots(
                     "ExternalPool/Applications@auto-20210106-1500009",
                     "ExternalPool/Applications@auto-20210107-150000");
         });
@@ -134,10 +134,10 @@ public class TestZFSFileSystem {
         snapshotList.add(new Snapshot("ExternalPool/Applications@auto-20210106-150000"));
         snapshotList.add(new Snapshot("ExternalPool/Applications@auto-20210107-150000"));
         snapshotList.add(new Snapshot("ExternalPool/Applications@auto-20210108-150000"));
-        ZFSFileSystem zfsFileSystem = new ZFSFileSystem(fileSystemName, snapshotList);
+        ZFSDataset zfsDataset = new ZFSDataset(fileSystemName, snapshotList);
 
         Assertions.assertThrows(SnapshotNotFoundException.class, () -> {
-            zfsFileSystem.getIncrementalSnapshots(
+            zfsDataset.getIncrementalSnapshots(
                     "ExternalPool/Applications@auto-20210106-1500009",
                     "ExternalPool/Applications@auto-20210107-1500008");
         });
@@ -148,9 +148,9 @@ public class TestZFSFileSystem {
     void shouldNotFindBaseSnapshot() {
         String fileSystemName = "ExternalPool/Applications";
         List<Snapshot> snapshotList = new ArrayList<>();
-        ZFSFileSystem zfsFileSystem = new ZFSFileSystem(fileSystemName, snapshotList);
+        ZFSDataset zfsDataset = new ZFSDataset(fileSystemName, snapshotList);
 
-        Assertions.assertThrows(BaseSnapshotNotFoundException.class, zfsFileSystem::getBaseSnapshot);
+        Assertions.assertThrows(BaseSnapshotNotFoundException.class, zfsDataset::getBaseSnapshot);
 
     }
 }
