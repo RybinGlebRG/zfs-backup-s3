@@ -53,15 +53,15 @@ public class ZFSFileSystemRepositoryImpl implements ZFSFileSystemRepository {
         }
     }
 
-    private CompressionProperty getCompression(String datasetName)
-            throws IOException, ExecutionException, InterruptedException {
-        String tmp = getProperty("compression",datasetName);
-        if (tmp.equals("lz4")){
-            return CompressionProperty.LZ4;
-        } else {
-            throw new IllegalArgumentException();
-        }
-    }
+//    private CompressionProperty getCompression(String datasetName)
+//            throws IOException, ExecutionException, InterruptedException {
+//        String tmp = getProperty("compression",datasetName);
+//        if (tmp.equals("lz4")){
+//            return CompressionProperty.LZ4;
+//        } else {
+//            throw new IllegalArgumentException();
+//        }
+//    }
 
     @Override
     public List<ZFSDataset> getFilesystemsTreeList(String fileSystemName) throws IOException, InterruptedException, ExecutionException {

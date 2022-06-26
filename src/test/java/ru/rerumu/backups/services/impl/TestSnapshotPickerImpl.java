@@ -6,6 +6,7 @@ import ru.rerumu.backups.exceptions.BaseSnapshotNotFoundException;
 import ru.rerumu.backups.exceptions.SnapshotNotFoundException;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSDataset;
+import ru.rerumu.backups.models.zfs_dataset_properties.EncryptionProperty;
 import ru.rerumu.backups.services.SnapshotPicker;
 
 import java.util.List;
@@ -21,7 +22,8 @@ class TestSnapshotPickerImpl {
                         new Snapshot("ExternalPool@auto-20220327-060000"),
                         new Snapshot("ExternalPool@auto-20220327-150000"),
                         new Snapshot("ExternalPool@auto-20220328-150000")
-                )
+                ),
+                EncryptionProperty.ON
         );
 
         SnapshotPicker snapshotPicker = new SnapshotPickerImpl();
@@ -43,7 +45,8 @@ class TestSnapshotPickerImpl {
                         new Snapshot("ExternalPool@auto-20220327-060000"),
                         new Snapshot("ExternalPool@auto-20220327-150000"),
                         new Snapshot("ExternalPool@auto-20220328-150000")
-                )
+                ),
+                EncryptionProperty.ON
         );
 
         SnapshotPicker snapshotPicker = new SnapshotPickerImpl();
@@ -67,7 +70,8 @@ class TestSnapshotPickerImpl {
                         new Snapshot("ExternalPool@auto-20220327-060000"),
                         new Snapshot("ExternalPool@auto-20220327-150000"),
                         new Snapshot("ExternalPool@auto-20220328-150000")
-                )
+                ),
+                EncryptionProperty.ON
         );
 
         SnapshotPicker snapshotPicker = new SnapshotPickerImpl();

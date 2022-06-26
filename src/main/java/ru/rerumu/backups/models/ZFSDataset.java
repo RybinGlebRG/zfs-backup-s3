@@ -13,13 +13,8 @@ public class ZFSDataset {
 
     private final String name;
     private final List<Snapshot> snapshotList;
-    private EncryptionProperty encryption;
+    private final EncryptionProperty encryption;
 
-    @Deprecated
-    public ZFSDataset(String name, List<Snapshot> snapshotList){
-        this.name = name;
-        this.snapshotList = snapshotList;
-    }
     public ZFSDataset(String name, List<Snapshot> snapshotList,EncryptionProperty encryptionProperty){
         this.name = name;
         this.snapshotList = snapshotList;
@@ -99,9 +94,9 @@ public class ZFSDataset {
         return encryption.equals(EncryptionProperty.ON);
     }
 
-    public void setEncryption(EncryptionProperty encryption) {
-        this.encryption = encryption;
-    }
+//    public void setEncryption(EncryptionProperty encryption) {
+//        this.encryption = encryption;
+//    }
 
     @Generated
     @Override
@@ -110,7 +105,7 @@ public class ZFSDataset {
         if (o == null || getClass() != o.getClass()) return false;
         ZFSDataset that = (ZFSDataset) o;
         // TODO: Should check encryption
-        return name.equals(that.name) && snapshotList.equals(that.snapshotList);
+        return name.equals(that.name) && snapshotList.equals(that.snapshotList) && encryption.equals(that.encryption);
     }
 
     @Generated

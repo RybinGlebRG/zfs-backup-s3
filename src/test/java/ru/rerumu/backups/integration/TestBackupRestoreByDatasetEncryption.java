@@ -8,11 +8,6 @@ import org.mockito.Mockito;
 import ru.rerumu.backups.controllers.BackupController;
 import ru.rerumu.backups.controllers.RestoreController;
 import ru.rerumu.backups.exceptions.IncorrectHashException;
-import ru.rerumu.backups.factories.ZFSFileReaderFactory;
-import ru.rerumu.backups.factories.ZFSFileWriterFactory;
-import ru.rerumu.backups.factories.ZFSProcessFactory;
-import ru.rerumu.backups.factories.impl.ZFSFileReaderFactoryImpl;
-import ru.rerumu.backups.factories.impl.ZFSFileWriterFactoryImpl;
 import ru.rerumu.backups.exceptions.S3MissesFileException;
 import ru.rerumu.backups.factories.SnapshotSenderFactory;
 import ru.rerumu.backups.factories.ZFSFileReaderFactory;
@@ -24,14 +19,17 @@ import ru.rerumu.backups.factories.impl.ZFSFileWriterFactoryImpl;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSPool;
 import ru.rerumu.backups.repositories.FilePartRepository;
+import ru.rerumu.backups.repositories.RemoteBackupRepository;
 import ru.rerumu.backups.repositories.ZFSFileSystemRepository;
 import ru.rerumu.backups.repositories.ZFSSnapshotRepository;
 import ru.rerumu.backups.repositories.impl.FilePartRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.ZFSFileSystemRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.ZFSSnapshotRepositoryImpl;
-import ru.rerumu.backups.repositories.RemoteBackupRepository;
-import ru.rerumu.backups.services.*;
-import ru.rerumu.backups.services.impl.*;
+import ru.rerumu.backups.services.DatasetPropertiesChecker;
+import ru.rerumu.backups.services.SnapshotReceiver;
+import ru.rerumu.backups.services.ZFSBackupService;
+import ru.rerumu.backups.services.ZFSRestoreService;
+import ru.rerumu.backups.services.impl.SnapshotReceiverImpl;
 import ru.rerumu.backups.zfs_api.ProcessWrapper;
 import ru.rerumu.backups.zfs_api.ZFSGetDatasetProperty;
 import ru.rerumu.backups.zfs_api.ZFSReceive;
@@ -54,7 +52,7 @@ import java.util.concurrent.Future;
 import static org.mockito.Matchers.eq;
 
 //@Disabled
-public class TestBackupRestore {
+public class TestBackupRestoreByDatasetEncryption {
 
     private byte[] randomBytes(int n) {
         byte[] bytes = new byte[n];
@@ -66,7 +64,11 @@ public class TestBackupRestore {
     private List<byte[]> resBytes;
 
     private BackupController setupBackup(Path backupDir, Path restoreDir, boolean isMultiIncremental)
-            throws IOException, NoSuchAlgorithmException, InterruptedException, IncorrectHashException, S3MissesFileException {
+            throws IOException,
+            NoSuchAlgorithmException,
+            InterruptedException,
+            IncorrectHashException,
+            S3MissesFileException {
         FilePartRepository filePartRepository = new FilePartRepositoryImpl(backupDir);
 
         // s3Loader
@@ -117,9 +119,7 @@ public class TestBackupRestore {
         // ExternalPool
         zfsSendList.add(Mockito.mock(ZFSSend.class));
         zfsSendList.add(Mockito.mock(ZFSSend.class));
-        zfsSendList.add(Mockito.mock(ZFSSend.class));
         // ExternalPool/Applications
-        zfsSendList.add(Mockito.mock(ZFSSend.class));
         zfsSendList.add(Mockito.mock(ZFSSend.class));
         zfsSendList.add(Mockito.mock(ZFSSend.class));
 
@@ -127,10 +127,8 @@ public class TestBackupRestore {
         // ExternalPool
         srcBytesList.add(randomBytes(250));
         srcBytesList.add(randomBytes(250));
-        srcBytesList.add(randomBytes(250));
         // ExternalPool/Applications
         srcBytesList.add(randomBytes(2000));
-        srcBytesList.add(randomBytes(250));
         srcBytesList.add(randomBytes(250));
 
         for (int i = 0; i < zfsSendList.size(); i++) {
@@ -155,38 +153,30 @@ public class TestBackupRestore {
         Mockito.when(zfsProcessFactory.getZFSListFilesystems("ExternalPool"))
                 .thenReturn(zfsListFilesystems);
 
+        Mockito.when(zfsProcessFactory.getZFSGetDatasetProperty(Mockito.any(),eq("encryption")))
+                .thenReturn(zfsGetDatasetProperty);
+
         Mockito.when(zfsProcessFactory.getZFSListSnapshots("ExternalPool"))
                 .thenReturn(processWrappers.get(0));
         Mockito.when(zfsProcessFactory.getZFSListSnapshots("ExternalPool/Applications"))
                 .thenReturn(processWrappers.get(1));
-
-        Mockito.when(zfsProcessFactory.getZFSGetDatasetProperty(Mockito.any(),eq("encryption")))
-                .thenReturn(zfsGetDatasetProperty);
-
 
         Mockito.when(zfsProcessFactory.getZFSSendFull(
                 new Snapshot("ExternalPool@auto-20220326-150000")
         )).thenReturn(zfsSendList.get(0));
         Mockito.when(zfsProcessFactory.getZFSSendIncremental(
                 new Snapshot("ExternalPool@auto-20220326-150000"),
-                new Snapshot("ExternalPool@auto-2022.03.27-06.00.00")
-        )).thenReturn(zfsSendList.get(1));
-        Mockito.when(zfsProcessFactory.getZFSSendIncremental(
-                new Snapshot("ExternalPool@auto-2022.03.27-06.00.00"),
                 new Snapshot("ExternalPool@auto-20220327-150000")
-        )).thenReturn(zfsSendList.get(2));
+        )).thenReturn(zfsSendList.get(1));
+
 
         Mockito.when(zfsProcessFactory.getZFSSendFull(
                 new Snapshot("ExternalPool/Applications@auto-20220326-150000")
-        )).thenReturn(zfsSendList.get(3));
+        )).thenReturn(zfsSendList.get(2));
         Mockito.when(zfsProcessFactory.getZFSSendIncremental(
                 new Snapshot("ExternalPool/Applications@auto-20220326-150000"),
-                new Snapshot("ExternalPool/Applications@auto-2022.03.27-06.00.00")
-        )).thenReturn(zfsSendList.get(4));
-        Mockito.when(zfsProcessFactory.getZFSSendIncremental(
-                new Snapshot("ExternalPool/Applications@auto-2022.03.27-06.00.00"),
                 new Snapshot("ExternalPool/Applications@auto-20220327-150000")
-        )).thenReturn(zfsSendList.get(5));
+        )).thenReturn(zfsSendList.get(3));
 
 
         ZFSSnapshotRepository zfsSnapshotRepository = new ZFSSnapshotRepositoryImpl(zfsProcessFactory);
@@ -203,7 +193,7 @@ public class TestBackupRestore {
         ZFSBackupService zfsBackupService = new ZFSBackupService(
                 zfsFileSystemRepository,
                 snapshotSenderFactory.getSnapshotSender(),
-                new DatasetPropertiesChecker(false)
+                new DatasetPropertiesChecker(true)
         );
         BackupController backupController = new BackupController(zfsBackupService);
         return backupController;
@@ -269,10 +259,12 @@ public class TestBackupRestore {
         return restoreController;
     }
 
-    @Test
-    void shouldBackupRestoreBySnapshot(@TempDir Path backupDir, @TempDir Path restoreDir) throws IOException, NoSuchAlgorithmException, InterruptedException, IncorrectHashException, ExecutionException, S3MissesFileException {
 
-        BackupController backupController = setupBackup(backupDir,restoreDir,false);
+
+    @Test
+    void shouldBackupRestoreByDatasetEncryption(@TempDir Path backupDir, @TempDir Path restoreDir) throws IOException, NoSuchAlgorithmException, InterruptedException, IncorrectHashException, ExecutionException, S3MissesFileException {
+
+        BackupController backupController = setupBackup(backupDir,restoreDir,true);
         RestoreController restoreController = setupRestore(restoreDir);
 
         ExecutorService executorService = Executors.newFixedThreadPool(2);
@@ -280,9 +272,10 @@ public class TestBackupRestore {
             backupController.backupFull("ExternalPool@auto-20220327-150000");
         });
 
-        Future<?> restoreFuture = executorService.submit( () -> {
+        Future<?> restoreFuture = executorService.submit(()->{
             restoreController.restore();
-        });
+        }
+        );
 
         backupFuture.get();
 

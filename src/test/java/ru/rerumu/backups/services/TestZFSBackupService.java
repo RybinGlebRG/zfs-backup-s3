@@ -1,11 +1,13 @@
 package ru.rerumu.backups.services;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 import ru.rerumu.backups.exceptions.*;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSDataset;
+import ru.rerumu.backups.models.zfs_dataset_properties.EncryptionProperty;
 import ru.rerumu.backups.repositories.ZFSFileSystemRepository;
 
 import java.io.*;
@@ -30,7 +32,8 @@ public class TestZFSBackupService {
                         new Snapshot("ExternalPool@auto-20220327-060000"),
                         new Snapshot("ExternalPool@auto-20220327-150000"),
                         new Snapshot("ExternalPool@auto-20220328-150000")
-                )
+                ),
+                EncryptionProperty.ON
         ));
         Mockito.when(mockedZfsFileSystemRepository.getFilesystemsTreeList("ExternalPool"))
                 .thenReturn(zfsDatasetList);
@@ -83,7 +86,8 @@ public class TestZFSBackupService {
                         new Snapshot("ExternalPool@auto-20220327-060000"),
                         new Snapshot("ExternalPool@auto-20220327-150000"),
                         new Snapshot("ExternalPool@auto-20220328-150000")
-                )
+                ),
+                EncryptionProperty.ON
         ));
         Mockito.when(mockedZfsFileSystemRepository.getFilesystemsTreeList("ExternalPool"))
                 .thenReturn(zfsDatasetList);
@@ -131,7 +135,8 @@ public class TestZFSBackupService {
                         new Snapshot("ExternalPool@auto-20220327-060000"),
                         new Snapshot("ExternalPool@auto-20220327-150000"),
                         new Snapshot("ExternalPool@auto-20220328-150000")
-                )
+                ),
+                EncryptionProperty.ON
         ));
         Mockito.when(mockedZfsFileSystemRepository.getFilesystemsTreeList("ExternalPool"))
                 .thenReturn(zfsDatasetList);
@@ -162,7 +167,8 @@ public class TestZFSBackupService {
         List<ZFSDataset> zfsDatasetList = new ArrayList<>();
         zfsDatasetList.add(new ZFSDataset(
                 "ExternalPool",
-               new ArrayList<>()
+               new ArrayList<>(),
+                EncryptionProperty.ON
         ));
         Mockito.when(mockedZfsFileSystemRepository.getFilesystemsTreeList("ExternalPool"))
                 .thenReturn(zfsDatasetList);
@@ -184,5 +190,34 @@ public class TestZFSBackupService {
         );
         Mockito.verify(mockedSnapshotSender,Mockito.never()).sendStartingFromFull(Mockito.any(),Mockito.any());
 //        Mockito.verify(mockedSnapshotSender,Mockito.never()).checkSent(any(),any());
+    }
+
+    @Test
+    void shouldNotSendUnencrypted() throws Exception{
+        ZFSFileSystemRepository zfsFileSystemRepository = Mockito.mock(ZFSFileSystemRepository.class);
+
+        List<ZFSDataset> zfsDatasetList = new ArrayList<>();
+        zfsDatasetList.add(new ZFSDataset(
+                "ExternalPool",
+                new ArrayList<>(),
+                EncryptionProperty.OFF
+        ));
+        Mockito.when(zfsFileSystemRepository.getFilesystemsTreeList("ExternalPool"))
+                .thenReturn(zfsDatasetList);
+
+        SnapshotSender mockedSnapshotSender = Mockito.mock(SnapshotSender.class);
+
+        ZFSBackupService zfsBackupService = new ZFSBackupService(
+                zfsFileSystemRepository,
+                mockedSnapshotSender,
+                new DatasetPropertiesChecker(true)
+        );
+
+        Assertions.assertThrows(IncompatibleDatasetException.class,()->{
+            zfsBackupService.zfsBackupFull(
+                    "auto-20220326-150000",
+                    "ExternalPool"
+            );
+        });
     }
 }
