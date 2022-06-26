@@ -104,7 +104,6 @@ public class ZFSDataset {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ZFSDataset that = (ZFSDataset) o;
-        // TODO: Should check encryption
         return name.equals(that.name) && snapshotList.equals(that.snapshotList) && encryption.equals(that.encryption);
     }
 
