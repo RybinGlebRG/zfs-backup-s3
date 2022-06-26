@@ -1,6 +1,7 @@
 package ru.rerumu.backups.integration;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
@@ -24,11 +25,13 @@ import ru.rerumu.backups.repositories.ZFSSnapshotRepository;
 import ru.rerumu.backups.repositories.impl.FilePartRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.ZFSFileSystemRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.ZFSSnapshotRepositoryImpl;
+import ru.rerumu.backups.services.DatasetPropertiesChecker;
 import ru.rerumu.backups.services.SnapshotReceiver;
 import ru.rerumu.backups.services.ZFSBackupService;
 import ru.rerumu.backups.services.ZFSRestoreService;
 import ru.rerumu.backups.services.impl.SnapshotReceiverImpl;
 import ru.rerumu.backups.zfs_api.ProcessWrapper;
+import ru.rerumu.backups.zfs_api.ZFSGetDatasetProperty;
 import ru.rerumu.backups.zfs_api.ZFSReceive;
 import ru.rerumu.backups.zfs_api.ZFSSend;
 
@@ -46,6 +49,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import static org.mockito.Matchers.eq;
+
+//@Disabled
 public class TestBackupRestoreByDataset {
 
     private byte[] randomBytes(int n) {
@@ -128,6 +134,15 @@ public class TestBackupRestoreByDataset {
                     );
         }
 
+        // ZFSGetDatasetProperty
+        ZFSGetDatasetProperty zfsGetDatasetProperty = Mockito.mock(ZFSGetDatasetProperty.class);
+        Mockito.when(zfsGetDatasetProperty.getBufferedInputStream())
+                .thenAnswer(invocationOnMock -> {
+                    String tmp = "on" + "\n";
+                    byte[] buf = tmp.getBytes(StandardCharsets.UTF_8);
+                    return new BufferedInputStream(new ByteArrayInputStream(buf));
+                });
+
         // zfsProcessFactory
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
 
@@ -138,6 +153,9 @@ public class TestBackupRestoreByDataset {
                 .thenReturn(processWrappers.get(0));
         Mockito.when(zfsProcessFactory.getZFSListSnapshots("ExternalPool/Applications"))
                 .thenReturn(processWrappers.get(1));
+
+        Mockito.when(zfsProcessFactory.getZFSGetDatasetProperty(Mockito.any(),eq("encryption")))
+                .thenReturn(zfsGetDatasetProperty);
 
         Mockito.when(zfsProcessFactory.getZFSSendFull(
                 new Snapshot("ExternalPool@auto-20220326-150000")
@@ -169,9 +187,9 @@ public class TestBackupRestoreByDataset {
                 true
         );
         ZFSBackupService zfsBackupService = new ZFSBackupService(
-                true,
                 zfsFileSystemRepository,
-                snapshotSenderFactory.getSnapshotSender()
+                snapshotSenderFactory.getSnapshotSender(),
+                new DatasetPropertiesChecker(false)
         );
         BackupController backupController = new BackupController(zfsBackupService);
         return backupController;

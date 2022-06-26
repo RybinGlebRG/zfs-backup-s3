@@ -13,6 +13,12 @@ import ru.rerumu.backups.factories.impl.SnapshotSenderFactoryImpl;
 import ru.rerumu.backups.factories.impl.ZFSFileReaderFactoryImpl;
 import ru.rerumu.backups.factories.impl.ZFSFileWriterFactoryImpl;
 import ru.rerumu.backups.factories.impl.ZFSProcessFactoryImpl;
+import ru.rerumu.backups.factories.ZFSFileReaderFactory;
+import ru.rerumu.backups.factories.ZFSFileWriterFactory;
+import ru.rerumu.backups.factories.ZFSProcessFactory;
+import ru.rerumu.backups.factories.impl.ZFSFileReaderFactoryImpl;
+import ru.rerumu.backups.factories.impl.ZFSFileWriterFactoryImpl;
+import ru.rerumu.backups.factories.impl.ZFSProcessFactoryImpl;
 import ru.rerumu.backups.models.S3Storage;
 import ru.rerumu.backups.models.ZFSPool;
 import ru.rerumu.backups.repositories.FilePartRepository;
@@ -61,7 +67,8 @@ public class App {
                     S3Repository s3Repository = new S3Repository(s3StorageList);
 
                     ZFSProcessFactory zfsProcessFactory = new ZFSProcessFactoryImpl(
-                            Boolean.parseBoolean(configuration.getProperty("is.multi.incremental"))
+                            Boolean.parseBoolean(configuration.getProperty("is.multi.incremental")),
+                            Boolean.parseBoolean(configuration.getProperty("is.native.encrypted"))
                     );
                     ZFSSnapshotRepository zfsSnapshotRepository = new ZFSSnapshotRepositoryImpl(zfsProcessFactory);
                     ZFSFileSystemRepository zfsFileSystemRepository = new ZFSFileSystemRepositoryImpl(zfsProcessFactory,zfsSnapshotRepository);
@@ -79,9 +86,11 @@ public class App {
                     );
 
                     ZFSBackupService zfsBackupService = new ZFSBackupService(
-                            Boolean.parseBoolean(configuration.getProperty("is.load.aws")),
                             zfsFileSystemRepository,
-                            snapshotSenderFactory.getSnapshotSender()
+                            snapshotSenderFactory.getSnapshotSender(),
+                            new DatasetPropertiesChecker(
+                                    Boolean.parseBoolean(configuration.getProperty("is.native.encrypted"))
+                            )
                     );
 
                     BackupController backupController = new BackupController(zfsBackupService);
@@ -94,7 +103,8 @@ public class App {
                     );
 
                     ZFSProcessFactory zfsProcessFactory = new ZFSProcessFactoryImpl(
-                            Boolean.parseBoolean(configuration.getProperty("is.multi.incremental"))
+                            Boolean.parseBoolean(configuration.getProperty("is.multi.incremental")),
+                            Boolean.parseBoolean(configuration.getProperty("is.native.encrypted"))
                     );
                     ZFSFileReaderFactory zfsFileReaderFactory = new ZFSFileReaderFactoryImpl(configuration.getProperty("password"));
                     SnapshotReceiver snapshotReceiver = new SnapshotReceiverImpl(
