@@ -24,6 +24,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class S3Repository implements RemoteBackupRepository {
@@ -62,24 +64,25 @@ public class S3Repository implements RemoteBackupRepository {
             String md5 = getMD5(path);
 
 
-            S3Client s3Client = S3Client.builder()
+            try(S3Client s3Client = S3Client.builder()
                     .region(s3Storage.getRegion())
                     .endpointOverride(s3Storage.getEndpoint())
                     .credentialsProvider(StaticCredentialsProvider.create(s3Storage.getCredentials()))
-                    .build();
+                    .build();) {
 
-            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                    .bucket(s3Storage.getBucketName())
-                    .key(key)
-                    .storageClass(s3Storage.getStorageClass())
-                    .build();
+                PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                        .bucket(s3Storage.getBucketName())
+                        .key(key)
+                        .storageClass(s3Storage.getStorageClass())
+                        .build();
 
-            PutObjectResponse putObjectResponse = s3Client.putObject(putObjectRequest, path);
-            String eTag = putObjectResponse.eTag();
-            logger.info(String.format("Uploaded file '%s'", path.toString()));
-            logger.info(String.format("ETag='%s'", eTag));
-            if (!(eTag.equals(md5))) {
-                throw new IncorrectHashException();
+                PutObjectResponse putObjectResponse = s3Client.putObject(putObjectRequest, path);
+                String eTag = putObjectResponse.eTag();
+                logger.info(String.format("Uploaded file '%s'", path.toString()));
+                logger.info(String.format("ETag='%s'", eTag));
+                if (!(eTag.equals(md5))) {
+                    throw new IncorrectHashException();
+                }
             }
         }
     }
@@ -104,34 +107,35 @@ public class S3Repository implements RemoteBackupRepository {
     public boolean isFileExists(final String datasetName, final String filename) {
 
         for (S3Storage s3Storage : storages) {
-            S3Client s3Client = S3Client.builder()
+            try (S3Client s3Client = S3Client.builder()
                     .region(s3Storage.getRegion())
                     .endpointOverride(s3Storage.getEndpoint())
                     .credentialsProvider(StaticCredentialsProvider.create(s3Storage.getCredentials()))
-                    .build();
+                    .build();) {
 
-            String prefix = s3Storage.getPrefix().toString() + "/" + datasetName + "/" + filename;
+                String prefix = s3Storage.getPrefix().toString() + "/" + datasetName + "/" + filename;
 
-            ListObjectsRequest listObjects = ListObjectsRequest.builder()
-                    .bucket(s3Storage.getBucketName())
-                    .prefix(prefix)
-                    .build();
+                ListObjectsRequest listObjects = ListObjectsRequest.builder()
+                        .bucket(s3Storage.getBucketName())
+                        .prefix(prefix)
+                        .build();
 
-            ListObjectsResponse res = s3Client.listObjects(listObjects);
-            List<S3Object> s3Objects = res.contents();
-            logger.info(String.format("Found on S3:\n'%s'", s3Objects));
+                ListObjectsResponse res = s3Client.listObjects(listObjects);
+                List<S3Object> s3Objects = res.contents();
+                logger.info(String.format("Found on S3:\n'%s'", s3Objects));
 
-            if (s3Objects.size() > 1) {
-                throw new IllegalArgumentException();
-            }
-
-            for (S3Object s3Object : s3Objects) {
-                String tmp = Paths.get(s3Object.key()).getFileName().toString();
-                if (tmp.equals(filename)) {
-                    return true;
+                if (s3Objects.size() > 1) {
+                    throw new IllegalArgumentException();
                 }
-            }
 
+                for (S3Object s3Object : s3Objects) {
+                    String tmp = Paths.get(s3Object.key()).getFileName().toString();
+                    if (tmp.equals(filename)) {
+                        return true;
+                    }
+                }
+
+            }
         }
         return false;
     }
