@@ -8,11 +8,7 @@ import ru.rerumu.backups.models.S3Storage;
 import ru.rerumu.backups.repositories.RemoteBackupRepository;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectResponse;
-import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
-import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
-import software.amazon.awssdk.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.model.*;
 import org.apache.commons.codec.binary.Hex;
 
 
@@ -49,6 +45,40 @@ public class S3Repository implements RemoteBackupRepository {
         }
     }
 
+    private void uploadMultipart(final String datasetName, final Path path)
+            throws
+            IOException,
+            NoSuchAlgorithmException,
+            IncorrectHashException {
+        for (S3Storage s3Storage : storages) {
+            logger.info(String.format("Uploading file %s", path.toString()));
+            String key = s3Storage.getPrefix().toString() + "/" + datasetName + "/" + path.getFileName().toString();
+            logger.info(String.format("Target: %s", key));
+            String md5 = getMD5(path);
+
+            try(S3Client s3Client = S3Client.builder()
+                    .region(s3Storage.getRegion())
+                    .endpointOverride(s3Storage.getEndpoint())
+                    .credentialsProvider(StaticCredentialsProvider.create(s3Storage.getCredentials()))
+                    .build();) {
+
+                CreateMultipartUploadRequest createMultipartUploadRequest = CreateMultipartUploadRequest.builder()
+                        .bucket(s3Storage.getBucketName())
+                        .key(key)
+                        .storageClass(s3Storage.getStorageClass())
+                        .build();
+
+                int partNumber = 1;
+
+                CreateMultipartUploadResponse response = s3Client.createMultipartUpload(createMultipartUploadRequest);
+                String uploadId = response.uploadId();
+                logger.info(String.format("UploadId '%s'",uploadId));
+            }
+
+        }
+    }
+
+    // TODO: Switch to UploadManager
     private void upload(final String datasetName, final Path path)
             throws
             IOException,
