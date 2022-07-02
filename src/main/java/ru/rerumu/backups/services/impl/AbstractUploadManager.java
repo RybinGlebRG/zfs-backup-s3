@@ -17,17 +17,27 @@ public abstract class AbstractUploadManager implements UploadManager {
 
     public abstract void run() throws IOException, NoSuchAlgorithmException, IncorrectHashException;
 
-    protected String getMD5(byte[] bytes)
+    protected String getMD5Hex(byte[] bytes)
             throws NoSuchAlgorithmException,
             IOException {
         MessageDigest md = MessageDigest.getInstance("MD5");
         try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
              BufferedInputStream bufferedInputStream = new BufferedInputStream(byteArrayInputStream)) {
 
-            String md5 = '"' + Hex.encodeHexString(md.digest(bufferedInputStream.readAllBytes())) + '"';
+            String md5 = Hex.encodeHexString(md.digest(bufferedInputStream.readAllBytes()));
             logger.info(String.format("Part hex MD5: '%s'", md5));
             return md5;
 
         }
-    };
+    }
+
+    protected byte[] getMD5Bytes(byte[] bytes)
+            throws NoSuchAlgorithmException,
+            IOException {
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+             BufferedInputStream bufferedInputStream = new BufferedInputStream(byteArrayInputStream)) {
+            return md.digest(bufferedInputStream.readAllBytes());
+        }
+    }
 }

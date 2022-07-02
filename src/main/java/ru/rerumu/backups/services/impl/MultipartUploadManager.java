@@ -1,20 +1,15 @@
 package ru.rerumu.backups.services.impl;
 
-import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.IncorrectHashException;
 import ru.rerumu.backups.models.S3Storage;
-import ru.rerumu.backups.services.UploadManager;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,7 +19,7 @@ import java.util.List;
 public class MultipartUploadManager extends AbstractUploadManager {
     private final Logger logger = LoggerFactory.getLogger(MultipartUploadManager.class);
     private final List<CompletedPart> completedPartList = new ArrayList<>();
-    private final List<String> md5List = new ArrayList<>();
+    private final List<byte[]> md5List = new ArrayList<>();
 
     private final S3Storage s3Storage;
     private final String key;
@@ -107,7 +102,6 @@ public class MultipartUploadManager extends AbstractUploadManager {
         partNumber++;
         logger.debug(String.format("Starting loading part '%d'",partNumber));
         byte[] nextPart = getNextPart();
-        String md5 = getMD5(nextPart);
         UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
                 .bucket(s3Storage.getBucketName())
                 .key(key)
@@ -117,10 +111,10 @@ public class MultipartUploadManager extends AbstractUploadManager {
         String eTag = s3Client.uploadPart(
                 uploadPartRequest, RequestBody.fromBytes(nextPart)
         ).eTag();
-        if (!(eTag.equals(md5))) {
+        if (!(eTag.equals(getMD5Hex(nextPart)))) {
             throw new IncorrectHashException();
         }
-        md5List.add(md5);
+        md5List.add(getMD5Bytes(nextPart));
 
         completedPartList.add(
                 CompletedPart.builder().partNumber(partNumber).eTag(eTag).build()
@@ -128,7 +122,7 @@ public class MultipartUploadManager extends AbstractUploadManager {
         logger.debug(String.format("Uploaded part '%d'",partNumber));
     }
 
-    private void finish() {
+    private void finish() throws NoSuchAlgorithmException, IOException, IncorrectHashException {
         CompletedMultipartUpload completedMultipartUpload = CompletedMultipartUpload.builder()
                 .parts(completedPartList)
                 .build();
@@ -141,8 +135,18 @@ public class MultipartUploadManager extends AbstractUploadManager {
                         .multipartUpload(completedMultipartUpload)
                         .build();
 
-        s3Client.completeMultipartUpload(completeMultipartUploadRequest);
-        // TODO: Check complete md5
+        CompleteMultipartUploadResponse completeMultipartUploadResponse =
+                s3Client.completeMultipartUpload(completeMultipartUploadRequest);
+
+        byte[] concatenatedMd5 = new byte[0];
+        for (byte[] bytes: md5List){
+            concatenatedMd5 = ArrayUtils.addAll(concatenatedMd5,bytes);
+        }
+        String md5 = getMD5Hex(concatenatedMd5)+"-"+partNumber;
+        String eTag = completeMultipartUploadResponse.eTag();
+        if (!eTag.equals(md5)){
+            throw new IncorrectHashException();
+        }
     }
 
 }
