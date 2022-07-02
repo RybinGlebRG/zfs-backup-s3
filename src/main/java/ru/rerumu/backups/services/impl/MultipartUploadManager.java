@@ -20,60 +20,45 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/* TODO:
- *   1) Test;
- *   2) Move size to properties
- */
 
-public class MultipartUploadManager implements UploadManager {
-    private final static int PART_SIZE=10_485_760;
-
+public class MultipartUploadManager extends AbstractUploadManager {
     private final Logger logger = LoggerFactory.getLogger(MultipartUploadManager.class);
     private final List<CompletedPart> completedPartList = new ArrayList<>();
     private final List<String> md5List = new ArrayList<>();
 
-    private final Path file;
     private final S3Storage s3Storage;
     private final String key;
     private final S3Client s3Client;
+    private final BufferedInputStream bufferedInputStream;
+    private final int maxPartSize;
 
     private int partNumber=0;
 
     private String uploadId;
 
-    public MultipartUploadManager(Path file, S3Storage s3Storage, String key, S3Client s3Client){
-        this.file = file;
+
+    public MultipartUploadManager(
+            BufferedInputStream bufferedInputStream,
+            long fileSize,
+            S3Storage s3Storage,
+            String key,
+            S3Client s3Client,
+            int maxPartSize
+    ){
+        this.bufferedInputStream = bufferedInputStream;
         this.s3Storage =s3Storage;
         this.key = key;
         this.s3Client = s3Client;
-    }
-
-    private String getMD5(byte[] bytes)
-            throws NoSuchAlgorithmException,
-            IOException {
-        MessageDigest md = MessageDigest.getInstance("MD5");
-        try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
-             BufferedInputStream bufferedInputStream = new BufferedInputStream(byteArrayInputStream)) {
-
-            String md5 = '"' + Hex.encodeHexString(md.digest(bufferedInputStream.readAllBytes())) + '"';
-            logger.info(String.format("Part hex MD5: '%s'", md5));
-            return md5;
-
-        }
+        this.maxPartSize = maxPartSize;
     }
 
     private byte[] getNextPart() throws IOException, EOFException {
-        byte[] tmp = new byte[PART_SIZE];
-        int len;
-        try(InputStream inputStream = Files.newInputStream(file);
-            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream)){
-            len = bufferedInputStream.read(tmp);
-        }
+        byte[] tmp = new byte[maxPartSize];
+        int len = bufferedInputStream.read(tmp);
         if (len==-1){
             throw new EOFException();
         }
-        byte[] nextPart = Arrays.copyOf(tmp,len);
-        return nextPart;
+        return Arrays.copyOf(tmp,len);
     }
 
     private void abort(){
@@ -140,10 +125,10 @@ public class MultipartUploadManager implements UploadManager {
         completedPartList.add(
                 CompletedPart.builder().partNumber(partNumber).eTag(eTag).build()
         );
-        logger.debug(String.format("Loaded part '%d'",partNumber));
+        logger.debug(String.format("Uploaded part '%d'",partNumber));
     }
 
-    private void finish(){
+    private void finish() {
         CompletedMultipartUpload completedMultipartUpload = CompletedMultipartUpload.builder()
                 .parts(completedPartList)
                 .build();
@@ -157,6 +142,7 @@ public class MultipartUploadManager implements UploadManager {
                         .build();
 
         s3Client.completeMultipartUpload(completeMultipartUploadRequest);
+        // TODO: Check complete md5
     }
 
 }

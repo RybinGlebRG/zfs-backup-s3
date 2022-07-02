@@ -9,10 +9,7 @@ import ru.rerumu.backups.factories.SnapshotSenderFactory;
 import ru.rerumu.backups.factories.ZFSFileReaderFactory;
 import ru.rerumu.backups.factories.ZFSFileWriterFactory;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
-import ru.rerumu.backups.factories.impl.SnapshotSenderFactoryImpl;
-import ru.rerumu.backups.factories.impl.ZFSFileReaderFactoryImpl;
-import ru.rerumu.backups.factories.impl.ZFSFileWriterFactoryImpl;
-import ru.rerumu.backups.factories.impl.ZFSProcessFactoryImpl;
+import ru.rerumu.backups.factories.impl.*;
 import ru.rerumu.backups.factories.ZFSFileReaderFactory;
 import ru.rerumu.backups.factories.ZFSFileWriterFactory;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
@@ -64,7 +61,12 @@ public class App {
                             new URI(configuration.getProperty("s3.endpoint_url")),
                             configuration.getProperty("s3.full.storage_class")
                     ));
-                    S3Repository s3Repository = new S3Repository(s3StorageList);
+                    S3Repository s3Repository = new S3Repository(
+                            s3StorageList,
+                            new UploadManagerFactoryImpl(
+                                    Integer.parseInt(configuration.getProperty("max_part_size"))
+                            )
+                    );
 
                     ZFSProcessFactory zfsProcessFactory = new ZFSProcessFactoryImpl(
                             Boolean.parseBoolean(configuration.getProperty("is.multi.incremental")),
