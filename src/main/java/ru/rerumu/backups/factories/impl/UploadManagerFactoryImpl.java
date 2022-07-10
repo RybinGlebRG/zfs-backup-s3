@@ -20,7 +20,8 @@ public class UploadManagerFactoryImpl implements UploadManagerFactory {
     }
 
     @Override
-    public UploadManager getUploadManager(BufferedInputStream bufferedInputStream, long size, S3Storage s3Storage, String key, S3Client s3Client) throws IOException {
+    public UploadManager getUploadManager(BufferedInputStream bufferedInputStream, long size, S3Storage s3Storage, String key, S3Client s3Client)
+            throws IOException {
         if (size > maxPartSize){
             return new MultipartUploadManager(bufferedInputStream, size, s3Storage, key, s3Client, maxPartSize);
         } else {

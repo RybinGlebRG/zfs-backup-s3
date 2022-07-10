@@ -27,11 +27,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-@Disabled
+//@Disabled
 public class TestS3Repository {
 
     @Test
-    void shouldSend(@TempDir Path tempDir) throws URISyntaxException, IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
+    void shouldSendOnepart(@TempDir Path tempDir) throws URISyntaxException, IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         logger.setLevel(Level.TRACE);
         S3Repository s3Repository = new S3Repository(List.of(
@@ -69,6 +69,42 @@ public class TestS3Repository {
 
         Assertions.assertTrue(s3Repository.isFileExists(datasetName,generatedString));
         Assertions.assertTrue(s3Repository.isFileExists(datasetName,generatedString1));
+    }
+
+    @Test
+    void shouldSendMultipart(@TempDir Path tempDir) throws URISyntaxException, IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
+        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        logger.setLevel(Level.TRACE);
+        S3Repository s3Repository = new S3Repository(List.of(
+                new S3Storage(
+                        Region.of(System.getProperty("region")),
+                        System.getProperty("bucket"),
+                        System.getProperty("keyId"),
+                        System.getProperty("secretKey"),
+                        Paths.get("level-0"),
+                        new URI(System.getProperty("endpoint")),
+                        "STANDARD"
+                )),
+                new UploadManagerFactoryImpl(6_291_456)
+        );
+
+
+        byte[] srcByte = new byte[7_291_456];
+        new Random().nextBytes(srcByte);
+        String datasetName = RandomStringUtils.random(10, true, false)
+                +"-"+RandomStringUtils.random(10, true, false);
+        String generatedString = datasetName+"@auto-20200321-173000__"
+                +datasetName+"@auto-20200322-173000.part0";
+
+        Path path = Files.createFile(tempDir.resolve(generatedString));
+
+        try(BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(Files.newOutputStream(path))){
+            bufferedOutputStream.write(srcByte);
+        }
+
+        s3Repository.add(datasetName,path);
+
+        Assertions.assertTrue(s3Repository.isFileExists(datasetName,generatedString));
     }
 
     @Test

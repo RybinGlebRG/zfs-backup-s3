@@ -99,9 +99,11 @@ public class MultipartUploadManager extends AbstractUploadManager {
     }
 
     private void uploadPart() throws IOException, EOFException, NoSuchAlgorithmException, IncorrectHashException {
+        logger.debug("Getting new part");
+        byte[] nextPart = getNextPart();
         partNumber++;
         logger.debug(String.format("Starting loading part '%d'",partNumber));
-        byte[] nextPart = getNextPart();
+        String md5 = getMD5Hex(nextPart);
         UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
                 .bucket(s3Storage.getBucketName())
                 .key(key)
@@ -111,7 +113,8 @@ public class MultipartUploadManager extends AbstractUploadManager {
         String eTag = s3Client.uploadPart(
                 uploadPartRequest, RequestBody.fromBytes(nextPart)
         ).eTag();
-        if (!(eTag.equals(getMD5Hex(nextPart)))) {
+        logger.info(String.format("ETag='%s'", eTag));
+        if (!(eTag.equals('"' + md5 + '"'))) {
             throw new IncorrectHashException();
         }
         md5List.add(getMD5Bytes(nextPart));
@@ -144,7 +147,7 @@ public class MultipartUploadManager extends AbstractUploadManager {
         }
         String md5 = getMD5Hex(concatenatedMd5)+"-"+partNumber;
         String eTag = completeMultipartUploadResponse.eTag();
-        if (!eTag.equals(md5)){
+        if (!eTag.equals('"' + md5 + '"')){
             throw new IncorrectHashException();
         }
     }
