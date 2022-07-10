@@ -1,5 +1,6 @@
 package ru.rerumu.backups.factories.impl;
 
+import ru.rerumu.backups.factories.ProcessWrapperFactory;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSPool;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
@@ -11,10 +12,15 @@ import java.io.IOException;
 public class ZFSProcessFactoryImpl implements ZFSProcessFactory {
     private final boolean isMultiIncremental;
     private final boolean isNativeEncrypted;
+    private final ProcessWrapperFactory processWrapperFactory;
 
-    public ZFSProcessFactoryImpl(boolean isMultiIncremental,boolean isNativeEncrypted){
+    public ZFSProcessFactoryImpl(
+            boolean isMultiIncremental,
+            boolean isNativeEncrypted,
+            ProcessWrapperFactory processWrapperFactory){
         this.isMultiIncremental = isMultiIncremental;
         this.isNativeEncrypted = isNativeEncrypted;
+        this.processWrapperFactory = processWrapperFactory;
     }
 
     @Override
@@ -28,7 +34,7 @@ public class ZFSProcessFactoryImpl implements ZFSProcessFactory {
 
     @Override
     public ZFSGetDatasetProperty getZFSGetDatasetProperty(String datasetName, String propertyName) throws IOException {
-        return new ZFSGetDatasetPropertyImpl(propertyName, datasetName);
+        return new ZFSGetDatasetPropertyImpl(propertyName, datasetName,processWrapperFactory);
     }
 
     @Override
@@ -50,7 +56,7 @@ public class ZFSProcessFactoryImpl implements ZFSProcessFactory {
 
     @Override
     public ZFSReceive getZFSReceive(ZFSPool zfsPool) throws IOException {
-        return new ZFSReceiveImpl(zfsPool.getName());
+        return new ZFSReceiveImpl(zfsPool.getName(), processWrapperFactory);
     }
 
     @Override

@@ -16,23 +16,28 @@ import java.util.concurrent.Future;
 
 public class ProcessWrapperImpl implements ProcessWrapper {
     protected final Logger logger = LoggerFactory.getLogger(ProcessWrapperImpl.class);
-    protected final Process process;
-    protected final BufferedInputStream bufferedInputStream;
-    protected final BufferedInputStream bufferedErrorStream;
-    protected final BufferedOutputStream bufferedOutputStream;
+    private  Process process;
+    private  BufferedInputStream bufferedInputStream;
+    private  BufferedInputStream bufferedErrorStream;
+    private  BufferedOutputStream bufferedOutputStream;
+    private final List<String> args;
     protected boolean isKilled = false;
     protected final ExecutorService executorService;
     protected final List<Future<?>> futureList;
 
-    public ProcessWrapperImpl(List<String> args) throws IOException {
+    public ProcessWrapperImpl(List<String> args)  {
+        this.args = args;
+        executorService = Executors.newCachedThreadPool();
+        futureList = new ArrayList<>();
+    }
+
+    public void run() throws IOException {
         logger.debug(String.format("Running command '%s'", args));
         ProcessBuilder pb = new ProcessBuilder(args);
         process = pb.start();
         bufferedInputStream = new BufferedInputStream(process.getInputStream());
         bufferedErrorStream = new BufferedInputStream(process.getErrorStream());
         bufferedOutputStream = new BufferedOutputStream(process.getOutputStream());
-        executorService = Executors.newCachedThreadPool();
-        futureList = new ArrayList<>();
     }
 
     public void setStderrProcessor(StdProcessor stderrProcessor){
@@ -47,6 +52,11 @@ public class ProcessWrapperImpl implements ProcessWrapper {
     @Override
     public BufferedInputStream getBufferedInputStream() {
         return bufferedInputStream;
+    }
+
+    @Override
+    public BufferedOutputStream getBufferedOutputStream() {
+        return bufferedOutputStream;
     }
 
     public void close() throws InterruptedException, IOException, ExecutionException {

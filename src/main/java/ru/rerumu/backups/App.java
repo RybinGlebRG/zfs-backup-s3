@@ -70,7 +70,8 @@ public class App {
 
                     ZFSProcessFactory zfsProcessFactory = new ZFSProcessFactoryImpl(
                             Boolean.parseBoolean(configuration.getProperty("is.multi.incremental")),
-                            Boolean.parseBoolean(configuration.getProperty("is.native.encrypted"))
+                            Boolean.parseBoolean(configuration.getProperty("is.native.encrypted")),
+                            new ProcessWrapperFactoryImpl()
                     );
                     ZFSSnapshotRepository zfsSnapshotRepository = new ZFSSnapshotRepositoryImpl(zfsProcessFactory);
                     ZFSFileSystemRepository zfsFileSystemRepository = new ZFSFileSystemRepositoryImpl(zfsProcessFactory,zfsSnapshotRepository);
@@ -106,7 +107,8 @@ public class App {
 
                     ZFSProcessFactory zfsProcessFactory = new ZFSProcessFactoryImpl(
                             Boolean.parseBoolean(configuration.getProperty("is.multi.incremental")),
-                            Boolean.parseBoolean(configuration.getProperty("is.native.encrypted"))
+                            Boolean.parseBoolean(configuration.getProperty("is.native.encrypted")),
+                            new ProcessWrapperFactoryImpl()
                     );
                     ZFSFileReaderFactory zfsFileReaderFactory = new ZFSFileReaderFactoryImpl(configuration.getProperty("password"));
                     SnapshotReceiver snapshotReceiver = new SnapshotReceiverImpl(
