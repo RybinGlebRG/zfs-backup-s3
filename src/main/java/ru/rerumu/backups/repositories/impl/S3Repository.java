@@ -4,15 +4,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.IncorrectHashException;
 import ru.rerumu.backups.exceptions.S3MissesFileException;
+import ru.rerumu.backups.factories.UploadManagerFactory;
 import ru.rerumu.backups.models.S3Storage;
 import ru.rerumu.backups.repositories.RemoteBackupRepository;
+import ru.rerumu.backups.services.UploadManager;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectResponse;
-import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
-import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
-import software.amazon.awssdk.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.model.*;
 import org.apache.commons.codec.binary.Hex;
 
 
@@ -32,21 +30,11 @@ public class S3Repository implements RemoteBackupRepository {
 
     private final List<S3Storage> storages;
     private final Logger logger = LoggerFactory.getLogger(S3Repository.class);
+    private final UploadManagerFactory uploadManagerFactory;
 
-    public S3Repository(final List<S3Storage> s3Storages) {
+    public S3Repository(final List<S3Storage> s3Storages, UploadManagerFactory uploadManagerFactory) {
         this.storages = s3Storages;
-    }
-
-    private String getMD5(final Path path)
-            throws NoSuchAlgorithmException,
-            IOException {
-        MessageDigest md = MessageDigest.getInstance("MD5");
-        try (InputStream inputStream = Files.newInputStream(path);
-             BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream)) {
-            String md5 = '"' + Hex.encodeHexString(md.digest(bufferedInputStream.readAllBytes())) + '"';
-            logger.info(String.format("Hex MD5: '%s'", md5));
-            return md5;
-        }
+        this.uploadManagerFactory = uploadManagerFactory;
     }
 
     private void upload(final String datasetName, final Path path)
@@ -61,28 +49,23 @@ public class S3Repository implements RemoteBackupRepository {
             logger.info(String.format("Uploading file %s", path.toString()));
             String key = s3Storage.getPrefix().toString() + "/" + datasetName + "/" + path.getFileName().toString();
             logger.info(String.format("Target: %s", key));
-            String md5 = getMD5(path);
-
 
             try(S3Client s3Client = S3Client.builder()
                     .region(s3Storage.getRegion())
                     .endpointOverride(s3Storage.getEndpoint())
                     .credentialsProvider(StaticCredentialsProvider.create(s3Storage.getCredentials()))
-                    .build();) {
+                    .build();
+                BufferedInputStream bufferedInputStream = new BufferedInputStream(Files.newInputStream(path))) {
 
-                PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                        .bucket(s3Storage.getBucketName())
-                        .key(key)
-                        .storageClass(s3Storage.getStorageClass())
-                        .build();
+                UploadManager uploadManager = uploadManagerFactory.getUploadManager(
+                        bufferedInputStream,
+                        Files.size(path),
+                        s3Storage,
+                        key,
+                        s3Client
+                );
+                uploadManager.run();
 
-                PutObjectResponse putObjectResponse = s3Client.putObject(putObjectRequest, path);
-                String eTag = putObjectResponse.eTag();
-                logger.info(String.format("Uploaded file '%s'", path.toString()));
-                logger.info(String.format("ETag='%s'", eTag));
-                if (!(eTag.equals(md5))) {
-                    throw new IncorrectHashException();
-                }
             }
         }
     }
