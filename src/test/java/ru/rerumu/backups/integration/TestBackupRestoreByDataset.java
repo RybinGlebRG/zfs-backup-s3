@@ -30,10 +30,7 @@ import ru.rerumu.backups.services.SnapshotReceiver;
 import ru.rerumu.backups.services.ZFSBackupService;
 import ru.rerumu.backups.services.ZFSRestoreService;
 import ru.rerumu.backups.services.impl.SnapshotReceiverImpl;
-import ru.rerumu.backups.zfs_api.ProcessWrapper;
-import ru.rerumu.backups.zfs_api.ZFSGetDatasetProperty;
-import ru.rerumu.backups.zfs_api.ZFSReceive;
-import ru.rerumu.backups.zfs_api.ZFSSend;
+import ru.rerumu.backups.zfs_api.*;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -81,7 +78,7 @@ public class TestBackupRestoreByDataset {
         }).when(remoteBackupRepository).add(Mockito.any(), Mockito.any());
 
         // zfsListFilesystems
-        ProcessWrapper zfsListFilesystems = Mockito.mock(ProcessWrapper.class);
+        ZFSListFilesystems zfsListFilesystems = Mockito.mock(ZFSListFilesystems.class);
         String filesystems = "ExternalPool\n" +
                 "ExternalPool/Applications\n";
         Mockito.when(zfsListFilesystems.getBufferedInputStream()).thenReturn(
@@ -89,9 +86,9 @@ public class TestBackupRestoreByDataset {
         );
 
         // zfsListSnapshots
-        List<ProcessWrapper> processWrappers = new ArrayList<>();
-        processWrappers.add(Mockito.mock(ProcessWrapper.class));
-        processWrappers.add(Mockito.mock(ProcessWrapper.class));
+        List<ZFSListSnapshots> processWrappers = new ArrayList<>();
+        processWrappers.add(Mockito.mock(ZFSListSnapshots.class));
+        processWrappers.add(Mockito.mock(ZFSListSnapshots.class));
 
         List<String> stringSnapshots = new ArrayList<>();
         stringSnapshots.add("ExternalPool@auto-20220326-150000\n" +

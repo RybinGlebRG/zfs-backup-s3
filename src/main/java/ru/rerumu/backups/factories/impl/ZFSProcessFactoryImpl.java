@@ -26,9 +26,9 @@ public class ZFSProcessFactoryImpl implements ZFSProcessFactory {
     @Override
     public ZFSSend getZFSSendFull(Snapshot snapshot) throws IOException {
         if (isNativeEncrypted){
-            return new ZFSSendFullEncrypted(snapshot);
+            return new ZFSSendFullEncrypted(snapshot, processWrapperFactory);
         } else {
-            return new ZFSSendFull(snapshot);
+            return new ZFSSendFull(snapshot, processWrapperFactory);
         }
     }
 
@@ -41,15 +41,15 @@ public class ZFSProcessFactoryImpl implements ZFSProcessFactory {
     public ZFSSend getZFSSendIncremental(Snapshot baseSnapshot, Snapshot incrementalSnapshot) throws IOException {
         if (isMultiIncremental){
             if (isNativeEncrypted) {
-                return new ZFSSendMultiIncrementalEncrypted(baseSnapshot,incrementalSnapshot);
+                return new ZFSSendMultiIncrementalEncrypted(baseSnapshot,incrementalSnapshot, processWrapperFactory);
             } else {
-                return new ZFSSendMultiIncremental(baseSnapshot, incrementalSnapshot);
+                return new ZFSSendMultiIncremental(baseSnapshot, incrementalSnapshot, processWrapperFactory);
             }
         } else {
             if (isNativeEncrypted){
                 throw new IllegalArgumentException();
             } else {
-                return new ZFSSendIncremental(baseSnapshot, incrementalSnapshot);
+                return new ZFSSendIncremental(baseSnapshot, incrementalSnapshot, processWrapperFactory);
             }
         }
     }
@@ -60,13 +60,13 @@ public class ZFSProcessFactoryImpl implements ZFSProcessFactory {
     }
 
     @Override
-    public ProcessWrapper getZFSListFilesystems(String parentFileSystem) throws IOException {
-        return new ZFSListFilesystems(parentFileSystem);
+    public ZFSListFilesystems getZFSListFilesystems(String parentFileSystem) throws IOException {
+        return new ZFSListFilesystems(parentFileSystem, processWrapperFactory);
     }
 
     @Override
-    public ProcessWrapper getZFSListSnapshots(String fileSystemName) throws IOException {
-        return new ZFSListSnapshots(fileSystemName);
+    public ZFSListSnapshots getZFSListSnapshots(String fileSystemName) throws IOException {
+        return new ZFSListSnapshots(fileSystemName, processWrapperFactory);
     }
 
 

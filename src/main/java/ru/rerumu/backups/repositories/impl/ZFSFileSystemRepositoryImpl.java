@@ -4,13 +4,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSDataset;
-import ru.rerumu.backups.models.zfs_dataset_properties.CompressionProperty;
 import ru.rerumu.backups.models.zfs_dataset_properties.EncryptionProperty;
 import ru.rerumu.backups.repositories.ZFSFileSystemRepository;
 import ru.rerumu.backups.repositories.ZFSSnapshotRepository;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
-import ru.rerumu.backups.zfs_api.ProcessWrapper;
 import ru.rerumu.backups.zfs_api.ZFSGetDatasetProperty;
+import ru.rerumu.backups.zfs_api.ZFSListFilesystems;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -65,7 +64,7 @@ public class ZFSFileSystemRepositoryImpl implements ZFSFileSystemRepository {
 
     @Override
     public List<ZFSDataset> getFilesystemsTreeList(String fileSystemName) throws IOException, InterruptedException, ExecutionException {
-        ProcessWrapper zfsListFilesystems = zfsProcessFactory.getZFSListFilesystems(fileSystemName);
+        ZFSListFilesystems zfsListFilesystems = zfsProcessFactory.getZFSListFilesystems(fileSystemName);
         byte[] buf = zfsListFilesystems.getBufferedInputStream().readAllBytes();
         zfsListFilesystems.close();
 

@@ -10,6 +10,7 @@ import ru.rerumu.backups.repositories.impl.ZFSFileSystemRepositoryImpl;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
 import ru.rerumu.backups.zfs_api.ProcessWrapper;
 import ru.rerumu.backups.zfs_api.ZFSGetDatasetProperty;
+import ru.rerumu.backups.zfs_api.ZFSListFilesystems;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -25,7 +26,7 @@ public class TestZFSFileSystemRepositoryImpl {
     void shouldGetFileSystems() throws IOException, InterruptedException, ExecutionException {
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
         ZFSSnapshotRepository zfsSnapshotRepository = Mockito.mock(ZFSSnapshotRepository.class);
-        ProcessWrapper zfsListFilesystems = Mockito.mock(ProcessWrapper.class);
+        ZFSListFilesystems zfsListFilesystems = Mockito.mock(ZFSListFilesystems.class);
         ZFSGetDatasetProperty zfsProperty = Mockito.mock(ZFSGetDatasetProperty.class);
 
         // Datasets
@@ -103,7 +104,7 @@ public class TestZFSFileSystemRepositoryImpl {
     void shouldReadPropertyEncryptionOff() throws Exception{
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
         ZFSSnapshotRepository zfsSnapshotRepository = Mockito.mock(ZFSSnapshotRepository.class);
-        ProcessWrapper zfsListFilesystems = Mockito.mock(ProcessWrapper.class);
+        ZFSListFilesystems zfsListFilesystems = Mockito.mock(ZFSListFilesystems.class);
         ZFSGetDatasetProperty zfsProperty = Mockito.mock(ZFSGetDatasetProperty.class);
 
         // Datasets
@@ -147,7 +148,7 @@ public class TestZFSFileSystemRepositoryImpl {
     void shouldReadPropertyEncryptionOn() throws Exception{
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
         ZFSSnapshotRepository zfsSnapshotRepository = Mockito.mock(ZFSSnapshotRepository.class);
-        ProcessWrapper zfsListFilesystems = Mockito.mock(ProcessWrapper.class);
+        ZFSListFilesystems zfsListFilesystems = Mockito.mock(ZFSListFilesystems.class);
         ZFSGetDatasetProperty zfsProperty = Mockito.mock(ZFSGetDatasetProperty.class);
 
         // Datasets
@@ -191,7 +192,7 @@ public class TestZFSFileSystemRepositoryImpl {
     void shouldReadPropertyEncryptionException() throws Exception{
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
         ZFSSnapshotRepository zfsSnapshotRepository = Mockito.mock(ZFSSnapshotRepository.class);
-        ProcessWrapper zfsListFilesystems = Mockito.mock(ProcessWrapper.class);
+        ZFSListFilesystems zfsListFilesystems = Mockito.mock(ZFSListFilesystems.class);
         ZFSGetDatasetProperty zfsProperty = Mockito.mock(ZFSGetDatasetProperty.class);
 
         // Datasets
