@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-//@Disabled
+@Disabled
 public class TestS3Repository {
 
     @Test

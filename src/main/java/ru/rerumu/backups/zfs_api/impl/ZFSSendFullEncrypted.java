@@ -18,10 +18,6 @@ public class ZFSSendFullEncrypted implements ZFSSend {
     private final ProcessWrapper processWrapper;
 
     public ZFSSendFullEncrypted(Snapshot fullSnapshot, ProcessWrapperFactory processWrapperFactory) throws IOException {
-//        super(Arrays.asList("zfs","send","-vpPw",fullSnapshot.getFullName()));
-
-//        setStderrProcessor(logger::debug);
-
         processWrapper = processWrapperFactory.getProcessWrapper(
                 Arrays.asList("zfs","send","-vpPw",fullSnapshot.getFullName())
         );

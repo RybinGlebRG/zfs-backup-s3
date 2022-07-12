@@ -9,6 +9,7 @@ import ru.rerumu.backups.zfs_api.ZFSReceive;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class ZFSReceiveImpl implements ZFSReceive {
@@ -17,9 +18,8 @@ public class ZFSReceiveImpl implements ZFSReceive {
     private final ProcessWrapper processWrapper;
 
     public ZFSReceiveImpl(String pool, ProcessWrapperFactory processWrapperFactory) throws IOException {
-//        super(Arrays.asList("zfs","receive","-duvF",pool));
         processWrapper = processWrapperFactory.getProcessWrapper(
-                Arrays.asList("zfs", "receive", "-duvF", pool)
+                List.of("zfs", "receive", "-duvF", pool)
         );
 
         processWrapper.setStderrProcessor(logger::error);

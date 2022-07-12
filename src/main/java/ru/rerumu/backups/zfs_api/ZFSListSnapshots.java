@@ -8,6 +8,7 @@ import ru.rerumu.backups.zfs_api.impl.ProcessWrapperImpl;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class ZFSListSnapshots  {
@@ -16,12 +17,9 @@ public class ZFSListSnapshots  {
     private final ProcessWrapper processWrapper;
 
     public ZFSListSnapshots(String fileSystemName, ProcessWrapperFactory processWrapperFactory) throws IOException {
-//        super(Arrays.asList(
-//                "zfs","list","-rH","-t","snapshot","-o","name","-s","creation","-d","1", fileSystemName
-//        ));
 
         processWrapper = processWrapperFactory.getProcessWrapper(
-                Arrays.asList(
+                List.of(
                         "zfs","list","-rH","-t","snapshot","-o","name","-s","creation","-d","1", fileSystemName
                 )
         );

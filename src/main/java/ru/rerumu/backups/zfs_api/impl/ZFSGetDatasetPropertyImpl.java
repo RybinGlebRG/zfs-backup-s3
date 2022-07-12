@@ -21,7 +21,7 @@ public class ZFSGetDatasetPropertyImpl implements ZFSGetDatasetProperty {
     ) throws IOException {
 
         processWrapper = processWrapperFactory.getProcessWrapper(
-                Arrays.asList(
+                List.of(
                         "zfs","get","-Hp","-d","0","-t","filesystem,volume","-o","value",propertyName,datasetName
                 )
         );
