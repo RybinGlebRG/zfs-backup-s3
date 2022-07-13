@@ -28,7 +28,6 @@ public class BackupController {
                     targetSnapshot.getDataset()
             );
 
-            // TODO: Kill processes and threads if exception
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
