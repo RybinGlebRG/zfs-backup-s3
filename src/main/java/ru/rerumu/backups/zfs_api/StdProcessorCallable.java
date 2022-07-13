@@ -8,19 +8,20 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.Callable;
 
-public class StdProcessorRunnable implements Runnable{
-    private final Logger logger = LoggerFactory.getLogger(StdProcessorRunnable.class);
+public class StdProcessorCallable implements Callable<Integer> {
+    private final Logger logger = LoggerFactory.getLogger(StdProcessorCallable.class);
     private final StdProcessor stdProcessor;
     private final BufferedInputStream bufferedInputStream;
 
-    public StdProcessorRunnable(BufferedInputStream bufferedInputStream, StdProcessor stdProcessor){
+    public StdProcessorCallable(BufferedInputStream bufferedInputStream, StdProcessor stdProcessor){
         this.stdProcessor = stdProcessor;
         this.bufferedInputStream = bufferedInputStream;
     }
 
     @Override
-    public void run() {
+    public Integer call() {
         logger.info("Started reading std");
         try(InputStreamReader inputStreamReader = new InputStreamReader(bufferedInputStream, StandardCharsets.UTF_8);
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)){
@@ -28,9 +29,11 @@ public class StdProcessorRunnable implements Runnable{
             while ((s=bufferedReader.readLine())!=null){
                 stdProcessor.process(s);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error(e.getMessage(),e);
+            return 1;
         }
         logger.info("Finished reading std");
+        return 0;
     }
 }

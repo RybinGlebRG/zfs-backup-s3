@@ -1,5 +1,7 @@
 package ru.rerumu.backups.zfs_api.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.factories.ProcessWrapperFactory;
 import ru.rerumu.backups.zfs_api.ProcessWrapper;
 import ru.rerumu.backups.zfs_api.ZFSGetDatasetProperty;
@@ -11,7 +13,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class ZFSGetDatasetPropertyImpl implements ZFSGetDatasetProperty {
-
+    private final Logger logger = LoggerFactory.getLogger(ZFSGetDatasetPropertyImpl.class);
     private final ProcessWrapper processWrapper;
 
     public ZFSGetDatasetPropertyImpl(
@@ -25,6 +27,7 @@ public class ZFSGetDatasetPropertyImpl implements ZFSGetDatasetProperty {
                         "zfs","get","-Hp","-d","0","-t","filesystem,volume","-o","value",propertyName,datasetName
                 )
         );
+        processWrapper.setStderrProcessor(logger::error);
         processWrapper.run();
     }
 

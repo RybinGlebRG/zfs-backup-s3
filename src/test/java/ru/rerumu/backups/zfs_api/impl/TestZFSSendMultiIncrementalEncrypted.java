@@ -1,20 +1,19 @@
-package ru.rerumu.backups.zfs_api;
+package ru.rerumu.backups.zfs_api.impl;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 import ru.rerumu.backups.factories.ProcessWrapperFactory;
+import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.zfs_api.ProcessWrapper;
-import ru.rerumu.backups.zfs_api.ZFSListFilesystems;
-import ru.rerumu.backups.zfs_api.impl.ZFSReceiveImpl;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.*;
 
-class TestZFSReceiveImpl {
-
+class TestZFSSendMultiIncrementalEncrypted {
     @Test
-    void shouldCreate() throws Exception{
+    void shouldRunProcess()throws Exception{
         ProcessWrapperFactory processWrapperFactory = Mockito.mock(ProcessWrapperFactory.class);
         ProcessWrapper processWrapper = Mockito.mock(ProcessWrapper.class);
 
@@ -22,19 +21,23 @@ class TestZFSReceiveImpl {
 
         InOrder inOrder = Mockito.inOrder(processWrapperFactory,processWrapper);
 
-        ZFSReceiveImpl zfsReceive = new ZFSReceiveImpl("Test",processWrapperFactory);
-        zfsReceive.getBufferedOutputStream();
-        zfsReceive.close();
+        ZFSSendMultiIncrementalEncrypted zfsSendMultiIncrementalEncrypted = new ZFSSendMultiIncrementalEncrypted(
+                new Snapshot("Test@level0"),
+                new Snapshot("Test@level1"),
+                processWrapperFactory);
+        zfsSendMultiIncrementalEncrypted.getBufferedInputStream();
+        zfsSendMultiIncrementalEncrypted.close();
+        zfsSendMultiIncrementalEncrypted.kill();
 
         inOrder.verify(processWrapperFactory)
                 .getProcessWrapper(List.of(
-                        "zfs", "receive", "-duvF","Test"
+                        "zfs", "send", "-vpPIw","Test@level0","Test@level1"
                 ));
 
         inOrder.verify(processWrapper).setStderrProcessor(Mockito.any());
-        inOrder.verify(processWrapper).setStdinProcessor(Mockito.any());
-        inOrder.verify(processWrapper).getBufferedOutputStream();
+        inOrder.verify(processWrapper).getBufferedInputStream();
         inOrder.verify(processWrapper).close();
+        inOrder.verify(processWrapper).kill();
     }
 
 }

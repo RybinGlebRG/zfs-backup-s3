@@ -19,6 +19,8 @@ class TestZFSListSnapshots {
         InOrder inOrder = Mockito.inOrder(processWrapperFactory,processWrapper);
 
         ZFSListSnapshots zfsListSnapshots = new ZFSListSnapshots("Test/test1/test2",processWrapperFactory);
+        zfsListSnapshots.getBufferedInputStream();
+        zfsListSnapshots.close();
 
         inOrder.verify(processWrapperFactory)
                 .getProcessWrapper(List.of(
@@ -26,6 +28,8 @@ class TestZFSListSnapshots {
                 ));
 
         inOrder.verify(processWrapper).setStderrProcessor(Mockito.any());
+        inOrder.verify(processWrapper).getBufferedInputStream();
+        inOrder.verify(processWrapper).close();
     }
 
 }

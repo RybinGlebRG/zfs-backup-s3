@@ -16,8 +16,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-// TODO: Test stream read after closed
-class TestStdProcessorRunnable {
+class TestStdProcessorCallable {
 
     @Test
     void shouldProcess() throws ExecutionException, InterruptedException {
@@ -30,8 +29,8 @@ class TestStdProcessorRunnable {
         ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
 
         ExecutorService executorService = Executors.newFixedThreadPool(1);
-        Future<?> future = executorService.submit(new StdProcessorRunnable(bufferedInputStream,stdProcessor));
-        future.get();
+        Future<Integer> future = executorService.submit(new StdProcessorCallable(bufferedInputStream,stdProcessor));
+        int threadRes = future.get();
 
         Mockito.verify(stdProcessor,Mockito.atLeastOnce()).process(argument.capture());
         List<String> arguments = argument.getAllValues();

@@ -20,6 +20,8 @@ class TestZFSListFilesystems {
         InOrder inOrder = Mockito.inOrder(processWrapperFactory,processWrapper);
 
         ZFSListFilesystems zfsListFilesystems = new ZFSListFilesystems("Test/test1/test2",processWrapperFactory);
+        zfsListFilesystems.getBufferedInputStream();
+        zfsListFilesystems.close();
 
         inOrder.verify(processWrapperFactory)
                 .getProcessWrapper(List.of(
@@ -27,7 +29,8 @@ class TestZFSListFilesystems {
                 ));
 
         inOrder.verify(processWrapper).setStderrProcessor(Mockito.any());
-
+        inOrder.verify(processWrapper).getBufferedInputStream();
+        inOrder.verify(processWrapper).close();
     }
 
 }

@@ -10,6 +10,7 @@ import ru.rerumu.backups.zfs_api.ZFSSend;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class ZFSSendFullEncrypted implements ZFSSend {
@@ -19,7 +20,7 @@ public class ZFSSendFullEncrypted implements ZFSSend {
 
     public ZFSSendFullEncrypted(Snapshot fullSnapshot, ProcessWrapperFactory processWrapperFactory) throws IOException {
         processWrapper = processWrapperFactory.getProcessWrapper(
-                Arrays.asList("zfs","send","-vpPw",fullSnapshot.getFullName())
+                List.of("zfs","send","-vpPw",fullSnapshot.getFullName())
         );
 
         processWrapper.setStderrProcessor(logger::error);
