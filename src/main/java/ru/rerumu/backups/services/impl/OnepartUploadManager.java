@@ -13,7 +13,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
-public class OnepartUploadManager extends AbstractUploadManager {
+public class OnepartUploadManager extends AbstractS3Manager {
     private final Logger logger = LoggerFactory.getLogger(OnepartUploadManager.class);
     private final S3Storage s3Storage;
     private final String key;

@@ -10,9 +10,6 @@ import ru.rerumu.backups.factories.ZFSFileReaderFactory;
 import ru.rerumu.backups.factories.ZFSFileWriterFactory;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
 import ru.rerumu.backups.factories.impl.*;
-import ru.rerumu.backups.factories.ZFSFileReaderFactory;
-import ru.rerumu.backups.factories.ZFSFileWriterFactory;
-import ru.rerumu.backups.factories.ZFSProcessFactory;
 import ru.rerumu.backups.factories.impl.ZFSFileReaderFactoryImpl;
 import ru.rerumu.backups.factories.impl.ZFSFileWriterFactoryImpl;
 import ru.rerumu.backups.factories.impl.ZFSProcessFactoryImpl;
@@ -63,7 +60,7 @@ public class App {
                     ));
                     S3Repository s3Repository = new S3Repository(
                             s3StorageList,
-                            new UploadManagerFactoryImpl(
+                            new S3ManagerFactoryImpl(
                                     Integer.parseInt(configuration.getProperty("max_part_size"))
                             )
                     );

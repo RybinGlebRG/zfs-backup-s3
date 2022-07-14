@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.IncorrectHashException;
 import ru.rerumu.backups.exceptions.S3MissesFileException;
-import ru.rerumu.backups.factories.impl.UploadManagerFactoryImpl;
+import ru.rerumu.backups.factories.impl.S3ManagerFactoryImpl;
 import ru.rerumu.backups.models.S3Storage;
 import ru.rerumu.backups.repositories.impl.S3Repository;
 import software.amazon.awssdk.regions.Region;
@@ -23,7 +23,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -44,7 +43,7 @@ public class TestS3Repository {
                         new URI(System.getProperty("endpoint")),
                         "STANDARD"
                 )),
-                new UploadManagerFactoryImpl(500_000_000)
+                new S3ManagerFactoryImpl(500_000_000)
         );
 
 
@@ -85,7 +84,7 @@ public class TestS3Repository {
                         new URI(System.getProperty("endpoint")),
                         "STANDARD"
                 )),
-                new UploadManagerFactoryImpl(6_291_456)
+                new S3ManagerFactoryImpl(6_291_456)
         );
 
 
@@ -121,7 +120,7 @@ public class TestS3Repository {
                         new URI(System.getProperty("endpoint")),
                         "STANDARD"
                 )),
-                new UploadManagerFactoryImpl(500_000_000)
+                new S3ManagerFactoryImpl(500_000_000)
         );
 
 
