@@ -7,6 +7,7 @@ import java.io.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+@Deprecated
 public class GZIPCompressor implements Compressor {
 
     @Override

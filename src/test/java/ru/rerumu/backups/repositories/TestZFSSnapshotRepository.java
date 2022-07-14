@@ -7,6 +7,7 @@ import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.repositories.impl.ZFSSnapshotRepositoryImpl;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
 import ru.rerumu.backups.zfs_api.ProcessWrapper;
+import ru.rerumu.backups.zfs_api.ZFSListSnapshots;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -20,7 +21,7 @@ public class TestZFSSnapshotRepository {
     @Test
     void shouldGetShort() throws IOException, InterruptedException, ExecutionException {
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
-        ProcessWrapper zfsListSnapshots = Mockito.mock(ProcessWrapper.class);
+        ZFSListSnapshots zfsListSnapshots = Mockito.mock(ZFSListSnapshots.class);
 
         Mockito.when(zfsProcessFactory.getZFSListSnapshots("ExternalPool/Applications"))
                 .thenReturn(zfsListSnapshots);

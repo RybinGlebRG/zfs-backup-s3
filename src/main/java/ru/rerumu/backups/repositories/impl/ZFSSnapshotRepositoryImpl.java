@@ -6,6 +6,7 @@ import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.repositories.ZFSSnapshotRepository;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
 import ru.rerumu.backups.zfs_api.ProcessWrapper;
+import ru.rerumu.backups.zfs_api.ZFSListSnapshots;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -24,7 +25,7 @@ public class ZFSSnapshotRepositoryImpl implements ZFSSnapshotRepository {
 
     @Override
     public List<Snapshot> getAllSnapshotsOrdered(String fileSystemName) throws IOException, InterruptedException, ExecutionException {
-        ProcessWrapper zfsListSnapshots = zfsProcessFactory.getZFSListSnapshots(fileSystemName);
+        ZFSListSnapshots zfsListSnapshots = zfsProcessFactory.getZFSListSnapshots(fileSystemName);
         byte[] buf = zfsListSnapshots.getBufferedInputStream().readAllBytes();
         zfsListSnapshots.close();
 

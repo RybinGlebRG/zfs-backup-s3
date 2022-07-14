@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+@Deprecated
 public class SnapshotSenderBySnapshot extends AbstractSnapshotSender {
     private final Logger logger = LoggerFactory.getLogger(SnapshotSenderBySnapshot.class);
 

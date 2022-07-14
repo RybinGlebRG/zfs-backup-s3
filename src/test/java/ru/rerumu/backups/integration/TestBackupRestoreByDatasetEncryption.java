@@ -30,10 +30,7 @@ import ru.rerumu.backups.services.SnapshotReceiver;
 import ru.rerumu.backups.services.ZFSBackupService;
 import ru.rerumu.backups.services.ZFSRestoreService;
 import ru.rerumu.backups.services.impl.SnapshotReceiverImpl;
-import ru.rerumu.backups.zfs_api.ProcessWrapper;
-import ru.rerumu.backups.zfs_api.ZFSGetDatasetProperty;
-import ru.rerumu.backups.zfs_api.ZFSReceive;
-import ru.rerumu.backups.zfs_api.ZFSSend;
+import ru.rerumu.backups.zfs_api.*;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -51,7 +48,7 @@ import java.util.concurrent.Future;
 
 import static org.mockito.Matchers.eq;
 
-//@Disabled
+@Disabled
 public class TestBackupRestoreByDatasetEncryption {
 
     private byte[] randomBytes(int n) {
@@ -85,7 +82,7 @@ public class TestBackupRestoreByDatasetEncryption {
         }).when(remoteBackupRepository).add(Mockito.any(), Mockito.any());
 
         // zfsListFilesystems
-        ProcessWrapper zfsListFilesystems = Mockito.mock(ProcessWrapper.class);
+        ZFSListFilesystems zfsListFilesystems = Mockito.mock(ZFSListFilesystems.class);
         String filesystems = "ExternalPool\n" +
                 "ExternalPool/Applications\n";
         Mockito.when(zfsListFilesystems.getBufferedInputStream()).thenReturn(
@@ -93,9 +90,9 @@ public class TestBackupRestoreByDatasetEncryption {
         );
 
         // zfsListSnapshots
-        List<ProcessWrapper> processWrappers = new ArrayList<>();
-        processWrappers.add(Mockito.mock(ProcessWrapper.class));
-        processWrappers.add(Mockito.mock(ProcessWrapper.class));
+        List<ZFSListSnapshots> processWrappers = new ArrayList<>();
+        processWrappers.add(Mockito.mock(ZFSListSnapshots.class));
+        processWrappers.add(Mockito.mock(ZFSListSnapshots.class));
 
         List<String> stringSnapshots = new ArrayList<>();
         stringSnapshots.add("ExternalPool@auto-20220326-150000\n" +
@@ -182,7 +179,6 @@ public class TestBackupRestoreByDatasetEncryption {
         ZFSSnapshotRepository zfsSnapshotRepository = new ZFSSnapshotRepositoryImpl(zfsProcessFactory);
         ZFSFileSystemRepository zfsFileSystemRepository = new ZFSFileSystemRepositoryImpl(zfsProcessFactory, zfsSnapshotRepository);
         ZFSFileWriterFactory zfsFileWriterFactory = new ZFSFileWriterFactoryImpl(
-                "84fBS1KsChnuaV0",
                 1070,
                 1024);
         SnapshotSenderFactory snapshotSenderFactory = new SnapshotSenderFactoryImpl(
@@ -239,7 +235,7 @@ public class TestBackupRestoreByDatasetEncryption {
                 .thenReturn(zfsReceive);
 
 
-        ZFSFileReaderFactory zfsFileReaderFactory = new ZFSFileReaderFactoryImpl("84fBS1KsChnuaV0");
+        ZFSFileReaderFactory zfsFileReaderFactory = new ZFSFileReaderFactoryImpl();
         SnapshotReceiver snapshotReceiver = new SnapshotReceiverImpl(
                 zfsProcessFactory,
                 new ZFSPool("ReceivePool"),

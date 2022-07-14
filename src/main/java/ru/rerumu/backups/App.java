@@ -69,17 +69,15 @@ public class App {
                     );
 
                     ZFSProcessFactory zfsProcessFactory = new ZFSProcessFactoryImpl(
-                            Boolean.parseBoolean(configuration.getProperty("is.multi.incremental")),
-                            Boolean.parseBoolean(configuration.getProperty("is.native.encrypted"))
+                            new ProcessWrapperFactoryImpl()
                     );
                     ZFSSnapshotRepository zfsSnapshotRepository = new ZFSSnapshotRepositoryImpl(zfsProcessFactory);
                     ZFSFileSystemRepository zfsFileSystemRepository = new ZFSFileSystemRepositoryImpl(zfsProcessFactory,zfsSnapshotRepository);
                     ZFSFileWriterFactory zfsFileWriterFactory = new ZFSFileWriterFactoryImpl(
-                            configuration.getProperty("password"),
                             Integer.parseInt(configuration.getProperty("chunk.size")),
                             Long.parseLong(configuration.getProperty("file.part.size")));
                     SnapshotSenderFactory snapshotSenderFactory = new SnapshotSenderFactoryImpl(
-                            Boolean.parseBoolean(configuration.getProperty("is.multi.incremental")),
+                            true,
                             filePartRepository,
                             s3Repository,
                             zfsProcessFactory,
@@ -91,7 +89,7 @@ public class App {
                             zfsFileSystemRepository,
                             snapshotSenderFactory.getSnapshotSender(),
                             new DatasetPropertiesChecker(
-                                    Boolean.parseBoolean(configuration.getProperty("is.native.encrypted"))
+                                    true
                             )
                     );
 
@@ -105,10 +103,9 @@ public class App {
                     );
 
                     ZFSProcessFactory zfsProcessFactory = new ZFSProcessFactoryImpl(
-                            Boolean.parseBoolean(configuration.getProperty("is.multi.incremental")),
-                            Boolean.parseBoolean(configuration.getProperty("is.native.encrypted"))
+                            new ProcessWrapperFactoryImpl()
                     );
-                    ZFSFileReaderFactory zfsFileReaderFactory = new ZFSFileReaderFactoryImpl(configuration.getProperty("password"));
+                    ZFSFileReaderFactory zfsFileReaderFactory = new ZFSFileReaderFactoryImpl();
                     SnapshotReceiver snapshotReceiver = new SnapshotReceiverImpl(
                             zfsProcessFactory,
                             new ZFSPool(configuration.getProperty("receive.pool")),
