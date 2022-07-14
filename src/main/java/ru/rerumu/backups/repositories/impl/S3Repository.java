@@ -143,6 +143,7 @@ public class S3Repository implements RemoteBackupRepository {
             logger.error(String.format("File '%s' not found on S3", path.getFileName().toString()));
             throw new S3MissesFileException();
         }
+        // TODO: Check already added
         addDatasetMeta(datasetName);
         logger.info(String.format("File '%s' found on S3", path.getFileName().toString()));
     }
