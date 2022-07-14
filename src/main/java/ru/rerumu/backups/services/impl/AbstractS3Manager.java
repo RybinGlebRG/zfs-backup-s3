@@ -4,6 +4,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.IncorrectHashException;
+import ru.rerumu.backups.exceptions.S3MissesFileException;
 import ru.rerumu.backups.services.S3Manager;
 
 import java.io.BufferedInputStream;
@@ -18,7 +19,7 @@ import java.security.NoSuchAlgorithmException;
 public abstract class AbstractS3Manager implements S3Manager {
     private final Logger logger = LoggerFactory.getLogger(AbstractS3Manager.class);
 
-    public abstract void run() throws IOException, NoSuchAlgorithmException, IncorrectHashException;
+    public abstract void run() throws IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException;
 
     protected String getMD5Hex(byte[] bytes)
             throws NoSuchAlgorithmException,
