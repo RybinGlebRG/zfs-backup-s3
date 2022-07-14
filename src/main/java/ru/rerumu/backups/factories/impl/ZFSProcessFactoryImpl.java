@@ -10,26 +10,16 @@ import ru.rerumu.backups.zfs_api.impl.*;
 import java.io.IOException;
 
 public class ZFSProcessFactoryImpl implements ZFSProcessFactory {
-    private final boolean isMultiIncremental;
-    private final boolean isNativeEncrypted;
     private final ProcessWrapperFactory processWrapperFactory;
 
     public ZFSProcessFactoryImpl(
-            boolean isMultiIncremental,
-            boolean isNativeEncrypted,
             ProcessWrapperFactory processWrapperFactory){
-        this.isMultiIncremental = isMultiIncremental;
-        this.isNativeEncrypted = isNativeEncrypted;
         this.processWrapperFactory = processWrapperFactory;
     }
 
     @Override
     public ZFSSend getZFSSendFull(Snapshot snapshot) throws IOException {
-        if (isNativeEncrypted){
-            return new ZFSSendFullEncrypted(snapshot, processWrapperFactory);
-        } else {
-            return new ZFSSendFull(snapshot, processWrapperFactory);
-        }
+        return new ZFSSendFullEncrypted(snapshot, processWrapperFactory);
     }
 
     @Override
@@ -39,19 +29,7 @@ public class ZFSProcessFactoryImpl implements ZFSProcessFactory {
 
     @Override
     public ZFSSend getZFSSendIncremental(Snapshot baseSnapshot, Snapshot incrementalSnapshot) throws IOException {
-        if (isMultiIncremental){
-            if (isNativeEncrypted) {
-                return new ZFSSendMultiIncrementalEncrypted(baseSnapshot,incrementalSnapshot, processWrapperFactory);
-            } else {
-                return new ZFSSendMultiIncremental(baseSnapshot, incrementalSnapshot, processWrapperFactory);
-            }
-        } else {
-            if (isNativeEncrypted){
-                throw new IllegalArgumentException();
-            } else {
-                return new ZFSSendIncremental(baseSnapshot, incrementalSnapshot, processWrapperFactory);
-            }
-        }
+        return new ZFSSendMultiIncrementalEncrypted(baseSnapshot,incrementalSnapshot, processWrapperFactory);
     }
 
     @Override

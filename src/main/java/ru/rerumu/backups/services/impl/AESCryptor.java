@@ -20,6 +20,7 @@ import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 
+@Deprecated
 public class AESCryptor implements Cryptor {
     private static final Integer SALT_SIZE=8;
 

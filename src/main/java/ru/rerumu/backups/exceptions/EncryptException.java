@@ -1,5 +1,6 @@
 package ru.rerumu.backups.exceptions;
 
+
 public class EncryptException extends Exception{
 
     public EncryptException(Throwable e){

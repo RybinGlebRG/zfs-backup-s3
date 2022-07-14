@@ -8,6 +8,7 @@ import org.mockito.Mockito;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -31,6 +32,34 @@ class TestStdProcessorCallable {
         ExecutorService executorService = Executors.newFixedThreadPool(1);
         Future<Integer> future = executorService.submit(new StdProcessorCallable(bufferedInputStream,stdProcessor));
         int threadRes = future.get();
+
+        Mockito.verify(stdProcessor,Mockito.atLeastOnce()).process(argument.capture());
+        List<String> arguments = argument.getAllValues();
+        StringBuilder res = new StringBuilder();
+        for (String item : arguments) {
+            res.append(item);
+        }
+        Assertions.assertEquals(res.toString(),generatedString);
+
+    }
+
+    @Test
+    void shouldThrowException() throws ExecutionException, InterruptedException {
+        String generatedString = RandomStringUtils.random(2300, true, true);
+        byte[] buf = generatedString.getBytes(StandardCharsets.UTF_8);
+
+        InputStream inputStream = new ByteArrayInputStream(buf);
+        BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+        StdProcessor stdProcessor = Mockito.mock(StdProcessor.class);
+        Mockito.doThrow(IOException.class).when(stdProcessor).process(Mockito.any());
+
+        ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+
+        ExecutorService executorService = Executors.newFixedThreadPool(1);
+        Future<Integer> future = executorService.submit(new StdProcessorCallable(bufferedInputStream,stdProcessor));
+        int threadRes = future.get();
+
+        Assertions.assertEquals(1,threadRes);
 
         Mockito.verify(stdProcessor,Mockito.atLeastOnce()).process(argument.capture());
         List<String> arguments = argument.getAllValues();
