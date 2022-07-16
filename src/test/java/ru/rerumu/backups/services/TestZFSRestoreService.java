@@ -5,7 +5,7 @@ import org.mockito.InOrder;
 import org.mockito.Mockito;
 import ru.rerumu.backups.exceptions.*;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
-import ru.rerumu.backups.repositories.FilePartRepository;
+import ru.rerumu.backups.repositories.LocalBackupRepository;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
@@ -13,23 +13,28 @@ import java.util.concurrent.ExecutionException;
 class TestZFSRestoreService {
 
     @Test
-    void shouldRestoreOneFile() throws FinishedFlagException, IncorrectFilePartNameException, CompressorException, NoMorePartsException, IOException, TooManyPartsException, ClassNotFoundException, InterruptedException, EncryptException, ExecutionException {
+    void shouldRestoreOneFile() throws Exception {
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
-        FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
+        LocalBackupRepository localBackupRepository = Mockito.mock(LocalBackupRepository.class);
         SnapshotReceiver snapshotReceiver = Mockito.mock(SnapshotReceiver.class);
 
-        Mockito.when(filePartRepository.getNextInputPath())
+        Mockito.when(localBackupRepository.getNextInputPath())
                 .thenReturn(null)
                 .thenThrow(new FinishedFlagException());
 
-        InOrder inOrder = Mockito.inOrder(filePartRepository,snapshotReceiver);
+        InOrder inOrder = Mockito.inOrder(localBackupRepository,snapshotReceiver);
 
-        ZFSRestoreService zfsRestoreService = new ZFSRestoreService("test",zfsProcessFactory,true,filePartRepository,snapshotReceiver);
+        ZFSRestoreService zfsRestoreService = new ZFSRestoreService(
+                "test",
+                zfsProcessFactory,
+                true,
+                localBackupRepository,
+                snapshotReceiver);
 
         zfsRestoreService.zfsReceive();
 
-        Mockito.verify(filePartRepository,Mockito.times(2)).getNextInputPath();
-        inOrder.verify(filePartRepository).getNextInputPath();
+        Mockito.verify(localBackupRepository,Mockito.times(2)).getNextInputPath();
+        inOrder.verify(localBackupRepository).getNextInputPath();
 
         Mockito.verify(snapshotReceiver,Mockito.times(1)).receiveSnapshotPart(Mockito.any());
         inOrder.verify(snapshotReceiver).receiveSnapshotPart(Mockito.any());
@@ -40,24 +45,24 @@ class TestZFSRestoreService {
     }
 
     @Test
-    void shouldRestoreTwoFiles() throws FinishedFlagException, NoMorePartsException, IOException, TooManyPartsException, IncorrectFilePartNameException, CompressorException, ClassNotFoundException, InterruptedException, EncryptException, ExecutionException {
+    void shouldRestoreTwoFiles() throws Exception{
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
-        FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
+        LocalBackupRepository localBackupRepository = Mockito.mock(LocalBackupRepository.class);
         SnapshotReceiver snapshotReceiver = Mockito.mock(SnapshotReceiver.class);
 
-        Mockito.when(filePartRepository.getNextInputPath())
+        Mockito.when(localBackupRepository.getNextInputPath())
                 .thenReturn(null)
                 .thenReturn(null)
                 .thenThrow(new FinishedFlagException());
 
-        InOrder inOrder = Mockito.inOrder(filePartRepository,snapshotReceiver);
+        InOrder inOrder = Mockito.inOrder(localBackupRepository,snapshotReceiver);
 
-        ZFSRestoreService zfsRestoreService = new ZFSRestoreService("test",zfsProcessFactory,true,filePartRepository,snapshotReceiver);
+        ZFSRestoreService zfsRestoreService = new ZFSRestoreService("test",zfsProcessFactory,true, localBackupRepository,snapshotReceiver);
 
         zfsRestoreService.zfsReceive();
 
-        Mockito.verify(filePartRepository,Mockito.times(3)).getNextInputPath();
-        inOrder.verify(filePartRepository).getNextInputPath();
+        Mockito.verify(localBackupRepository,Mockito.times(3)).getNextInputPath();
+        inOrder.verify(localBackupRepository).getNextInputPath();
 
         Mockito.verify(snapshotReceiver,Mockito.times(2)).receiveSnapshotPart(Mockito.any());
         inOrder.verify(snapshotReceiver).receiveSnapshotPart(Mockito.any());
@@ -67,22 +72,22 @@ class TestZFSRestoreService {
     }
 
     @Test
-    void shouldWaitForParts() throws FinishedFlagException, IncorrectFilePartNameException, CompressorException, NoMorePartsException, IOException, TooManyPartsException, ClassNotFoundException, InterruptedException, EncryptException, ExecutionException {
+    void shouldWaitForParts() throws Exception {
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
-        FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
+        LocalBackupRepository localBackupRepository = Mockito.mock(LocalBackupRepository.class);
         SnapshotReceiver snapshotReceiver = Mockito.mock(SnapshotReceiver.class);
 
-        Mockito.when(filePartRepository.getNextInputPath())
+        Mockito.when(localBackupRepository.getNextInputPath())
                 .thenThrow(new NoMorePartsException())
                 .thenThrow(new FinishedFlagException());
 
-        InOrder inOrder = Mockito.inOrder(filePartRepository,snapshotReceiver);
+        InOrder inOrder = Mockito.inOrder(localBackupRepository,snapshotReceiver);
 
-        ZFSRestoreService zfsRestoreService = new ZFSRestoreService("test",zfsProcessFactory,true,filePartRepository,snapshotReceiver);
+        ZFSRestoreService zfsRestoreService = new ZFSRestoreService("test",zfsProcessFactory,true, localBackupRepository,snapshotReceiver);
 
         zfsRestoreService.zfsReceive();
 
-        inOrder.verify(filePartRepository,Mockito.times(2)).getNextInputPath();
+        inOrder.verify(localBackupRepository,Mockito.times(2)).getNextInputPath();
 
         Mockito.verify(snapshotReceiver,Mockito.never()).receiveSnapshotPart(Mockito.any());
 

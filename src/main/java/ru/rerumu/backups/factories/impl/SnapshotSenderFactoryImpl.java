@@ -3,7 +3,7 @@ package ru.rerumu.backups.factories.impl;
 import ru.rerumu.backups.factories.SnapshotSenderFactory;
 import ru.rerumu.backups.factories.ZFSFileWriterFactory;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
-import ru.rerumu.backups.repositories.FilePartRepository;
+import ru.rerumu.backups.repositories.LocalBackupRepository;
 import ru.rerumu.backups.repositories.RemoteBackupRepository;
 import ru.rerumu.backups.services.SnapshotSender;
 import ru.rerumu.backups.services.impl.SnapshotSenderByDataset;
@@ -12,7 +12,7 @@ import ru.rerumu.backups.services.impl.SnapshotSenderBySnapshot;
 public class SnapshotSenderFactoryImpl implements SnapshotSenderFactory {
 
     private final boolean isMultiIncremental;
-    private final FilePartRepository filePartRepository;
+    private final LocalBackupRepository localBackupRepository;
     private final RemoteBackupRepository remoteBackupRepository;
     private final ZFSProcessFactory zfsProcessFactory;
     private final ZFSFileWriterFactory zfsFileWriterFactory;
@@ -20,14 +20,14 @@ public class SnapshotSenderFactoryImpl implements SnapshotSenderFactory {
 
     public SnapshotSenderFactoryImpl(
             boolean isMultiIncremental,
-            FilePartRepository filePartRepository,
+            LocalBackupRepository localBackupRepository,
             RemoteBackupRepository remoteBackupRepository,
             ZFSProcessFactory zfsProcessFactory,
             ZFSFileWriterFactory zfsFileWriterFactory,
             boolean isLoadS3
     ){
         this.isMultiIncremental = isMultiIncremental;
-        this.filePartRepository = filePartRepository;
+        this.localBackupRepository = localBackupRepository;
         this.remoteBackupRepository = remoteBackupRepository;
         this.zfsProcessFactory = zfsProcessFactory;
         this.zfsFileWriterFactory = zfsFileWriterFactory;
@@ -38,7 +38,7 @@ public class SnapshotSenderFactoryImpl implements SnapshotSenderFactory {
     public SnapshotSender getSnapshotSender() {
         if (isMultiIncremental){
             return new SnapshotSenderByDataset(
-                    filePartRepository,
+                    localBackupRepository,
                     remoteBackupRepository,
                     zfsProcessFactory,
                     zfsFileWriterFactory,
@@ -46,7 +46,7 @@ public class SnapshotSenderFactoryImpl implements SnapshotSenderFactory {
             );
         } else {
             return new SnapshotSenderBySnapshot(
-                    filePartRepository,
+                    localBackupRepository,
                     remoteBackupRepository,
                     zfsProcessFactory,
                     zfsFileWriterFactory,

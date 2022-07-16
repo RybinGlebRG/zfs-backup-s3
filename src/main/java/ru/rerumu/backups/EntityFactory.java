@@ -1,12 +1,14 @@
 package ru.rerumu.backups;
 
+import ru.rerumu.backups.exceptions.IncorrectHashException;
 import ru.rerumu.backups.factories.SnapshotSenderFactory;
 import ru.rerumu.backups.factories.ZFSFileWriterFactory;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
 import ru.rerumu.backups.factories.impl.*;
 import ru.rerumu.backups.models.S3Storage;
-import ru.rerumu.backups.repositories.FilePartRepository;
-import ru.rerumu.backups.repositories.impl.FilePartRepositoryImpl;
+import ru.rerumu.backups.repositories.LocalBackupRepository;
+import ru.rerumu.backups.repositories.RemoteBackupRepository;
+import ru.rerumu.backups.repositories.impl.LocalBackupRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.S3Repository;
 import software.amazon.awssdk.regions.Region;
 
@@ -14,6 +16,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,9 +26,12 @@ public class EntityFactory {
     public EntityFactory() throws IOException {
     }
 
-    public FilePartRepository getFilePartRepository(){
-        return new FilePartRepositoryImpl(
-                Paths.get(configuration.getProperty("backup.directory"))
+    public LocalBackupRepository getLocalBackupRepository(RemoteBackupRepository remoteBackupRepository) throws IOException, NoSuchAlgorithmException, IncorrectHashException {
+        return new LocalBackupRepositoryImpl(
+                Paths.get(configuration.getProperty("backup.directory")),
+                Paths.get(configuration.getProperty("cloned_path")),
+                remoteBackupRepository,
+                Boolean.parseBoolean(configuration.getProperty("is.load.aws"))
         );
     }
 
@@ -67,13 +73,13 @@ public class EntityFactory {
     }
 
     public SnapshotSenderFactory getSnapshotSenderFactory(
-            FilePartRepository filePartRepository,
+            LocalBackupRepository localBackupRepository,
             S3Repository s3Repository,
             ZFSProcessFactory zfsProcessFactory,
             ZFSFileWriterFactory zfsFileWriterFactory){
         return new SnapshotSenderFactoryImpl(
                 true,
-                filePartRepository,
+                localBackupRepository,
                 s3Repository,
                 zfsProcessFactory,
                 zfsFileWriterFactory,

@@ -1,4 +1,4 @@
-package ru.rerumu.backups.models;
+package ru.rerumu.backups.models.meta;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -25,8 +25,21 @@ public class BackupMeta {
 
     }
 
+    public boolean isAdded(String datasetName){
+        for (String item: datasets){
+            if (item.equals(datasetName)){
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void addDataset(String datasetName){
         datasets.add(datasetName);
+    }
+
+    public List<String> getDatasets() {
+        return datasets;
     }
 
     public JSONObject toJSONObject(){

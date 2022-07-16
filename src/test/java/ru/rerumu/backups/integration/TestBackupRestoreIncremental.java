@@ -18,11 +18,11 @@ import ru.rerumu.backups.factories.impl.ZFSFileReaderFactoryImpl;
 import ru.rerumu.backups.factories.impl.ZFSFileWriterFactoryImpl;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSPool;
-import ru.rerumu.backups.repositories.FilePartRepository;
+import ru.rerumu.backups.repositories.LocalBackupRepository;
 import ru.rerumu.backups.repositories.RemoteBackupRepository;
 import ru.rerumu.backups.repositories.ZFSFileSystemRepository;
 import ru.rerumu.backups.repositories.ZFSSnapshotRepository;
-import ru.rerumu.backups.repositories.impl.FilePartRepositoryImpl;
+import ru.rerumu.backups.repositories.impl.LocalBackupRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.ZFSFileSystemRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.ZFSSnapshotRepositoryImpl;
 import ru.rerumu.backups.services.DatasetPropertiesChecker;
@@ -66,7 +66,7 @@ public class TestBackupRestoreIncremental {
             InterruptedException,
             IncorrectHashException,
             S3MissesFileException {
-        FilePartRepository filePartRepository = new FilePartRepositoryImpl(backupDir);
+        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(backupDir);
 
         // s3Loader
         RemoteBackupRepository remoteBackupRepository = Mockito.mock(RemoteBackupRepository.class);
@@ -173,7 +173,7 @@ public class TestBackupRestoreIncremental {
                 1024);
         SnapshotSenderFactory snapshotSenderFactory = new SnapshotSenderFactoryImpl(
                 true,
-                filePartRepository, remoteBackupRepository, zfsProcessFactory, zfsFileWriterFactory,
+                localBackupRepository, remoteBackupRepository, zfsProcessFactory, zfsFileWriterFactory,
                 true
         );
         ZFSBackupService zfsBackupService = new ZFSBackupService(
@@ -186,7 +186,7 @@ public class TestBackupRestoreIncremental {
     }
 
     private RestoreController setupRestore(Path restoreDir) throws IOException, ExecutionException, InterruptedException {
-        FilePartRepository filePartRepository = new FilePartRepositoryImpl(restoreDir);
+        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(restoreDir);
 
         ZFSReceive zfsReceive = Mockito.mock(ZFSReceive.class);
         List<ByteArrayOutputStream> byteArrayOutputStreamList = new ArrayList<>();
@@ -229,7 +229,7 @@ public class TestBackupRestoreIncremental {
         SnapshotReceiver snapshotReceiver = new SnapshotReceiverImpl(
                 zfsProcessFactory,
                 new ZFSPool("ReceivePool"),
-                filePartRepository,
+                localBackupRepository,
                 zfsFileReaderFactory,
                 true
         );
@@ -238,7 +238,7 @@ public class TestBackupRestoreIncremental {
                 "84fBS1KsChnuaV0",
                 zfsProcessFactory,
                 true,
-                filePartRepository,
+                localBackupRepository,
                 snapshotReceiver);
 
         RestoreController restoreController = new RestoreController(zfsRestoreService);

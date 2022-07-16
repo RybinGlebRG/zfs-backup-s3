@@ -6,7 +6,7 @@ import ru.rerumu.backups.exceptions.*;
 import ru.rerumu.backups.factories.ZFSFileWriterFactory;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
 import ru.rerumu.backups.models.Snapshot;
-import ru.rerumu.backups.repositories.FilePartRepository;
+import ru.rerumu.backups.repositories.LocalBackupRepository;
 import ru.rerumu.backups.repositories.RemoteBackupRepository;
 import ru.rerumu.backups.services.SnapshotSender;
 import ru.rerumu.backups.services.ZFSFileWriter;
@@ -22,20 +22,20 @@ import java.util.concurrent.ExecutionException;
 public abstract class AbstractSnapshotSender implements SnapshotSender {
     private final Logger logger = LoggerFactory.getLogger(AbstractSnapshotSender.class);
 
-    protected final FilePartRepository filePartRepository;
+    protected final LocalBackupRepository localBackupRepository;
     protected final RemoteBackupRepository remoteBackupRepository;
     protected final ZFSProcessFactory zfsProcessFactory;
     protected final ZFSFileWriterFactory zfsFileWriterFactory;
     protected final boolean isLoadS3;
 
     public AbstractSnapshotSender(
-            FilePartRepository filePartRepository,
+            LocalBackupRepository localBackupRepository,
             RemoteBackupRepository remoteBackupRepository,
             ZFSProcessFactory zfsProcessFactory,
             ZFSFileWriterFactory zfsFileWriterFactory,
             boolean isLoadS3
     ) {
-        this.filePartRepository = filePartRepository;
+        this.localBackupRepository = localBackupRepository;
         this.remoteBackupRepository = remoteBackupRepository;
         this.zfsProcessFactory = zfsProcessFactory;
         this.zfsFileWriterFactory = zfsFileWriterFactory;
@@ -55,16 +55,17 @@ public abstract class AbstractSnapshotSender implements SnapshotSender {
             NoSuchAlgorithmException,
             IncorrectHashException,
             S3MissesFileException {
-        if (isLoadS3) {
-            remoteBackupRepository.add(datasetName, path);
-            filePartRepository.delete(path);
-        } else {
-            Path readyPath = filePartRepository.markReady(path);
-            while (Files.exists(readyPath)) {
-                logger.debug("Last part exists. Waiting 1 second before retry");
-                Thread.sleep(1000);
-            }
-        }
+        localBackupRepository.add(datasetName,path.getFileName().toString(),path);
+//        if (isLoadS3) {
+//            remoteBackupRepository.add(datasetName, path);
+//            localBackupRepository.delete(path);
+//        } else {
+//            Path readyPath = localBackupRepository.markReady(path);
+//            while (Files.exists(readyPath)) {
+//                logger.debug("Last part exists. Waiting 1 second before retry");
+//                Thread.sleep(1000);
+//            }
+//        }
 
     }
 
@@ -83,7 +84,7 @@ public abstract class AbstractSnapshotSender implements SnapshotSender {
         int n = 0;
         ZFSFileWriter zfsFileWriter = zfsFileWriterFactory.getZFSFileWriter();
         while (true) {
-            Path newFilePath = filePartRepository.createNewFilePath(streamMark, n);
+            Path newFilePath = localBackupRepository.createNewFilePath(streamMark, n);
             n++;
             try {
                 zfsFileWriter.write(zfsSend.getBufferedInputStream(), newFilePath);

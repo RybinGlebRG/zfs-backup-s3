@@ -15,4 +15,9 @@ public interface RemoteBackupRepository {
 //    List<String> objectsListForDataset(String datasetName);
     boolean isFileExists(String datasetName, String filename) throws IOException, NoSuchAlgorithmException, IncorrectHashException;
     void add(String datasetName, Path path) throws IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException;
+    void addPath(String prefix, Path path) throws IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException;
+    Path getPart(String datasetName, String partName,Path targetDir) throws IOException, NoSuchAlgorithmException, IncorrectHashException;
+
+    Path getBackupMeta(Path targetDir) throws IOException, NoSuchAlgorithmException, IncorrectHashException;
+    Path getDatasetMeta(String datasetName, Path targetDir) throws IOException, NoSuchAlgorithmException, IncorrectHashException;
 }

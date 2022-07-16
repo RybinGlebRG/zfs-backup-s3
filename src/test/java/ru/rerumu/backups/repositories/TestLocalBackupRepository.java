@@ -6,20 +6,18 @@ import org.junit.jupiter.api.io.TempDir;
 import ru.rerumu.backups.exceptions.FinishedFlagException;
 import ru.rerumu.backups.exceptions.NoMorePartsException;
 import ru.rerumu.backups.exceptions.TooManyPartsException;
-import ru.rerumu.backups.repositories.impl.FilePartRepositoryImpl;
+import ru.rerumu.backups.repositories.impl.LocalBackupRepositoryImpl;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Random;
 
 
-public class TestFilePartRepository {
+public class TestLocalBackupRepository {
 
     @Test
     void shouldGetNext(@TempDir Path tempDir) throws IOException, FinishedFlagException, NoMorePartsException, TooManyPartsException {
@@ -32,9 +30,9 @@ public class TestFilePartRepository {
             outputStream.write(src);
         }
 
-        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir);
+        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(tempDir);
         byte[] dst;
-        Path nextPath = filePartRepository.getNextInputPath();
+        Path nextPath = localBackupRepository.getNextInputPath();
         try(InputStream inputStream = Files.newInputStream(nextPath)){
             dst = inputStream.readAllBytes();
         }
@@ -46,9 +44,9 @@ public class TestFilePartRepository {
     void shouldNotGetNext(@TempDir Path tempDir) throws IOException {
         Files.createFile(tempDir.resolve("level_0_25_02_2020__20_50.part0"));
 
-        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir);
+        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(tempDir);
 
-        Assertions.assertThrows(NoMorePartsException.class, filePartRepository::getNextInputPath);
+        Assertions.assertThrows(NoMorePartsException.class, localBackupRepository::getNextInputPath);
     }
 
     @Test
@@ -56,9 +54,9 @@ public class TestFilePartRepository {
         Files.createFile(tempDir.resolve("level_0_25_02_2020__20_50.part0.ready"));
         Files.createFile(tempDir.resolve("level_0_25_02_2020__20_50.part1.ready"));
 
-        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir);
+        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(tempDir);
 
-        Assertions.assertThrows(TooManyPartsException.class, filePartRepository::getNextInputPath);
+        Assertions.assertThrows(TooManyPartsException.class, localBackupRepository::getNextInputPath);
     }
 
     @Test
@@ -66,28 +64,28 @@ public class TestFilePartRepository {
         Files.createFile(tempDir.resolve("level_0_25_02_2020__20_50.part0.ready"));
         Files.createFile(tempDir.resolve("finished"));
 
-        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir);
+        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(tempDir);
 
-        Assertions.assertThrows(TooManyPartsException.class, filePartRepository::getNextInputPath);
+        Assertions.assertThrows(TooManyPartsException.class, localBackupRepository::getNextInputPath);
     }
 
     @Test
     void shouldThrowFinished(@TempDir Path tempDir) throws IOException {
         Files.createFile(tempDir.resolve("finished"));
 
-        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir);
+        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(tempDir);
 
-        Assertions.assertThrows(FinishedFlagException.class, filePartRepository::getNextInputPath);
+        Assertions.assertThrows(FinishedFlagException.class, localBackupRepository::getNextInputPath);
     }
 
     @Test
     void shouldFillNewFile(@TempDir Path tempDir) throws IOException {
         Files.createFile(tempDir.resolve("level_0_25_02_2020__20_50.part0"));
 
-        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir);
+        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(tempDir);
         byte[] src = new byte[1000];
         new Random().nextBytes(src);
-        Path newPath = filePartRepository.createNewFilePath("level_0_25_02_2020__20_50",0);
+        Path newPath = localBackupRepository.createNewFilePath("level_0_25_02_2020__20_50",0);
         try(OutputStream outputStream = Files.newOutputStream(newPath);
             BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)){
             bufferedOutputStream.write(src);
@@ -105,10 +103,10 @@ public class TestFilePartRepository {
     void shouldMarkReceived(@TempDir Path tempDir) throws Exception {
         Files.createFile(tempDir.resolve("level_0_25_02_2020__20_50.part0.ready"));
 
-        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir);
-        Path nextPath = filePartRepository.getNextInputPath();
+        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(tempDir);
+        Path nextPath = localBackupRepository.getNextInputPath();
 
-        filePartRepository.markReceived(nextPath);
+        localBackupRepository.markReceived(nextPath);
 
         Assertions.assertFalse(Files.exists(tempDir.resolve("level_0_25_02_2020__20_50.part0.ready")));
         Assertions.assertTrue(Files.exists(tempDir.resolve("level_0_25_02_2020__20_50.part0.received")));
@@ -120,8 +118,8 @@ public class TestFilePartRepository {
         Path path = tempDir.resolve("level_0_25_02_2020__20_50.part0");
         Files.createFile(path);
 
-        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir);
-        filePartRepository.markReady(path);
+        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(tempDir);
+        localBackupRepository.markReady(path);
 
         Assertions.assertFalse(Files.exists(tempDir.resolve("level_0_25_02_2020__20_50.part0")));
         Assertions.assertTrue(Files.exists(tempDir.resolve("level_0_25_02_2020__20_50.part0.ready")));
@@ -133,9 +131,9 @@ public class TestFilePartRepository {
         Path path = tempDir.resolve("level_0_25_02_2020__20_50.part0.ready");
         Files.createFile(path);
 
-        FilePartRepository filePartRepository = new FilePartRepositoryImpl(tempDir);
+        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(tempDir);
 
-        filePartRepository.delete(path);
+        localBackupRepository.delete(path);
 
         Assertions.assertFalse(Files.exists(path));
 

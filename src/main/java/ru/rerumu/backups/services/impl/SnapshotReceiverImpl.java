@@ -9,7 +9,7 @@ import ru.rerumu.backups.services.ZFSFileReader;
 import ru.rerumu.backups.factories.ZFSFileReaderFactory;
 import ru.rerumu.backups.models.ZFSPool;
 import ru.rerumu.backups.models.ZFSStreamPart;
-import ru.rerumu.backups.repositories.FilePartRepository;
+import ru.rerumu.backups.repositories.LocalBackupRepository;
 import ru.rerumu.backups.services.SnapshotReceiver;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
 import ru.rerumu.backups.zfs_api.ZFSReceive;
@@ -24,7 +24,7 @@ public class SnapshotReceiverImpl implements SnapshotReceiver {
 
     private final ZFSProcessFactory zfsProcessFactory;
     private final ZFSPool zfsPool;
-    private final FilePartRepository filePartRepository;
+    private final LocalBackupRepository localBackupRepository;
     private final boolean isDelete;
     private final ZFSFileReaderFactory zfsFileReaderFactory;
 
@@ -35,13 +35,13 @@ public class SnapshotReceiverImpl implements SnapshotReceiver {
     public SnapshotReceiverImpl(
             ZFSProcessFactory zfsProcessFactory,
             ZFSPool zfsPool,
-            FilePartRepository filePartRepository,
+            LocalBackupRepository localBackupRepository,
             ZFSFileReaderFactory zfsFileReaderFactory,
             boolean isDelete
     ){
         this.zfsProcessFactory = zfsProcessFactory;
         this.zfsPool = zfsPool;
-        this.filePartRepository = filePartRepository;
+        this.localBackupRepository = localBackupRepository;
         this.zfsFileReaderFactory = zfsFileReaderFactory;
         this.isDelete = isDelete;
     }
@@ -49,9 +49,9 @@ public class SnapshotReceiverImpl implements SnapshotReceiver {
     private void processReceivedFile(Path path) throws IOException {
         logger.info(String.format("Starting processing of file '%s'",path.toString()));
         if (isDelete) {
-            filePartRepository.delete(path);
+            localBackupRepository.delete(path);
         } else {
-            filePartRepository.markReceived(path);
+            localBackupRepository.markReceived(path);
         }
         logger.info(String.format("Finished processing of file '%s'",path.toString()));
     }

@@ -6,10 +6,8 @@ import ru.rerumu.backups.exceptions.*;
 import ru.rerumu.backups.factories.ZFSFileWriterFactory;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
 import ru.rerumu.backups.models.Snapshot;
-import ru.rerumu.backups.repositories.FilePartRepository;
+import ru.rerumu.backups.repositories.LocalBackupRepository;
 import ru.rerumu.backups.repositories.RemoteBackupRepository;
-import ru.rerumu.backups.services.SnapshotSender;
-import ru.rerumu.backups.zfs_api.ZFSSend;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -21,14 +19,14 @@ public class SnapshotSenderByDataset extends AbstractSnapshotSender {
     private final Logger logger = LoggerFactory.getLogger(SnapshotSenderByDataset.class);
 
     public SnapshotSenderByDataset(
-            FilePartRepository filePartRepository,
+            LocalBackupRepository localBackupRepository,
             RemoteBackupRepository remoteBackupRepository,
             ZFSProcessFactory zfsProcessFactory,
             ZFSFileWriterFactory zfsFileWriterFactory,
             boolean isLoadS3
     ) {
         super(
-                filePartRepository,
+                localBackupRepository,
                 remoteBackupRepository,
                 zfsProcessFactory,
                 zfsFileWriterFactory,

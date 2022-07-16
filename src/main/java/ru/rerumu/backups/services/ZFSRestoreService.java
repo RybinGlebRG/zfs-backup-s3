@@ -4,39 +4,49 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.*;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
-import ru.rerumu.backups.repositories.FilePartRepository;
+import ru.rerumu.backups.repositories.LocalBackupRepository;
+import ru.rerumu.backups.repositories.RemoteBackupRepository;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class ZFSRestoreService {
 
-    private final String password;
     private final Logger logger = LoggerFactory.getLogger(ZFSRestoreService.class);
-    private final ZFSProcessFactory zfsProcessFactory;
-    private final boolean isDelete;
-    private final FilePartRepository filePartRepository;
+    private final LocalBackupRepository localBackupRepository;
     private final SnapshotReceiver snapshotReceiver;
+    private final boolean isUseAWS;
+    private final String datasetName;
 
-    public ZFSRestoreService(String password,
-                             ZFSProcessFactory zfsProcessFactory,
-                             boolean isDelete,
-                             FilePartRepository filePartRepository,
-                             SnapshotReceiver snapshotReceiver) {
-        this.password = password;
-        this.zfsProcessFactory = zfsProcessFactory;
-        this.isDelete = isDelete;
-        this.filePartRepository = filePartRepository;
+    public ZFSRestoreService(LocalBackupRepository localBackupRepository,
+                             SnapshotReceiver snapshotReceiver,
+                             boolean isUseAWS,
+                             String datasetName) {
+        this.localBackupRepository = localBackupRepository;
         this.snapshotReceiver = snapshotReceiver;
+        this.isUseAWS = isUseAWS;
+        this.datasetName = datasetName;
     }
 
-    public void zfsReceive() throws FinishedFlagException, NoMorePartsException, IOException, TooManyPartsException, IncorrectFilePartNameException, CompressorException, ClassNotFoundException, EncryptException, InterruptedException, ExecutionException {
-
+    private void receiveLocal()
+            throws FinishedFlagException,
+            NoMorePartsException,
+            IOException,
+            TooManyPartsException,
+            IncorrectFilePartNameException,
+            CompressorException,
+            ClassNotFoundException,
+            EncryptException,
+            InterruptedException,
+            ExecutionException {
         try {
             while (true) {
                 try {
-                    Path nextPath = filePartRepository.getNextInputPath();
+                    Path nextPath = localBackupRepository.getNextInputPath();
                     snapshotReceiver.receiveSnapshotPart(nextPath);
                 } catch (NoMorePartsException e) {
                     logger.debug("No acceptable files found. Waiting 1 second before retry");
@@ -49,6 +59,61 @@ public class ZFSRestoreService {
         } finally {
             snapshotReceiver.finish();
         }
+    }
 
+    // TODO: write
+    private void receiveRemote()
+            throws IOException,
+            NoSuchAlgorithmException,
+            IncorrectHashException,
+            ExecutionException,
+            InterruptedException,
+            IncorrectFilePartNameException,
+            CompressorException,
+            ClassNotFoundException,
+            EncryptException, FinishedFlagException {
+
+        List<String> datasets = localBackupRepository.getDatasets();
+
+        if (!datasets.contains(datasetName)){
+            throw new IllegalArgumentException();
+        }
+
+        String currentPart = null;
+
+        try {
+            while (true) {
+                try {
+                    Path path = localBackupRepository.getNextPart(datasetName, currentPart);
+                    currentPart = path.getFileName().toString();
+                    snapshotReceiver.receiveSnapshotPart(path);
+                } catch (FinishedFlagException e) {
+                    logger.info("Finish flag found. Exiting loop");
+                    break;
+                }
+            }
+        } finally {
+            snapshotReceiver.finish();
+        }
+    }
+
+    public void zfsReceive()
+            throws FinishedFlagException,
+            NoMorePartsException,
+            IOException,
+            TooManyPartsException,
+            IncorrectFilePartNameException,
+            CompressorException,
+            ClassNotFoundException,
+            EncryptException,
+            InterruptedException,
+            ExecutionException,
+            NoSuchAlgorithmException,
+            IncorrectHashException {
+        if (isUseAWS){
+            receiveRemote();
+        } else {
+            receiveLocal();
+        }
     }
 }

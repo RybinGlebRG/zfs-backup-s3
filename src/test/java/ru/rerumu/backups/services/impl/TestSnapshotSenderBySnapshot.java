@@ -9,7 +9,7 @@ import ru.rerumu.backups.repositories.RemoteBackupRepository;
 import ru.rerumu.backups.services.ZFSFileWriter;
 import ru.rerumu.backups.factories.ZFSFileWriterFactory;
 import ru.rerumu.backups.models.Snapshot;
-import ru.rerumu.backups.repositories.FilePartRepository;
+import ru.rerumu.backups.repositories.LocalBackupRepository;
 import ru.rerumu.backups.services.SnapshotSender;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
 import ru.rerumu.backups.zfs_api.ZFSSend;
@@ -34,7 +34,7 @@ public class TestSnapshotSenderBySnapshot {
             IncorrectHashException,
             S3MissesFileException,
             ExecutionException {
-        FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
+        LocalBackupRepository localBackupRepository = Mockito.mock(LocalBackupRepository.class);
         RemoteBackupRepository remoteBackupRepository = Mockito.mock(RemoteBackupRepository.class);
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
         ZFSFileWriterFactory zfsFileWriterFactory = Mockito.mock(ZFSFileWriterFactory.class);
@@ -43,13 +43,13 @@ public class TestSnapshotSenderBySnapshot {
 
         Mockito.when(zfsProcessFactory.getZFSSendFull(Mockito.any())).thenReturn(zfsSend);
         Mockito.when(zfsFileWriterFactory.getZFSFileWriter()).thenReturn(zfsFileWriter);
-        Mockito.when(filePartRepository.createNewFilePath(Mockito.any(), Mockito.anyInt())).thenAnswer(invocationOnMock -> {
+        Mockito.when(localBackupRepository.createNewFilePath(Mockito.any(), Mockito.anyInt())).thenAnswer(invocationOnMock -> {
             Object[] args = invocationOnMock.getArguments();
             return Paths.get("/tmp/"+(String)args[0]+".part"+(int)args[1]);
         });
         Mockito.doThrow(new ZFSStreamEndedException()).when(zfsFileWriter).write(Mockito.any(), Mockito.any());
 
-        SnapshotSender snapshotSender = new SnapshotSenderBySnapshot(filePartRepository, remoteBackupRepository, zfsProcessFactory, zfsFileWriterFactory,true);
+        SnapshotSender snapshotSender = new SnapshotSenderBySnapshot(localBackupRepository, remoteBackupRepository, zfsProcessFactory, zfsFileWriterFactory,true);
         snapshotSender.sendStartingFromFull("ExternalPool/Applications", List.of(
                 new Snapshot("ExternalPool/Applications@auto-20220326-150000")
         ));
@@ -76,7 +76,7 @@ public class TestSnapshotSenderBySnapshot {
             IncorrectHashException,
             S3MissesFileException,
             ExecutionException {
-        FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
+        LocalBackupRepository localBackupRepository = Mockito.mock(LocalBackupRepository.class);
         RemoteBackupRepository remoteBackupRepository = Mockito.mock(RemoteBackupRepository.class);
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
         ZFSFileWriterFactory zfsFileWriterFactory = Mockito.mock(ZFSFileWriterFactory.class);
@@ -87,13 +87,13 @@ public class TestSnapshotSenderBySnapshot {
         Mockito.when(zfsProcessFactory.getZFSSendFull(Mockito.any())).thenReturn(zfsSend);
         Mockito.when(zfsProcessFactory.getZFSSendIncremental(Mockito.any(),Mockito.any())).thenReturn(zfsSendIncremental);
         Mockito.when(zfsFileWriterFactory.getZFSFileWriter()).thenReturn(zfsFileWriter);
-        Mockito.when(filePartRepository.createNewFilePath(Mockito.any(), Mockito.anyInt())).thenAnswer(invocationOnMock -> {
+        Mockito.when(localBackupRepository.createNewFilePath(Mockito.any(), Mockito.anyInt())).thenAnswer(invocationOnMock -> {
             Object[] args = invocationOnMock.getArguments();
             return Paths.get("/tmp/"+(String)args[0]+".part"+(int)args[1]);
         });
         Mockito.doThrow(new ZFSStreamEndedException()).when(zfsFileWriter).write(Mockito.any(), Mockito.any());
 
-        SnapshotSender snapshotSender = new SnapshotSenderBySnapshot(filePartRepository, remoteBackupRepository, zfsProcessFactory, zfsFileWriterFactory,true);
+        SnapshotSender snapshotSender = new SnapshotSenderBySnapshot(localBackupRepository, remoteBackupRepository, zfsProcessFactory, zfsFileWriterFactory,true);
         snapshotSender.sendStartingFromFull("ExternalPool/Applications", List.of(
                 new Snapshot("ExternalPool/Applications@auto-20220326-150000"),
                 new Snapshot("ExternalPool/Applications@auto-20220327-150000"),
@@ -120,7 +120,7 @@ public class TestSnapshotSenderBySnapshot {
 
     @Test
     void shouldSendMultipart() throws IOException, FileHitSizeLimitException, CompressorException, ZFSStreamEndedException, EncryptException, S3MissesFileException, NoSuchAlgorithmException, ExecutionException, InterruptedException, IncorrectHashException {
-        FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
+        LocalBackupRepository localBackupRepository = Mockito.mock(LocalBackupRepository.class);
         RemoteBackupRepository remoteBackupRepository = Mockito.mock(RemoteBackupRepository.class);
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
         ZFSFileWriterFactory zfsFileWriterFactory = Mockito.mock(ZFSFileWriterFactory.class);
@@ -129,7 +129,7 @@ public class TestSnapshotSenderBySnapshot {
 
         Mockito.when(zfsProcessFactory.getZFSSendFull(Mockito.any())).thenReturn(zfsSend);
         Mockito.when(zfsFileWriterFactory.getZFSFileWriter()).thenReturn(zfsFileWriter);
-        Mockito.when(filePartRepository.createNewFilePath(Mockito.any(), Mockito.anyInt())).thenAnswer(invocationOnMock -> {
+        Mockito.when(localBackupRepository.createNewFilePath(Mockito.any(), Mockito.anyInt())).thenAnswer(invocationOnMock -> {
             Object[] args = invocationOnMock.getArguments();
             return Paths.get("/tmp/"+(String)args[0]+".part"+(int)args[1]);
         });
@@ -137,7 +137,7 @@ public class TestSnapshotSenderBySnapshot {
                 .doThrow(new ZFSStreamEndedException())
                 .when(zfsFileWriter).write(Mockito.any(), Mockito.any());
 
-        SnapshotSender snapshotSender = new SnapshotSenderBySnapshot(filePartRepository, remoteBackupRepository, zfsProcessFactory, zfsFileWriterFactory,true);
+        SnapshotSender snapshotSender = new SnapshotSenderBySnapshot(localBackupRepository, remoteBackupRepository, zfsProcessFactory, zfsFileWriterFactory,true);
         snapshotSender.sendStartingFromFull("ExternalPool/Applications", List.of(
                 new Snapshot("ExternalPool/Applications@auto-20220326-150000")
         ));
@@ -168,7 +168,7 @@ public class TestSnapshotSenderBySnapshot {
             IncorrectHashException,
             S3MissesFileException,
             ExecutionException {
-        FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
+        LocalBackupRepository localBackupRepository = Mockito.mock(LocalBackupRepository.class);
         RemoteBackupRepository remoteBackupRepository = Mockito.mock(RemoteBackupRepository.class);
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
         ZFSFileWriterFactory zfsFileWriterFactory = Mockito.mock(ZFSFileWriterFactory.class);
@@ -177,14 +177,14 @@ public class TestSnapshotSenderBySnapshot {
 
         Mockito.when(zfsProcessFactory.getZFSSendIncremental(Mockito.any(), Mockito.any())).thenReturn(zfsSendIncremental);
         Mockito.when(zfsFileWriterFactory.getZFSFileWriter()).thenReturn(zfsFileWriter);
-        Mockito.when(filePartRepository.createNewFilePath(Mockito.any(), Mockito.anyInt())).thenAnswer(invocationOnMock -> {
+        Mockito.when(localBackupRepository.createNewFilePath(Mockito.any(), Mockito.anyInt())).thenAnswer(invocationOnMock -> {
             Object[] args = invocationOnMock.getArguments();
             return Paths.get("/tmp/"+(String)args[0]+".part"+(int)args[1]);
         });
         Mockito.doThrow(new ZFSStreamEndedException())
                 .when(zfsFileWriter).write(Mockito.any(), Mockito.any());
 
-        SnapshotSender snapshotSender = new SnapshotSenderBySnapshot(filePartRepository, remoteBackupRepository, zfsProcessFactory, zfsFileWriterFactory,true);
+        SnapshotSender snapshotSender = new SnapshotSenderBySnapshot(localBackupRepository, remoteBackupRepository, zfsProcessFactory, zfsFileWriterFactory,true);
         snapshotSender.sendStartingFromIncremental("ExternalPool/Applications", List.of(
                 new Snapshot("ExternalPool/Applications@auto-20220326-150000"),
                 new Snapshot("ExternalPool/Applications@auto-20220327-150000")
@@ -202,14 +202,14 @@ public class TestSnapshotSenderBySnapshot {
 
     @Test
     void shouldThrowException() throws IOException{
-        FilePartRepository filePartRepository = Mockito.mock(FilePartRepository.class);
+        LocalBackupRepository localBackupRepository = Mockito.mock(LocalBackupRepository.class);
         RemoteBackupRepository remoteBackupRepository = Mockito.mock(RemoteBackupRepository.class);
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
         ZFSFileWriterFactory zfsFileWriterFactory = Mockito.mock(ZFSFileWriterFactory.class);
 
         Mockito.when(zfsProcessFactory.getZFSSendFull(Mockito.any())).thenThrow(new IOException());
 
-        SnapshotSender snapshotSender = new SnapshotSenderBySnapshot(filePartRepository, remoteBackupRepository, zfsProcessFactory, zfsFileWriterFactory,true);
+        SnapshotSender snapshotSender = new SnapshotSenderBySnapshot(localBackupRepository, remoteBackupRepository, zfsProcessFactory, zfsFileWriterFactory,true);
 
         Assertions.assertThrows(Exception.class,()->{
             snapshotSender.sendStartingFromFull("ExternalPool/Applications", List.of(
