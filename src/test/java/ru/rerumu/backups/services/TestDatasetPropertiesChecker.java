@@ -14,15 +14,7 @@ class TestDatasetPropertiesChecker {
 
     @Test
     void shouldPassCheck() throws Exception{
-        DatasetPropertiesChecker datasetPropertiesChecker = new DatasetPropertiesChecker(false);
-        datasetPropertiesChecker.check(
-                new ZFSDataset("test",new ArrayList<>(), EncryptionProperty.OFF)
-        );
-    }
-
-    @Test
-    void shouldPassCheck1() throws Exception{
-        DatasetPropertiesChecker datasetPropertiesChecker = new DatasetPropertiesChecker(false);
+        DatasetPropertiesChecker datasetPropertiesChecker = new DatasetPropertiesChecker();
         datasetPropertiesChecker.check(
                 new ZFSDataset("test",new ArrayList<>(), EncryptionProperty.ON)
         );
@@ -30,12 +22,12 @@ class TestDatasetPropertiesChecker {
 
     @Test
     void shouldNotCheck() throws Exception{
-        DatasetPropertiesChecker datasetPropertiesChecker = new DatasetPropertiesChecker(true);
-        Assertions.assertThrows(IncompatibleDatasetException.class,()->{
-            datasetPropertiesChecker.check(
-                    new ZFSDataset("test",new ArrayList<>(), EncryptionProperty.OFF)
-            );
-        });
+        DatasetPropertiesChecker datasetPropertiesChecker = new DatasetPropertiesChecker();
+        Assertions.assertThrows(
+                IncompatibleDatasetException.class,
+                ()-> datasetPropertiesChecker.check(
+                        new ZFSDataset("test",new ArrayList<>(), EncryptionProperty.OFF)
+                ));
 
     }
 }

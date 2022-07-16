@@ -48,7 +48,7 @@ public class TestZFSBackupService {
         ZFSBackupService zfsBackupService = new ZFSBackupService(
                 mockedZfsFileSystemRepository,
                 mockedSnapshotSender,
-                new DatasetPropertiesChecker(false)
+                new DatasetPropertiesChecker()
         );
 
         zfsBackupService.zfsBackupFull(
@@ -102,7 +102,7 @@ public class TestZFSBackupService {
         ZFSBackupService zfsBackupService = new ZFSBackupService(
                 mockedZfsFileSystemRepository,
                 mockedSnapshotSender,
-                new DatasetPropertiesChecker(false)
+                new DatasetPropertiesChecker()
         );
 
         zfsBackupService.zfsBackupFull(
@@ -149,7 +149,7 @@ public class TestZFSBackupService {
         ZFSBackupService zfsBackupService = new ZFSBackupService(
                 mockedZfsFileSystemRepository,
                 mockedSnapshotSender,
-                new DatasetPropertiesChecker(false)
+                new DatasetPropertiesChecker()
         );
 
         zfsBackupService.zfsBackupFull(
@@ -181,7 +181,7 @@ public class TestZFSBackupService {
         ZFSBackupService zfsBackupService = new ZFSBackupService(
                 mockedZfsFileSystemRepository,
                 mockedSnapshotSender,
-                new DatasetPropertiesChecker(false)
+                new DatasetPropertiesChecker()
         );
 
         zfsBackupService.zfsBackupFull(
@@ -210,7 +210,7 @@ public class TestZFSBackupService {
         ZFSBackupService zfsBackupService = new ZFSBackupService(
                 zfsFileSystemRepository,
                 mockedSnapshotSender,
-                new DatasetPropertiesChecker(true)
+                new DatasetPropertiesChecker()
         );
 
         Assertions.assertThrows(IncompatibleDatasetException.class,()->{
@@ -219,5 +219,91 @@ public class TestZFSBackupService {
                     "ExternalPool"
             );
         });
+    }
+
+    @Test
+    void shouldBackupIncremental() throws Exception {
+        ZFSFileSystemRepository mockedZfsFileSystemRepository = Mockito.mock(ZFSFileSystemRepository.class);
+
+        List<ZFSDataset> zfsDatasetList = new ArrayList<>();
+        zfsDatasetList.add(new ZFSDataset(
+                "ExternalPool",
+                List.of(
+                        new Snapshot("ExternalPool@auto-20220326-150000"),
+                        new Snapshot("ExternalPool@auto-20220327-060000"),
+                        new Snapshot("ExternalPool@auto-20220327-150000"),
+                        new Snapshot("ExternalPool@auto-20220328-150000")
+                ),
+                EncryptionProperty.ON
+        ));
+        Mockito.when(mockedZfsFileSystemRepository.getFilesystemsTreeList("ExternalPool"))
+                .thenReturn(zfsDatasetList);
+
+
+        SnapshotSender mockedSnapshotSender = Mockito.mock(SnapshotSender.class);
+
+        ZFSBackupService zfsBackupService = new ZFSBackupService(
+                mockedZfsFileSystemRepository,
+                mockedSnapshotSender,
+                new DatasetPropertiesChecker()
+        );
+
+        zfsBackupService.zfsBackupIncremental(
+                "ExternalPool",
+                "auto-20220326-150000",
+                "auto-20220327-150000"
+
+        );
+
+
+        Mockito.verify(mockedSnapshotSender).sendStartingFromIncremental(
+                "ExternalPool",
+                List.of(
+                        new Snapshot("ExternalPool@auto-20220326-150000"),
+                        new Snapshot("ExternalPool@auto-20220327-060000"),
+                        new Snapshot("ExternalPool@auto-20220327-150000")
+                )
+        );
+    }
+
+    @Test
+    void shouldNotBackupIncremental() throws Exception {
+        ZFSFileSystemRepository mockedZfsFileSystemRepository = Mockito.mock(ZFSFileSystemRepository.class);
+
+        List<ZFSDataset> zfsDatasetList = new ArrayList<>();
+        zfsDatasetList.add(new ZFSDataset(
+                "ExternalPool",
+                List.of(
+                        new Snapshot("ExternalPool@auto-20220326-150000"),
+                        new Snapshot("ExternalPool@auto-20220327-060000"),
+                        new Snapshot("ExternalPool@auto-20220327-150000"),
+                        new Snapshot("ExternalPool@auto-20220328-150000")
+                ),
+                EncryptionProperty.ON
+        ));
+        Mockito.when(mockedZfsFileSystemRepository.getFilesystemsTreeList("ExternalPool"))
+                .thenReturn(zfsDatasetList);
+
+
+        SnapshotSender mockedSnapshotSender = Mockito.mock(SnapshotSender.class);
+
+        ZFSBackupService zfsBackupService = new ZFSBackupService(
+                mockedZfsFileSystemRepository,
+                mockedSnapshotSender,
+                new DatasetPropertiesChecker()
+        );
+
+        zfsBackupService.zfsBackupIncremental(
+                "ExternalPool",
+                "auto-20220323-150000",
+                "auto-20220327-150000"
+
+        );
+
+
+        Mockito.verify(mockedSnapshotSender, Mockito.never()).sendStartingFromIncremental(
+                Mockito.any(),
+                Mockito.any()
+        );
     }
 }

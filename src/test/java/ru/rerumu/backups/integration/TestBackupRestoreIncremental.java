@@ -49,7 +49,7 @@ import java.util.concurrent.Future;
 import static org.mockito.Matchers.eq;
 
 @Disabled
-public class TestBackupRestoreByDatasetEncryption {
+public class TestBackupRestoreIncremental {
 
     private byte[] randomBytes(int n) {
         byte[] bytes = new byte[n];
@@ -60,7 +60,7 @@ public class TestBackupRestoreByDatasetEncryption {
     private List<byte[]> srcBytesList;
     private List<byte[]> resBytes;
 
-    private BackupController setupBackup(Path backupDir, Path restoreDir, boolean isMultiIncremental)
+    private BackupController setupBackup(Path backupDir, Path restoreDir)
             throws IOException,
             NoSuchAlgorithmException,
             InterruptedException,
@@ -115,18 +115,14 @@ public class TestBackupRestoreByDatasetEncryption {
         List<ZFSSend> zfsSendList = new ArrayList<>();
         // ExternalPool
         zfsSendList.add(Mockito.mock(ZFSSend.class));
-        zfsSendList.add(Mockito.mock(ZFSSend.class));
         // ExternalPool/Applications
-        zfsSendList.add(Mockito.mock(ZFSSend.class));
         zfsSendList.add(Mockito.mock(ZFSSend.class));
 
         srcBytesList = new ArrayList<>();
         // ExternalPool
         srcBytesList.add(randomBytes(250));
-        srcBytesList.add(randomBytes(250));
         // ExternalPool/Applications
         srcBytesList.add(randomBytes(2000));
-        srcBytesList.add(randomBytes(250));
 
         for (int i = 0; i < zfsSendList.size(); i++) {
             Mockito.when(zfsSendList.get(i).getBufferedInputStream())
@@ -158,22 +154,16 @@ public class TestBackupRestoreByDatasetEncryption {
         Mockito.when(zfsProcessFactory.getZFSListSnapshots("ExternalPool/Applications"))
                 .thenReturn(processWrappers.get(1));
 
-        Mockito.when(zfsProcessFactory.getZFSSendFull(
-                new Snapshot("ExternalPool@auto-20220326-150000")
-        )).thenReturn(zfsSendList.get(0));
         Mockito.when(zfsProcessFactory.getZFSSendIncremental(
-                new Snapshot("ExternalPool@auto-20220326-150000"),
+                new Snapshot("ExternalPool@auto-2022.03.27-06.00.00"),
                 new Snapshot("ExternalPool@auto-20220327-150000")
-        )).thenReturn(zfsSendList.get(1));
+        )).thenReturn(zfsSendList.get(0));
 
 
-        Mockito.when(zfsProcessFactory.getZFSSendFull(
-                new Snapshot("ExternalPool/Applications@auto-20220326-150000")
-        )).thenReturn(zfsSendList.get(2));
         Mockito.when(zfsProcessFactory.getZFSSendIncremental(
-                new Snapshot("ExternalPool/Applications@auto-20220326-150000"),
+                new Snapshot("ExternalPool/Applications@auto-2022.03.27-06.00.00"),
                 new Snapshot("ExternalPool/Applications@auto-20220327-150000")
-        )).thenReturn(zfsSendList.get(3));
+        )).thenReturn(zfsSendList.get(1));
 
 
         ZFSSnapshotRepository zfsSnapshotRepository = new ZFSSnapshotRepositoryImpl(zfsProcessFactory);
@@ -182,7 +172,7 @@ public class TestBackupRestoreByDatasetEncryption {
                 1070,
                 1024);
         SnapshotSenderFactory snapshotSenderFactory = new SnapshotSenderFactoryImpl(
-                isMultiIncremental,
+                true,
                 filePartRepository, remoteBackupRepository, zfsProcessFactory, zfsFileWriterFactory,
                 true
         );
@@ -258,14 +248,16 @@ public class TestBackupRestoreByDatasetEncryption {
 
 
     @Test
-    void shouldBackupRestoreByDatasetEncryption(@TempDir Path backupDir, @TempDir Path restoreDir) throws IOException, NoSuchAlgorithmException, InterruptedException, IncorrectHashException, ExecutionException, S3MissesFileException {
+    void shouldBackupRestoreIncremental(@TempDir Path backupDir, @TempDir Path restoreDir) throws IOException, NoSuchAlgorithmException, InterruptedException, IncorrectHashException, ExecutionException, S3MissesFileException {
 
-        BackupController backupController = setupBackup(backupDir,restoreDir,true);
+        BackupController backupController = setupBackup(backupDir,restoreDir);
         RestoreController restoreController = setupRestore(restoreDir);
 
         ExecutorService executorService = Executors.newFixedThreadPool(2);
         Future<?> backupFuture = executorService.submit(() -> {
-            backupController.backupFull("ExternalPool@auto-20220327-150000");
+            backupController.backupIncremental(
+                    "ExternalPool@auto-2022.03.27-06.00.00",
+                    "ExternalPool@auto-20220327-150000");
         });
 
         Future<?> restoreFuture = executorService.submit(()->{
