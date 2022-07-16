@@ -32,4 +32,24 @@ public class BackupController {
             logger.error(e.getMessage(), e);
         }
     }
+
+    public void backupIncremental(
+            String baseSnapshotName,
+            String targetSnapshotName
+    ){
+        try {
+            logger.info("Starting incremental backup");
+
+            Snapshot baseSnapshot = new Snapshot(baseSnapshotName);
+            Snapshot targetSnapshot = new Snapshot(targetSnapshotName);
+            zfsBackupService.zfsBackupIncremental(
+                    baseSnapshot.getDataset(),
+                    baseSnapshot.getName(),
+                    targetSnapshot.getName()
+            );
+
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
 }

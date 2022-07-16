@@ -42,68 +42,66 @@ public class App {
             String mode = System.getProperty("mode");
             logger.info("Mode is '"+mode+"'");
             Configuration configuration = new Configuration();
+            EntityFactory entityFactory = new EntityFactory();
 
             switch (mode) {
                 case "backupFull": {
-                    FilePartRepository filePartRepository = new FilePartRepositoryImpl(
-                            Paths.get(configuration.getProperty("backup.directory"))
-                    );
-                    List<S3Storage> s3StorageList = new ArrayList<>();
-                    s3StorageList.add(new S3Storage(
-                            Region.of(configuration.getProperty("s3.region_name")),
-                            configuration.getProperty("s3.full.s3_bucket"),
-                            configuration.getProperty("s3.access_key_id"),
-                            configuration.getProperty("s3.secret_access_key"),
-                            Paths.get(configuration.getProperty("s3.full.prefix")),
-                            new URI(configuration.getProperty("s3.endpoint_url")),
-                            configuration.getProperty("s3.full.storage_class")
-                    ));
-                    S3Repository s3Repository = new S3Repository(
-                            s3StorageList,
-                            new S3ManagerFactoryImpl(
-                                    Integer.parseInt(configuration.getProperty("max_part_size"))
-                            ),
-                            new S3ClientFactoryImpl(),
-                            Paths.get(configuration.getProperty("temp_dir"))
-                    );
-
-                    ZFSProcessFactory zfsProcessFactory = new ZFSProcessFactoryImpl(
-                            new ProcessWrapperFactoryImpl()
-                    );
+                    FilePartRepository filePartRepository = entityFactory.getFilePartRepository();
+                    List<S3Storage> s3StorageList = entityFactory.getS3StorageList();
+                    S3Repository s3Repository = entityFactory.getS3Repository(s3StorageList);
+                    ZFSProcessFactory zfsProcessFactory = entityFactory.getZFSProcessFactory();
                     ZFSSnapshotRepository zfsSnapshotRepository = new ZFSSnapshotRepositoryImpl(zfsProcessFactory);
                     ZFSFileSystemRepository zfsFileSystemRepository = new ZFSFileSystemRepositoryImpl(zfsProcessFactory,zfsSnapshotRepository);
-                    ZFSFileWriterFactory zfsFileWriterFactory = new ZFSFileWriterFactoryImpl(
-                            Integer.parseInt(configuration.getProperty("chunk.size")),
-                            Long.parseLong(configuration.getProperty("file.part.size")));
-                    SnapshotSenderFactory snapshotSenderFactory = new SnapshotSenderFactoryImpl(
-                            true,
+                    ZFSFileWriterFactory zfsFileWriterFactory = entityFactory.getZFSFileWriterFactory();
+                    SnapshotSenderFactory snapshotSenderFactory = entityFactory.getSnapshotSenderFactory(
                             filePartRepository,
                             s3Repository,
                             zfsProcessFactory,
-                            zfsFileWriterFactory,
-                            Boolean.parseBoolean(configuration.getProperty("is.load.aws"))
+                            zfsFileWriterFactory
                     );
 
                     ZFSBackupService zfsBackupService = new ZFSBackupService(
                             zfsFileSystemRepository,
                             snapshotSenderFactory.getSnapshotSender(),
-                            new DatasetPropertiesChecker(
-                                    true
-                            )
+                            new DatasetPropertiesChecker()
                     );
 
                     BackupController backupController = new BackupController(zfsBackupService);
                     backupController.backupFull(configuration.getProperty("full.snapshot"));
                     break;
                 }
-                case "restore": {
-                    FilePartRepository filePartRepository = new FilePartRepositoryImpl(
-                            Paths.get(configuration.getProperty("backup.directory"))
+                case "backupInc":{
+                    FilePartRepository filePartRepository = entityFactory.getFilePartRepository();
+                    List<S3Storage> s3StorageList = entityFactory.getS3StorageList();
+                    S3Repository s3Repository = entityFactory.getS3Repository(s3StorageList);
+                    ZFSProcessFactory zfsProcessFactory = entityFactory.getZFSProcessFactory();
+                    ZFSSnapshotRepository zfsSnapshotRepository = new ZFSSnapshotRepositoryImpl(zfsProcessFactory);
+                    ZFSFileSystemRepository zfsFileSystemRepository = new ZFSFileSystemRepositoryImpl(zfsProcessFactory,zfsSnapshotRepository);
+                    ZFSFileWriterFactory zfsFileWriterFactory = entityFactory.getZFSFileWriterFactory();
+                    SnapshotSenderFactory snapshotSenderFactory = entityFactory.getSnapshotSenderFactory(
+                            filePartRepository,
+                            s3Repository,
+                            zfsProcessFactory,
+                            zfsFileWriterFactory
                     );
 
-                    ZFSProcessFactory zfsProcessFactory = new ZFSProcessFactoryImpl(
-                            new ProcessWrapperFactoryImpl()
+                    ZFSBackupService zfsBackupService = new ZFSBackupService(
+                            zfsFileSystemRepository,
+                            snapshotSenderFactory.getSnapshotSender(),
+                            new DatasetPropertiesChecker()
                     );
+
+                    BackupController backupController = new BackupController(zfsBackupService);
+                    backupController.backupIncremental(
+                            configuration.getProperty("full.snapshot"),
+                            configuration.getProperty("incremental_snapshot")
+                    );
+                    break;
+                }
+                case "restore": {
+                    FilePartRepository filePartRepository = entityFactory.getFilePartRepository();
+
+                    ZFSProcessFactory zfsProcessFactory = entityFactory.getZFSProcessFactory();
                     ZFSFileReaderFactory zfsFileReaderFactory = new ZFSFileReaderFactoryImpl();
                     SnapshotReceiver snapshotReceiver = new SnapshotReceiverImpl(
                             zfsProcessFactory,
