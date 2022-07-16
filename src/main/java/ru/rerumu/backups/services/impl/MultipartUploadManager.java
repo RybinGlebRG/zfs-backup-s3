@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 
 
-public class MultipartUploadManager extends AbstractUploadManager {
+public class MultipartUploadManager extends AbstractS3Manager {
     private final Logger logger = LoggerFactory.getLogger(MultipartUploadManager.class);
     private final List<CompletedPart> completedPartList = new ArrayList<>();
     private final List<byte[]> md5List = new ArrayList<>();

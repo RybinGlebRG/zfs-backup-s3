@@ -10,7 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.IncorrectHashException;
 import ru.rerumu.backups.exceptions.S3MissesFileException;
-import ru.rerumu.backups.factories.impl.UploadManagerFactoryImpl;
+import ru.rerumu.backups.factories.impl.S3ClientFactoryImpl;
+import ru.rerumu.backups.factories.impl.S3ManagerFactoryImpl;
 import ru.rerumu.backups.models.S3Storage;
 import ru.rerumu.backups.repositories.impl.S3Repository;
 import software.amazon.awssdk.regions.Region;
@@ -23,15 +24,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 @Disabled
-public class TestS3Repository {
+public class TestS3 {
 
     @Test
-    void shouldSendOnepart(@TempDir Path tempDir) throws URISyntaxException, IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
+    void shouldSendOnepart(@TempDir Path tempDir, @TempDir Path tempDownloadDir) throws URISyntaxException, IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         logger.setLevel(Level.TRACE);
         S3Repository s3Repository = new S3Repository(List.of(
@@ -44,7 +44,9 @@ public class TestS3Repository {
                         new URI(System.getProperty("endpoint")),
                         "STANDARD"
                 )),
-                new UploadManagerFactoryImpl(500_000_000)
+                new S3ManagerFactoryImpl(500_000_000),
+                new S3ClientFactoryImpl(),
+                tempDownloadDir
         );
 
 
@@ -72,7 +74,7 @@ public class TestS3Repository {
     }
 
     @Test
-    void shouldSendMultipart(@TempDir Path tempDir) throws URISyntaxException, IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
+    void shouldSendMultipart(@TempDir Path tempDir, @TempDir Path tempDownloadDir) throws URISyntaxException, IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         logger.setLevel(Level.TRACE);
         S3Repository s3Repository = new S3Repository(List.of(
@@ -85,7 +87,9 @@ public class TestS3Repository {
                         new URI(System.getProperty("endpoint")),
                         "STANDARD"
                 )),
-                new UploadManagerFactoryImpl(6_291_456)
+                new S3ManagerFactoryImpl(6_291_456),
+                new S3ClientFactoryImpl(),
+                tempDownloadDir
         );
 
 
@@ -108,7 +112,7 @@ public class TestS3Repository {
     }
 
     @Test
-    void shouldNotFind(@TempDir Path tempDir) throws URISyntaxException, IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
+    void shouldNotFind(@TempDir Path tempDir, @TempDir Path tempDownloadDir) throws URISyntaxException, IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         logger.setLevel(Level.TRACE);
         S3Repository s3Repository = new S3Repository(List.of(
@@ -121,7 +125,9 @@ public class TestS3Repository {
                         new URI(System.getProperty("endpoint")),
                         "STANDARD"
                 )),
-                new UploadManagerFactoryImpl(500_000_000)
+                new S3ManagerFactoryImpl(500_000_000),
+                new S3ClientFactoryImpl(),
+                tempDownloadDir
         );
 
 
