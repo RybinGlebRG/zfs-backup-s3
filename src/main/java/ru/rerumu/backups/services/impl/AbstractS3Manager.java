@@ -19,7 +19,7 @@ import java.security.NoSuchAlgorithmException;
 public abstract class AbstractS3Manager implements S3Manager {
     private final Logger logger = LoggerFactory.getLogger(AbstractS3Manager.class);
 
-    public abstract void run() throws IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException;
+    public abstract void run() throws IOException, NoSuchAlgorithmException, IncorrectHashException;
 
     protected String getMD5Hex(byte[] bytes)
             throws NoSuchAlgorithmException,

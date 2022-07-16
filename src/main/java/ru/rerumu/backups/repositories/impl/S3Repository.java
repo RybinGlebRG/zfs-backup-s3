@@ -90,6 +90,8 @@ public class S3Repository implements RemoteBackupRepository {
         return true;
     }
 
+    // TODO: Check already added
+    // TODO: Use
     private void addDatasetMeta(String datasetName) throws IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
         if (!isFileExists(s3Storage.getPrefix()+"/_meta.json")){
             BackupMeta backupMeta = new BackupMeta();
@@ -143,21 +145,7 @@ public class S3Repository implements RemoteBackupRepository {
             logger.error(String.format("File '%s' not found on S3", path.getFileName().toString()));
             throw new S3MissesFileException();
         }
-        // TODO: Check already added
-        addDatasetMeta(datasetName);
         logger.info(String.format("File '%s' found on S3", path.getFileName().toString()));
-    }
-
-    @Override
-    public Path getNext(String datasetName) {
-        // TODO: Write
-        return null;
-    }
-
-    @Override
-    public Path getNext(String datasetName, String filename) {
-        // TODO: Write
-        return null;
     }
 
     @Override

@@ -62,7 +62,9 @@ public class App {
                             s3StorageList,
                             new S3ManagerFactoryImpl(
                                     Integer.parseInt(configuration.getProperty("max_part_size"))
-                            )
+                            ),
+                            new S3ClientFactoryImpl(),
+                            Paths.get(configuration.getProperty("temp_dir"))
                     );
 
                     ZFSProcessFactory zfsProcessFactory = new ZFSProcessFactoryImpl(
