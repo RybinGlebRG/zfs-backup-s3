@@ -1,11 +1,18 @@
 package ru.rerumu.backups.repositories;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.Mockito;
 import ru.rerumu.backups.exceptions.FinishedFlagException;
+import ru.rerumu.backups.exceptions.IncorrectHashException;
 import ru.rerumu.backups.exceptions.NoMorePartsException;
 import ru.rerumu.backups.exceptions.TooManyPartsException;
+import ru.rerumu.backups.models.meta.BackupMeta;
+import ru.rerumu.backups.models.meta.DatasetMeta;
+import ru.rerumu.backups.models.meta.PartMeta;
 import ru.rerumu.backups.repositories.impl.LocalBackupRepositoryImpl;
 
 import java.io.BufferedOutputStream;
@@ -14,128 +21,270 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.Random;
 
 
 public class TestLocalBackupRepository {
 
     @Test
-    void shouldGetNext(@TempDir Path tempDir) throws IOException, FinishedFlagException, NoMorePartsException, TooManyPartsException {
-        Path srcFile = tempDir.resolve("level_0_25_02_2020__20_50.part0.ready");
-        Files.createFile(srcFile);
+    void shouldClone(@TempDir Path backupDir, @TempDir Path repositoryDir) throws Exception {
+        RemoteBackupRepository remoteBackupRepository = Mockito.mock(RemoteBackupRepository.class);
 
-        byte[] src = new byte[1000];
-        new Random().nextBytes(src);
-        try(OutputStream outputStream = Files.newOutputStream(srcFile)){
-            outputStream.write(src);
-        }
+        Mockito.when(remoteBackupRepository.getBackupMeta(Mockito.eq(repositoryDir)))
+                .thenAnswer(invocationOnMock -> {
+                    BackupMeta backupMeta = new BackupMeta();
+                    backupMeta.addDataset("Test");
+                    Files.writeString(repositoryDir.resolve("_meta.json"), backupMeta.toJSONObject().toString());
+                    return repositoryDir.resolve("_meta.json");
+                });
+        Mockito.when(remoteBackupRepository.getDatasetMeta(
+                Mockito.eq("Test"),Mockito.eq(repositoryDir.resolve("Test")))
+                )
+                .thenAnswer(invocationOnMock -> {
+                    DatasetMeta datasetMeta = new DatasetMeta();
+                    datasetMeta.addPart(new PartMeta("part0", 10L));
+                    Files.writeString(
+                            repositoryDir.resolve("Test").resolve("_meta.json"),
+                            datasetMeta.toJSONObject().toString()
+                    );
+                    return repositoryDir.resolve("Test").resolve("_meta.json");
+                });
 
-        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(tempDir);
-        byte[] dst;
-        Path nextPath = localBackupRepository.getNextInputPath();
-        try(InputStream inputStream = Files.newInputStream(nextPath)){
-            dst = inputStream.readAllBytes();
-        }
+        Files.createFile(repositoryDir.resolve("testFile"));
+        Files.createDirectory(repositoryDir.resolve("testDir"));
+        Files.createFile(repositoryDir.resolve("testDir").resolve("testFile"));
 
-        Assertions.assertArrayEquals(src,dst);
+        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(
+                backupDir,
+                repositoryDir,
+                remoteBackupRepository,
+                true
+        );
+
+        Assertions.assertFalse(Files.exists(repositoryDir.resolve("testFile")));
+        Assertions.assertFalse(Files.exists(repositoryDir.resolve("testDir").resolve("testFile")));
+        Assertions.assertTrue(Files.exists(repositoryDir.resolve("_meta.json")));
+        Assertions.assertTrue(Files.exists(repositoryDir.resolve("Test").resolve("_meta.json")));
     }
 
     @Test
-    void shouldNotGetNext(@TempDir Path tempDir) throws IOException {
-        Files.createFile(tempDir.resolve("level_0_25_02_2020__20_50.part0"));
+    void shouldGetDatasets(@TempDir Path backupDir, @TempDir Path repositoryDir) throws Exception {
+        RemoteBackupRepository remoteBackupRepository = Mockito.mock(RemoteBackupRepository.class);
 
-        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(tempDir);
+        Mockito.when(remoteBackupRepository.getBackupMeta(Mockito.eq(repositoryDir)))
+                .thenAnswer(invocationOnMock -> {
+                    BackupMeta backupMeta = new BackupMeta();
+                    backupMeta.addDataset("Test");
+                    Files.writeString(repositoryDir.resolve("_meta.json"), backupMeta.toJSONObject().toString());
+                    return repositoryDir.resolve("_meta.json");
+                });
+        Mockito.when(remoteBackupRepository.getDatasetMeta(
+                        Mockito.eq("Test"),Mockito.eq(repositoryDir.resolve("Test")))
+                )
+                .thenAnswer(invocationOnMock -> {
+                    DatasetMeta datasetMeta = new DatasetMeta();
+                    datasetMeta.addPart(new PartMeta("part0", 10L));
+                    Files.writeString(
+                            repositoryDir.resolve("Test").resolve("_meta.json"),
+                            datasetMeta.toJSONObject().toString()
+                    );
+                    return repositoryDir.resolve("Test").resolve("_meta.json");
+                });
 
-        Assertions.assertThrows(NoMorePartsException.class, localBackupRepository::getNextInputPath);
+        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(
+                backupDir,
+                repositoryDir,
+                remoteBackupRepository,
+                true
+        );
+
+        List<String> datasets = localBackupRepository.getDatasets();
+
+        Assertions.assertEquals(List.of("Test"),datasets);
     }
 
     @Test
-    void shouldThrowTooMany(@TempDir Path tempDir) throws IOException {
-        Files.createFile(tempDir.resolve("level_0_25_02_2020__20_50.part0.ready"));
-        Files.createFile(tempDir.resolve("level_0_25_02_2020__20_50.part1.ready"));
+    void shouldClearRepositoryOnlyParts(@TempDir Path backupDir, @TempDir Path repositoryDir) throws Exception {
+        RemoteBackupRepository remoteBackupRepository = Mockito.mock(RemoteBackupRepository.class);
 
-        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(tempDir);
+        Mockito.when(remoteBackupRepository.getBackupMeta(Mockito.eq(repositoryDir)))
+                .thenAnswer(invocationOnMock -> {
+                    BackupMeta backupMeta = new BackupMeta();
+                    backupMeta.addDataset("Test");
+                    Files.writeString(repositoryDir.resolve("_meta.json"), backupMeta.toJSONObject().toString());
+                    return repositoryDir.resolve("_meta.json");
+                });
+        Mockito.when(remoteBackupRepository.getDatasetMeta(
+                        Mockito.eq("Test"),Mockito.eq(repositoryDir.resolve("Test")))
+                )
+                .thenAnswer(invocationOnMock -> {
+                    DatasetMeta datasetMeta = new DatasetMeta();
+                    datasetMeta.addPart(new PartMeta("part0", 10L));
+                    Files.writeString(
+                            repositoryDir.resolve("Test").resolve("_meta.json"),
+                            datasetMeta.toJSONObject().toString()
+                    );
+                    return repositoryDir.resolve("Test").resolve("_meta.json");
+                });
+        Mockito.when(remoteBackupRepository.getPart(
+                        Mockito.eq("Test"),
+                        Mockito.eq("part0"),
+                        repositoryDir.resolve("Test")
+                ))
+                .thenAnswer(invocationOnMock -> {
+                   Files.createFile(repositoryDir.resolve("Test").resolve("part0"));
+                   return repositoryDir.resolve("Test").resolve("part0");
+                });
 
-        Assertions.assertThrows(TooManyPartsException.class, localBackupRepository::getNextInputPath);
+        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(
+                backupDir,
+                repositoryDir,
+                remoteBackupRepository,
+                true
+        );
+
+        Files.createFile(repositoryDir.resolve("testFile"));
+        Files.createDirectory(repositoryDir.resolve("testDir"));
+        Files.createFile(repositoryDir.resolve("testDir").resolve("testFile"));
+
+        Path path = localBackupRepository.getNextPart("Test",null);
+
+        Assertions.assertFalse(Files.exists(repositoryDir.resolve("testFile")));
+        Assertions.assertFalse(Files.exists(repositoryDir.resolve("testDir").resolve("testFile")));
+        Assertions.assertTrue(Files.exists(repositoryDir.resolve("_meta.json")));
+        Assertions.assertTrue(Files.exists(repositoryDir.resolve("Test").resolve("_meta.json")));
+        Assertions.assertTrue(Files.exists(repositoryDir.resolve("Test").resolve("part0")));
     }
 
     @Test
-    void shouldThrowTooManyFinished(@TempDir Path tempDir) throws IOException {
-        Files.createFile(tempDir.resolve("level_0_25_02_2020__20_50.part0.ready"));
-        Files.createFile(tempDir.resolve("finished"));
+    void shouldGetNextPart(@TempDir Path backupDir, @TempDir Path repositoryDir) throws Exception {
+        RemoteBackupRepository remoteBackupRepository = Mockito.mock(RemoteBackupRepository.class);
 
-        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(tempDir);
+        Mockito.when(remoteBackupRepository.getBackupMeta(Mockito.eq(repositoryDir)))
+                .thenAnswer(invocationOnMock -> {
+                    BackupMeta backupMeta = new BackupMeta();
+                    backupMeta.addDataset("Test");
+                    Files.writeString(repositoryDir.resolve("_meta.json"), backupMeta.toJSONObject().toString());
+                    return repositoryDir.resolve("_meta.json");
+                });
+        Mockito.when(remoteBackupRepository.getDatasetMeta(
+                        Mockito.eq("Test"),Mockito.eq(repositoryDir.resolve("Test")))
+                )
+                .thenAnswer(invocationOnMock -> {
+                    DatasetMeta datasetMeta = new DatasetMeta();
+                    datasetMeta.addPart(new PartMeta("part0", 10L));
+                    datasetMeta.addPart(new PartMeta("part1", 10L));
+                    Files.writeString(
+                            repositoryDir.resolve("Test").resolve("_meta.json"),
+                            datasetMeta.toJSONObject().toString()
+                    );
+                    return repositoryDir.resolve("Test").resolve("_meta.json");
+                });
+        Mockito.when(remoteBackupRepository.getPart(
+                        Mockito.eq("Test"),
+                        Mockito.eq("part0"),
+                        repositoryDir.resolve("Test")
+                ))
+                .thenReturn(repositoryDir.resolve("Test").resolve("part0"));
+        Mockito.when(remoteBackupRepository.getPart(
+                        Mockito.eq("Test"),
+                        Mockito.eq("part1"),
+                        repositoryDir.resolve("Test")
+                ))
+                .thenReturn(repositoryDir.resolve("Test").resolve("part1"));
 
-        Assertions.assertThrows(TooManyPartsException.class, localBackupRepository::getNextInputPath);
+        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(
+                backupDir,
+                repositoryDir,
+                remoteBackupRepository,
+                true
+        );
+
+        Path path = localBackupRepository.getNextPart("Test",null);
+
+        Assertions.assertEquals(repositoryDir.resolve("Test").resolve("part0"),path);
+
+        path = localBackupRepository.getNextPart("Test","part0");
+
+        Assertions.assertEquals(repositoryDir.resolve("Test").resolve("part1"),path);
+
+        Assertions.assertThrows(NoMorePartsException.class,()->{
+            localBackupRepository.getNextPart("Test","part1");
+        });
     }
 
     @Test
-    void shouldThrowFinished(@TempDir Path tempDir) throws IOException {
-        Files.createFile(tempDir.resolve("finished"));
+    void shouldNotFindAny(@TempDir Path backupDir, @TempDir Path repositoryDir) throws Exception {
+        RemoteBackupRepository remoteBackupRepository = Mockito.mock(RemoteBackupRepository.class);
 
-        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(tempDir);
+        Mockito.when(remoteBackupRepository.getBackupMeta(Mockito.eq(repositoryDir)))
+                .thenAnswer(invocationOnMock -> {
+                    BackupMeta backupMeta = new BackupMeta();
+                    backupMeta.addDataset("Test");
+                    Files.writeString(repositoryDir.resolve("_meta.json"), backupMeta.toJSONObject().toString());
+                    return repositoryDir.resolve("_meta.json");
+                });
+        Mockito.when(remoteBackupRepository.getDatasetMeta(
+                        Mockito.eq("Test"),Mockito.eq(repositoryDir.resolve("Test")))
+                )
+                .thenAnswer(invocationOnMock -> {
+                    DatasetMeta datasetMeta = new DatasetMeta();
+                    Files.writeString(
+                            repositoryDir.resolve("Test").resolve("_meta.json"),
+                            datasetMeta.toJSONObject().toString()
+                    );
+                    return repositoryDir.resolve("Test").resolve("_meta.json");
+                });
 
-        Assertions.assertThrows(FinishedFlagException.class, localBackupRepository::getNextInputPath);
+        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(
+                backupDir,
+                repositoryDir,
+                remoteBackupRepository,
+                true
+        );
+
+        Assertions.assertThrows(NoMorePartsException.class,()->{
+            localBackupRepository.getNextPart("Test",null);
+        });
     }
 
     @Test
-    void shouldFillNewFile(@TempDir Path tempDir) throws IOException {
-        Files.createFile(tempDir.resolve("level_0_25_02_2020__20_50.part0"));
+    void shouldFinish(@TempDir Path backupDir, @TempDir Path repositoryDir) throws Exception{
+        RemoteBackupRepository remoteBackupRepository = Mockito.mock(RemoteBackupRepository.class);
 
-        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(tempDir);
-        byte[] src = new byte[1000];
-        new Random().nextBytes(src);
-        Path newPath = localBackupRepository.createNewFilePath("level_0_25_02_2020__20_50",0);
-        try(OutputStream outputStream = Files.newOutputStream(newPath);
-            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)){
-            bufferedOutputStream.write(src);
-        }
+        Mockito.when(remoteBackupRepository.getBackupMeta(Mockito.eq(repositoryDir)))
+                .thenAnswer(invocationOnMock -> {
+                    BackupMeta backupMeta = new BackupMeta();
+                    backupMeta.addDataset("Test");
+                    Files.writeString(repositoryDir.resolve("_meta.json"), backupMeta.toJSONObject().toString());
+                    return repositoryDir.resolve("_meta.json");
+                });
+        Mockito.when(remoteBackupRepository.getDatasetMeta(
+                        Mockito.eq("Test"),Mockito.eq(repositoryDir.resolve("Test")))
+                )
+                .thenAnswer(invocationOnMock -> {
+                    DatasetMeta datasetMeta = new DatasetMeta();
+                    datasetMeta.addPart(new PartMeta("part0", 10L));
+                    Files.writeString(
+                            repositoryDir.resolve("Test").resolve("_meta.json"),
+                            datasetMeta.toJSONObject().toString()
+                    );
+                    return repositoryDir.resolve("Test").resolve("_meta.json");
+                });
 
-        byte[] dst;
-        try(InputStream inputStream = Files.newInputStream(newPath)){
-            dst = inputStream.readAllBytes();
-        }
+        Files.createFile(repositoryDir.resolve("finished"));
 
-        Assertions.assertArrayEquals(src,dst);
-    }
+        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(
+                backupDir,
+                repositoryDir,
+                remoteBackupRepository,
+                true
+        );
 
-    @Test
-    void shouldMarkReceived(@TempDir Path tempDir) throws Exception {
-        Files.createFile(tempDir.resolve("level_0_25_02_2020__20_50.part0.ready"));
-
-        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(tempDir);
-        Path nextPath = localBackupRepository.getNextInputPath();
-
-        localBackupRepository.markReceived(nextPath);
-
-        Assertions.assertFalse(Files.exists(tempDir.resolve("level_0_25_02_2020__20_50.part0.ready")));
-        Assertions.assertTrue(Files.exists(tempDir.resolve("level_0_25_02_2020__20_50.part0.received")));
-
-    }
-
-    @Test
-    void shouldMarkReady(@TempDir Path tempDir) throws Exception {
-        Path path = tempDir.resolve("level_0_25_02_2020__20_50.part0");
-        Files.createFile(path);
-
-        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(tempDir);
-        localBackupRepository.markReady(path);
-
-        Assertions.assertFalse(Files.exists(tempDir.resolve("level_0_25_02_2020__20_50.part0")));
-        Assertions.assertTrue(Files.exists(tempDir.resolve("level_0_25_02_2020__20_50.part0.ready")));
-
-    }
-
-    @Test
-    void shouldDelete(@TempDir Path tempDir) throws Exception {
-        Path path = tempDir.resolve("level_0_25_02_2020__20_50.part0.ready");
-        Files.createFile(path);
-
-        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(tempDir);
-
-        localBackupRepository.delete(path);
-
-        Assertions.assertFalse(Files.exists(path));
-
+        Assertions.assertThrows(FinishedFlagException.class,()->{
+            localBackupRepository.getNextPart("Test",null);
+        });
     }
 }

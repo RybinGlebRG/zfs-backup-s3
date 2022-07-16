@@ -34,7 +34,11 @@ class TestSnapshotReceiverImpl {
         Mockito.when(zfsProcessFactory.getZFSReceive(Mockito.any())).thenReturn(zfsReceive);
         Mockito.doThrow(new EOFException()).when(zfsFileReader).read();
 
-        SnapshotReceiver snapshotReceiver = new SnapshotReceiverImpl(zfsProcessFactory,zfsPool, localBackupRepository,zfsFileReaderFactory,true);
+        SnapshotReceiver snapshotReceiver = new SnapshotReceiverImpl(
+                zfsProcessFactory,
+                zfsPool,
+                zfsFileReaderFactory
+        );
 
         InOrder inOrder = Mockito.inOrder(zfsProcessFactory,zfsFileReaderFactory, localBackupRepository,zfsFileReader, zfsReceive);
 
@@ -69,7 +73,11 @@ class TestSnapshotReceiverImpl {
         Mockito.when(zfsProcessFactory.getZFSReceive(Mockito.any())).thenReturn(zfsReceive);
         Mockito.doThrow(new EOFException()).when(zfsFileReader).read();
 
-        SnapshotReceiver snapshotReceiver = new SnapshotReceiverImpl(zfsProcessFactory,zfsPool, localBackupRepository,zfsFileReaderFactory,true);
+        SnapshotReceiver snapshotReceiver = new SnapshotReceiverImpl(
+                zfsProcessFactory,
+                zfsPool,
+                zfsFileReaderFactory
+        );
 
         InOrder inOrder = Mockito.inOrder(zfsProcessFactory,zfsFileReaderFactory, localBackupRepository,zfsFileReader,zfsReceive);
 
@@ -114,7 +122,11 @@ class TestSnapshotReceiverImpl {
         Mockito.when(zfsProcessFactory.getZFSReceive(Mockito.any())).thenReturn(zfsReceive);
         Mockito.doThrow(new EOFException()).when(zfsFileReader).read();
 
-        SnapshotReceiver snapshotReceiver = new SnapshotReceiverImpl(zfsProcessFactory,zfsPool, localBackupRepository,zfsFileReaderFactory,true);
+        SnapshotReceiver snapshotReceiver = new SnapshotReceiverImpl(
+                zfsProcessFactory,
+                zfsPool,
+                zfsFileReaderFactory
+        );
 
         InOrder inOrder = Mockito.inOrder(zfsProcessFactory,zfsFileReaderFactory, localBackupRepository,zfsFileReader, zfsReceive);
 

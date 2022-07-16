@@ -49,7 +49,7 @@ import java.util.concurrent.Future;
 import static org.mockito.Matchers.eq;
 
 @Disabled
-public class TestBackupRestoreByDatasetEncryption {
+public class TestBackupRestoreFull {
 
     private byte[] randomBytes(int n) {
         byte[] bytes = new byte[n];
@@ -195,8 +195,15 @@ public class TestBackupRestoreByDatasetEncryption {
         return backupController;
     }
 
-    private RestoreController setupRestore(Path restoreDir) throws IOException, ExecutionException, InterruptedException {
-        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(restoreDir);
+    private RestoreController setupRestore(Path restoreDir, Path repositoryDir) throws Exception {
+        RemoteBackupRepository remoteBackupRepository = Mockito.mock(RemoteBackupRepository.class);
+
+        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(
+                restoreDir,
+                repositoryDir,
+                remoteBackupRepository,
+                true
+        );
 
         ZFSReceive zfsReceive = Mockito.mock(ZFSReceive.class);
         List<ByteArrayOutputStream> byteArrayOutputStreamList = new ArrayList<>();
@@ -239,9 +246,7 @@ public class TestBackupRestoreByDatasetEncryption {
         SnapshotReceiver snapshotReceiver = new SnapshotReceiverImpl(
                 zfsProcessFactory,
                 new ZFSPool("ReceivePool"),
-                localBackupRepository,
-                zfsFileReaderFactory,
-                true
+                zfsFileReaderFactory
         );
 
         ZFSRestoreService zfsRestoreService = new ZFSRestoreService(

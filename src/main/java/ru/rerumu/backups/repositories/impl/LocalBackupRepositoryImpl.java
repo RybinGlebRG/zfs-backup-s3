@@ -23,6 +23,8 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
 
     private static final String filePostfix = ".part";
     private static final String FINISH_MARK = "finished";
+
+    // TODO: remove
     private final Path backupDirectory;
     private final Logger logger = LoggerFactory.getLogger(LocalBackupRepositoryImpl.class);
 
@@ -84,6 +86,12 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
             Files.delete(path);
         }
     }
+
+    /**
+     * Clones S3 repository metadata to local repository. Does not require lock, since does not share directory
+     * with other processes
+     *
+     */
     private void cloneRepository() throws IOException, NoSuchAlgorithmException, IncorrectHashException {
         clearClone();
 
@@ -167,11 +175,15 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
         setLock();
     }
 
+    /**
+     * Either loads file from S3 or resolves local file name. Local file have to exist in the moment of resolution.
+     * Does not require locks, since remote repository case uses only one process and local repository case only
+     * resolves name, doesn't modify repository contents
+     */
     @Override
     public Path getPart(String datasetName, String partName)
             throws IOException, NoSuchAlgorithmException, IncorrectHashException, InterruptedException {
 
-        waitLock();
         Path path;
         if (isUseS3) {
             // Clearing space
@@ -187,38 +199,37 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
             path = repositoryDir.resolve(datasetName).resolve(partName);
         }
 
-        releaseLock();
         return path;
     }
 
     @Override
     public Path getNextPart(String datasetName, String partName)
-            throws IOException, NoSuchAlgorithmException, IncorrectHashException, InterruptedException, FinishedFlagException {
+            throws IOException,
+            NoSuchAlgorithmException,
+            IncorrectHashException,
+            InterruptedException,
+            FinishedFlagException,
+            NoMorePartsException {
         String nextPart = null;
 
-        while (true){
-            if (Files.exists(repositoryDir.resolve("finished"))){
-                throw new FinishedFlagException();
-            }
-            DatasetMeta datasetMeta = getDatasetMeta(datasetName);
-            boolean isFoundCurrent = false;
+        if (Files.exists(repositoryDir.resolve("finished"))){
+            throw new FinishedFlagException();
+        }
+        DatasetMeta datasetMeta = getDatasetMeta(datasetName);
+        boolean isFoundCurrent = false;
 
-            for (String part: datasetMeta.getParts()){
+        for (String part: datasetMeta.getParts()){
 
-                if (!isFoundCurrent && part.equals(partName)){
-                    isFoundCurrent=true;
-                    continue;
-                }
+            if (!isFoundCurrent && part.equals(partName)){
+                isFoundCurrent=true;
+                continue;
+            }
 
-                nextPart = part;
-                break;
-            }
-            if (nextPart!=null){
-                break;
-            } else {
-                logger.debug("No acceptable files found. Waiting 1 second before retry");
-                Thread.sleep(1000);
-            }
+            nextPart = part;
+            break;
+        }
+        if (nextPart==null){
+            throw new NoMorePartsException();
         }
 
         Path path = getPart(datasetName, partName);
@@ -226,12 +237,18 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
         return path;
     }
 
+    /**
+     * Gets datasets from local metadata
+     */
     @Override
     public List<String> getDatasets() throws IOException, NoSuchAlgorithmException, IncorrectHashException {
         BackupMeta backupMeta = getBackupMeta();
         return backupMeta.getDatasets();
     }
 
+    /**
+     * Gets parts from local metadata
+     */
     @Override
     public List<String> getParts(String datasetName) throws IOException, NoSuchAlgorithmException, IncorrectHashException {
         DatasetMeta datasetMeta = getDatasetMeta(datasetName);
@@ -271,56 +288,9 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
         logger.info(String.format("File '%s' deleted",path.toString()));
     }
 
-//    @Override
-//    public Path markReady(Path path) throws IOException {
-//        logger.info(String.format("Marking file '%s' as 'ready'",path.toString()));
-//        Path res = Paths.get(path.toString() + ".ready");
-//        Files.move(path, res);
-//        logger.info(String.format("markReady - '%s'",res.toString()));
-//        return res;
-//    }
-
     @Override
-    public Path markReceived(Path path) throws IOException {
-        logger.info(String.format("Marking file '%s' as 'received'",path.toString()));
-        String fileName = path.getFileName().toString();
-        fileName = fileName.replace(".ready", ".received");
-        Path res = Paths.get(path.getParent().toString(), fileName);
-        Files.move(path, res);
-        logger.info(String.format("markReceived - '%s'",res.toString()));
-        return res;
+    public void clear(String datasetName, String partName) throws IOException {
+        Path path = repositoryDir.resolve(datasetName).resolve(partName);
+        Files.delete(path);
     }
-
-//    @Override
-//    public Path getNextInputPath() throws NoMorePartsException, FinishedFlagException, IOException, TooManyPartsException {
-//        logger.info("Starting looking for next input path");
-//        List<Path> fileParts = new ArrayList<>();
-//        try (DirectoryStream<Path> stream = Files.newDirectoryStream(backupDirectory)) {
-//            for (Path item : stream) {
-//                logger.info(String.format("Found file '%s'", item.toString()));
-//                if (item.toString().endsWith(".ready") || item.getFileName().toString().equals(FINISH_MARK)) {
-//                    logger.info(String.format("Accepted file '%s'", item.toString()));
-//                    fileParts.add(item);
-//                }
-//            }
-//        }
-//
-//        if (fileParts.size() == 0) {
-//            logger.info("Did not find acceptable files");
-//            throw new NoMorePartsException();
-//        } else if (fileParts.size() > 1) {
-//            logger.info("Found too many files");
-//            throw new TooManyPartsException();
-//        } else {
-//
-//            Path filePart = fileParts.get(0);
-//            if (filePart.getFileName().toString().equals(FINISH_MARK)) {
-//                logger.info("Found 'finished' flag");
-//                throw new FinishedFlagException();
-//            }
-//            logger.info(String.format("getNextInputPath - '%s'",filePart.toString()));
-//            return filePart;
-//
-//        }
-//    }
 }

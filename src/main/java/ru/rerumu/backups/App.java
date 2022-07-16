@@ -13,6 +13,7 @@ import ru.rerumu.backups.factories.impl.ZFSFileReaderFactoryImpl;
 import ru.rerumu.backups.models.S3Storage;
 import ru.rerumu.backups.models.ZFSPool;
 import ru.rerumu.backups.repositories.LocalBackupRepository;
+import ru.rerumu.backups.repositories.RemoteBackupRepository;
 import ru.rerumu.backups.repositories.ZFSFileSystemRepository;
 import ru.rerumu.backups.repositories.ZFSSnapshotRepository;
 import ru.rerumu.backups.repositories.impl.S3Repository;
@@ -21,6 +22,7 @@ import ru.rerumu.backups.repositories.impl.ZFSSnapshotRepositoryImpl;
 import ru.rerumu.backups.services.*;
 import ru.rerumu.backups.services.impl.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Generated
@@ -38,9 +40,10 @@ public class App {
 
             switch (mode) {
                 case "backupFull": {
-                    LocalBackupRepository localBackupRepository = entityFactory.getLocalBackupRepository();
+
                     List<S3Storage> s3StorageList = entityFactory.getS3StorageList();
                     S3Repository s3Repository = entityFactory.getS3Repository(s3StorageList);
+                    LocalBackupRepository localBackupRepository = entityFactory.getLocalBackupRepository(s3Repository);
                     ZFSProcessFactory zfsProcessFactory = entityFactory.getZFSProcessFactory();
                     ZFSSnapshotRepository zfsSnapshotRepository = new ZFSSnapshotRepositoryImpl(zfsProcessFactory);
                     ZFSFileSystemRepository zfsFileSystemRepository = new ZFSFileSystemRepositoryImpl(zfsProcessFactory,zfsSnapshotRepository);
@@ -63,9 +66,9 @@ public class App {
                     break;
                 }
                 case "backupInc":{
-                    LocalBackupRepository localBackupRepository = entityFactory.getLocalBackupRepository();
                     List<S3Storage> s3StorageList = entityFactory.getS3StorageList();
                     S3Repository s3Repository = entityFactory.getS3Repository(s3StorageList);
+                    LocalBackupRepository localBackupRepository = entityFactory.getLocalBackupRepository(s3Repository);
                     ZFSProcessFactory zfsProcessFactory = entityFactory.getZFSProcessFactory();
                     ZFSSnapshotRepository zfsSnapshotRepository = new ZFSSnapshotRepositoryImpl(zfsProcessFactory);
                     ZFSFileSystemRepository zfsFileSystemRepository = new ZFSFileSystemRepositoryImpl(zfsProcessFactory,zfsSnapshotRepository);
@@ -91,22 +94,25 @@ public class App {
                     break;
                 }
                 case "restore": {
-                    LocalBackupRepository localBackupRepository = entityFactory.getLocalBackupRepository();
+                    List<S3Storage> s3StorageList = entityFactory.getS3StorageList();
+                    RemoteBackupRepository s3Repository = entityFactory.getS3Repository(s3StorageList);
+                    LocalBackupRepository localBackupRepository = entityFactory.getLocalBackupRepository(s3Repository);
 
                     ZFSProcessFactory zfsProcessFactory = entityFactory.getZFSProcessFactory();
                     ZFSFileReaderFactory zfsFileReaderFactory = new ZFSFileReaderFactoryImpl();
                     SnapshotReceiver snapshotReceiver = new SnapshotReceiverImpl(
                             zfsProcessFactory,
                             new ZFSPool(configuration.getProperty("receive.pool")),
-                            localBackupRepository,
-                            zfsFileReaderFactory,
-                            Boolean.parseBoolean(configuration.getProperty("is.delete.after.receive")));
+                            zfsFileReaderFactory
+                    );
 
                     ZFSRestoreService zfsRestoreService = new ZFSRestoreService(
                             localBackupRepository,
                             snapshotReceiver,
-                            Boolean.parseBoolean(configuration.getProperty("is.load.aws")),
-                            configuration.getProperty("restore.dataset"));
+                            Arrays.asList(
+                                    configuration.getProperty("restore.dataset").split(",")
+                            )
+                    );
 
                     RestoreController restoreController = new RestoreController(zfsRestoreService);
                     restoreController.restore();

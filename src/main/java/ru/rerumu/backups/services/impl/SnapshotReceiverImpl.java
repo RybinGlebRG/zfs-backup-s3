@@ -24,8 +24,6 @@ public class SnapshotReceiverImpl implements SnapshotReceiver {
 
     private final ZFSProcessFactory zfsProcessFactory;
     private final ZFSPool zfsPool;
-    private final LocalBackupRepository localBackupRepository;
-    private final boolean isDelete;
     private final ZFSFileReaderFactory zfsFileReaderFactory;
 
     private ZFSStreamPart previousStream;
@@ -35,25 +33,11 @@ public class SnapshotReceiverImpl implements SnapshotReceiver {
     public SnapshotReceiverImpl(
             ZFSProcessFactory zfsProcessFactory,
             ZFSPool zfsPool,
-            LocalBackupRepository localBackupRepository,
-            ZFSFileReaderFactory zfsFileReaderFactory,
-            boolean isDelete
+            ZFSFileReaderFactory zfsFileReaderFactory
     ){
         this.zfsProcessFactory = zfsProcessFactory;
         this.zfsPool = zfsPool;
-        this.localBackupRepository = localBackupRepository;
         this.zfsFileReaderFactory = zfsFileReaderFactory;
-        this.isDelete = isDelete;
-    }
-
-    private void processReceivedFile(Path path) throws IOException {
-        logger.info(String.format("Starting processing of file '%s'",path.toString()));
-        if (isDelete) {
-            localBackupRepository.delete(path);
-        } else {
-            localBackupRepository.markReceived(path);
-        }
-        logger.info(String.format("Finished processing of file '%s'",path.toString()));
     }
 
     private boolean isNextPart(ZFSStreamPart previousStream, ZFSStreamPart nextStream){
@@ -85,7 +69,6 @@ public class SnapshotReceiverImpl implements SnapshotReceiver {
             zfsFileReader.read();
         } catch (EOFException e){
             logger.info(String.format("End of file '%s'", nextStream.getFullPath().toString()));
-            processReceivedFile(nextStream.getFullPath());
             previousStream = nextStream;
         }
     }

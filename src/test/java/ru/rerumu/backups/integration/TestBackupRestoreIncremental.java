@@ -229,15 +229,10 @@ public class TestBackupRestoreIncremental {
         SnapshotReceiver snapshotReceiver = new SnapshotReceiverImpl(
                 zfsProcessFactory,
                 new ZFSPool("ReceivePool"),
-                localBackupRepository,
-                zfsFileReaderFactory,
-                true
+                zfsFileReaderFactory
         );
 
         ZFSRestoreService zfsRestoreService = new ZFSRestoreService(
-                "84fBS1KsChnuaV0",
-                zfsProcessFactory,
-                true,
                 localBackupRepository,
                 snapshotReceiver);
 

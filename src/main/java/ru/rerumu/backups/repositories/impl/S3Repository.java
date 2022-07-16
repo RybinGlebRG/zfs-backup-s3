@@ -92,19 +92,6 @@ public class S3Repository implements RemoteBackupRepository {
         return true;
     }
 
-    private void clearTmp() throws IOException {
-        List<Path> filesToDelete = new ArrayList<>();
-        try(Stream<Path> pathStream = Files.walk(tmpDir)) {
-            pathStream
-                    .sorted(Comparator.reverseOrder())
-                    .forEach(filesToDelete::add);
-        }
-
-        for (Path path: filesToDelete){
-            Files.delete(path);
-        }
-    }
-
     @Override
     public void add(String prefix, Path path)
             throws

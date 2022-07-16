@@ -19,17 +19,16 @@ public class ZFSRestoreService {
     private final Logger logger = LoggerFactory.getLogger(ZFSRestoreService.class);
     private final LocalBackupRepository localBackupRepository;
     private final SnapshotReceiver snapshotReceiver;
-    private final String datasetName;
+    private final List<String> datasetList;
 
     public ZFSRestoreService(LocalBackupRepository localBackupRepository,
                              SnapshotReceiver snapshotReceiver,
-                             String datasetName) {
+                             List<String> datasetList) {
         this.localBackupRepository = localBackupRepository;
         this.snapshotReceiver = snapshotReceiver;
-        this.datasetName = datasetName;
+        this.datasetList = datasetList;
     }
 
-    // TODO: write
     public void zfsReceive()
             throws FinishedFlagException,
             NoMorePartsException,
@@ -45,25 +44,34 @@ public class ZFSRestoreService {
             IncorrectHashException {
         List<String> datasets = localBackupRepository.getDatasets();
 
-        if (!datasets.contains(datasetName)){
-            throw new IllegalArgumentException();
+        for (String datasetName: datasetList){
+            if (!datasets.contains(datasetName)){
+                throw new IllegalArgumentException();
+            }
         }
 
-        String currentPart = null;
+        for (String datasetName: datasetList) {
 
-        try {
-            while (true) {
-                try {
-                    Path path = localBackupRepository.getNextPart(datasetName, currentPart);
-                    currentPart = path.getFileName().toString();
-                    snapshotReceiver.receiveSnapshotPart(path);
-                } catch (FinishedFlagException e) {
-                    logger.info("Finish flag found. Exiting loop");
-                    break;
+            String currentPart = null;
+
+            try {
+                while (true) {
+                    try {
+                        Path path = localBackupRepository.getNextPart(datasetName, currentPart);
+                        currentPart = path.getFileName().toString();
+                        snapshotReceiver.receiveSnapshotPart(path);
+                        localBackupRepository.clear(datasetName, currentPart);
+                    } catch (NoMorePartsException e) {
+                        logger.debug("No acceptable files found. Waiting 1 second before retry");
+                        Thread.sleep(1000);
+                    } catch (FinishedFlagException e) {
+                        logger.info("Finish flag found. Exiting loop");
+                        break;
+                    }
                 }
+            } finally {
+                snapshotReceiver.finish();
             }
-        } finally {
-            snapshotReceiver.finish();
         }
     }
 }
