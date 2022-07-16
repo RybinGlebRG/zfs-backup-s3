@@ -12,12 +12,12 @@ import java.util.List;
 public interface LocalBackupRepository {
 
 //    BufferedInputStream getNextInputStream() throws NoMorePartsException, FinishedFlagException, IOException, TooManyPartsException;
-    Path getNextInputPath() throws NoMorePartsException, FinishedFlagException, IOException, TooManyPartsException;
+//    Path getNextInputPath() throws NoMorePartsException, FinishedFlagException, IOException, TooManyPartsException;
 //    void deleteLastPart() throws IOException;
     void delete(Path path) throws IOException;
 //    void markReceivedLastPart() throws IOException;
     Path markReceived(Path path) throws IOException;
-    Path markReady(Path path) throws IOException;
+//    Path markReady(Path path) throws IOException;
 //    BufferedOutputStream newPart()  throws IOException;
 //    Path getLastPart();
 //    boolean isExists(Path path);
