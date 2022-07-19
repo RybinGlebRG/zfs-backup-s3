@@ -21,11 +21,6 @@ import java.util.stream.Stream;
 
 public class LocalBackupRepositoryImpl implements LocalBackupRepository {
 
-    private static final String filePostfix = ".part";
-    private static final String FINISH_MARK = "finished";
-
-    // TODO: remove
-    private final Path backupDirectory;
     private final Logger logger = LoggerFactory.getLogger(LocalBackupRepositoryImpl.class);
 
     private final Path repositoryDir;
@@ -36,12 +31,10 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
 
 
     public LocalBackupRepositoryImpl(
-            Path backupDirectory,
             Path repositoryDir,
             RemoteBackupRepository remoteBackupRepository,
             boolean isUseS3) throws IOException, NoSuchAlgorithmException, IncorrectHashException {
 
-        this.backupDirectory = backupDirectory;
         this.repositoryDir = repositoryDir;
         this.remoteBackupRepository = remoteBackupRepository;
         this.isUseS3 = isUseS3;
@@ -49,12 +42,6 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
             cloneRepository();
         }
 
-    }
-
-    @Override
-    public Path createNewFilePath(String prefix, int partNumber) {
-        Path filePart = Paths.get(backupDirectory.toString(), prefix + filePostfix + partNumber);
-        return filePart;
     }
 
     private void clearClone() throws IOException {

@@ -10,6 +10,7 @@ import ru.rerumu.backups.repositories.LocalBackupRepository;
 import ru.rerumu.backups.repositories.RemoteBackupRepository;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -23,14 +24,14 @@ public class SnapshotSenderByDataset extends AbstractSnapshotSender {
             RemoteBackupRepository remoteBackupRepository,
             ZFSProcessFactory zfsProcessFactory,
             ZFSFileWriterFactory zfsFileWriterFactory,
-            boolean isLoadS3
+            Path tempDir
     ) {
         super(
                 localBackupRepository,
                 remoteBackupRepository,
                 zfsProcessFactory,
                 zfsFileWriterFactory,
-                isLoadS3
+                tempDir
         );
     }
 

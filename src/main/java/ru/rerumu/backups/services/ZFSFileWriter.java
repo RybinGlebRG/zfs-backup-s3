@@ -12,7 +12,7 @@ import java.nio.file.Path;
 
 public interface ZFSFileWriter {
 
-    void write(BufferedInputStream bufferedInputStream, Path path) throws IOException,
+    void write(BufferedInputStream bufferedInputStream) throws IOException,
             CompressorException,
             EncryptException,
             FileHitSizeLimitException,

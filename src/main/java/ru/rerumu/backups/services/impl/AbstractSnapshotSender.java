@@ -26,47 +26,24 @@ public abstract class AbstractSnapshotSender implements SnapshotSender {
     protected final RemoteBackupRepository remoteBackupRepository;
     protected final ZFSProcessFactory zfsProcessFactory;
     protected final ZFSFileWriterFactory zfsFileWriterFactory;
-    protected final boolean isLoadS3;
+    private final Path tempDir;
 
     public AbstractSnapshotSender(
             LocalBackupRepository localBackupRepository,
             RemoteBackupRepository remoteBackupRepository,
             ZFSProcessFactory zfsProcessFactory,
             ZFSFileWriterFactory zfsFileWriterFactory,
-            boolean isLoadS3
+            Path tempDir
     ) {
         this.localBackupRepository = localBackupRepository;
         this.remoteBackupRepository = remoteBackupRepository;
         this.zfsProcessFactory = zfsProcessFactory;
         this.zfsFileWriterFactory = zfsFileWriterFactory;
-        this.isLoadS3 = isLoadS3;
+        this.tempDir =tempDir;
     }
 
     private String escapeSymbols(final String srcString) {
         return srcString.replace('/', '-');
-    }
-
-    private void processCreatedFile(
-            final String datasetName,
-            final Path path
-    )
-            throws IOException,
-            InterruptedException,
-            NoSuchAlgorithmException,
-            IncorrectHashException,
-            S3MissesFileException {
-        localBackupRepository.add(datasetName,path.getFileName().toString(),path);
-//        if (isLoadS3) {
-//            remoteBackupRepository.add(datasetName, path);
-//            localBackupRepository.delete(path);
-//        } else {
-//            Path readyPath = localBackupRepository.markReady(path);
-//            while (Files.exists(readyPath)) {
-//                logger.debug("Last part exists. Waiting 1 second before retry");
-//                Thread.sleep(1000);
-//            }
-//        }
-
     }
 
     private void sendStream(
@@ -82,19 +59,20 @@ public abstract class AbstractSnapshotSender implements SnapshotSender {
             IncorrectHashException,
             S3MissesFileException {
         int n = 0;
-        ZFSFileWriter zfsFileWriter = zfsFileWriterFactory.getZFSFileWriter();
+
         while (true) {
-            Path newFilePath = localBackupRepository.createNewFilePath(streamMark, n);
+            Path newFilePath = tempDir.resolve(streamMark+".part"+n);
+            ZFSFileWriter zfsFileWriter = zfsFileWriterFactory.getZFSFileWriter(newFilePath);
             n++;
             try {
-                zfsFileWriter.write(zfsSend.getBufferedInputStream(), newFilePath);
+                zfsFileWriter.write(zfsSend.getBufferedInputStream());
             } catch (FileHitSizeLimitException e) {
-                processCreatedFile(datasetName, newFilePath);
+                localBackupRepository.add(datasetName,newFilePath.getFileName().toString(),newFilePath);
                 logger.debug(String.format(
                         "File '%s' processed",
                         newFilePath));
             } catch (ZFSStreamEndedException e) {
-                processCreatedFile(datasetName, newFilePath);
+                localBackupRepository.add(datasetName,newFilePath.getFileName().toString(),newFilePath);
                 logger.debug(String.format(
                         "File '%s' processed",
                         newFilePath));

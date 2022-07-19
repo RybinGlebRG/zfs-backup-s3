@@ -7,51 +7,44 @@ import ru.rerumu.backups.repositories.LocalBackupRepository;
 import ru.rerumu.backups.repositories.RemoteBackupRepository;
 import ru.rerumu.backups.services.SnapshotSender;
 import ru.rerumu.backups.services.impl.SnapshotSenderByDataset;
-import ru.rerumu.backups.services.impl.SnapshotSenderBySnapshot;
+
+import java.nio.file.Path;
 
 public class SnapshotSenderFactoryImpl implements SnapshotSenderFactory {
 
-    private final boolean isMultiIncremental;
     private final LocalBackupRepository localBackupRepository;
     private final RemoteBackupRepository remoteBackupRepository;
     private final ZFSProcessFactory zfsProcessFactory;
     private final ZFSFileWriterFactory zfsFileWriterFactory;
     private final boolean isLoadS3;
+    private final Path tempDir;
 
     public SnapshotSenderFactoryImpl(
-            boolean isMultiIncremental,
             LocalBackupRepository localBackupRepository,
             RemoteBackupRepository remoteBackupRepository,
             ZFSProcessFactory zfsProcessFactory,
             ZFSFileWriterFactory zfsFileWriterFactory,
-            boolean isLoadS3
+            boolean isLoadS3,
+            Path tempDir
     ){
-        this.isMultiIncremental = isMultiIncremental;
         this.localBackupRepository = localBackupRepository;
         this.remoteBackupRepository = remoteBackupRepository;
         this.zfsProcessFactory = zfsProcessFactory;
         this.zfsFileWriterFactory = zfsFileWriterFactory;
         this.isLoadS3 = isLoadS3;
+        this.tempDir = tempDir;
     }
 
     @Override
     public SnapshotSender getSnapshotSender() {
-        if (isMultiIncremental){
             return new SnapshotSenderByDataset(
                     localBackupRepository,
                     remoteBackupRepository,
                     zfsProcessFactory,
                     zfsFileWriterFactory,
-                    isLoadS3
+                    isLoadS3,
+                    tempDir
             );
-        } else {
-            return new SnapshotSenderBySnapshot(
-                    localBackupRepository,
-                    remoteBackupRepository,
-                    zfsProcessFactory,
-                    zfsFileWriterFactory,
-                    isLoadS3
-            );
-        }
+
     }
 }

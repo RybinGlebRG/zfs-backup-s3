@@ -26,10 +26,15 @@ public class ZFSFileWriterTrivial implements ZFSFileWriter {
 
     private final int chunkSize;
     private final long filePartSize;
+    private final Path path;
 
-    public ZFSFileWriterTrivial( int chunkSize, long filePartSize){
+    public ZFSFileWriterTrivial( int chunkSize, long filePartSize, Path path) throws IOException {
         this.chunkSize = chunkSize;
         this.filePartSize = filePartSize;
+        this.path = path;
+        if (Files.exists(path)){
+            throw new IOException("File already exists");
+        }
     }
 
     private byte[] fillBuffer(BufferedInputStream bufferedInputStream) throws IOException {
@@ -52,7 +57,7 @@ public class ZFSFileWriterTrivial implements ZFSFileWriter {
     }
 
     @Override
-    public void write(BufferedInputStream bufferedInputStream, Path path)
+    public void write(BufferedInputStream bufferedInputStream)
             throws
             IOException,
             FileHitSizeLimitException,
