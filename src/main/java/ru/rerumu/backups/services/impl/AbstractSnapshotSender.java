@@ -23,20 +23,17 @@ public abstract class AbstractSnapshotSender implements SnapshotSender {
     private final Logger logger = LoggerFactory.getLogger(AbstractSnapshotSender.class);
 
     protected final LocalBackupRepository localBackupRepository;
-    protected final RemoteBackupRepository remoteBackupRepository;
     protected final ZFSProcessFactory zfsProcessFactory;
     protected final ZFSFileWriterFactory zfsFileWriterFactory;
     private final Path tempDir;
 
     public AbstractSnapshotSender(
             LocalBackupRepository localBackupRepository,
-            RemoteBackupRepository remoteBackupRepository,
             ZFSProcessFactory zfsProcessFactory,
             ZFSFileWriterFactory zfsFileWriterFactory,
             Path tempDir
     ) {
         this.localBackupRepository = localBackupRepository;
-        this.remoteBackupRepository = remoteBackupRepository;
         this.zfsProcessFactory = zfsProcessFactory;
         this.zfsFileWriterFactory = zfsFileWriterFactory;
         this.tempDir =tempDir;

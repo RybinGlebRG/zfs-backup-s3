@@ -57,7 +57,6 @@ public class TestLocalBackupRepository {
         Files.createFile(repositoryDir.resolve("testDir").resolve("testFile"));
 
         LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(
-                backupDir,
                 repositoryDir,
                 remoteBackupRepository,
                 true
@@ -94,7 +93,6 @@ public class TestLocalBackupRepository {
                 });
 
         LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(
-                backupDir,
                 repositoryDir,
                 remoteBackupRepository,
                 true
@@ -139,7 +137,6 @@ public class TestLocalBackupRepository {
                 });
 
         LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(
-                backupDir,
                 repositoryDir,
                 remoteBackupRepository,
                 true
@@ -196,7 +193,6 @@ public class TestLocalBackupRepository {
                 .thenReturn(repositoryDir.resolve("Test").resolve("part1"));
 
         LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(
-                backupDir,
                 repositoryDir,
                 remoteBackupRepository,
                 true
@@ -239,7 +235,6 @@ public class TestLocalBackupRepository {
                 });
 
         LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(
-                backupDir,
                 repositoryDir,
                 remoteBackupRepository,
                 true
@@ -277,7 +272,6 @@ public class TestLocalBackupRepository {
         Files.createFile(repositoryDir.resolve("finished"));
 
         LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(
-                backupDir,
                 repositoryDir,
                 remoteBackupRepository,
                 true

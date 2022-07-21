@@ -21,14 +21,12 @@ public class SnapshotSenderByDataset extends AbstractSnapshotSender {
 
     public SnapshotSenderByDataset(
             LocalBackupRepository localBackupRepository,
-            RemoteBackupRepository remoteBackupRepository,
             ZFSProcessFactory zfsProcessFactory,
             ZFSFileWriterFactory zfsFileWriterFactory,
             Path tempDir
     ) {
         super(
                 localBackupRepository,
-                remoteBackupRepository,
                 zfsProcessFactory,
                 zfsFileWriterFactory,
                 tempDir

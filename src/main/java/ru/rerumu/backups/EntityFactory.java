@@ -28,8 +28,7 @@ public class EntityFactory {
 
     public LocalBackupRepository getLocalBackupRepository(RemoteBackupRepository remoteBackupRepository) throws IOException, NoSuchAlgorithmException, IncorrectHashException {
         return new LocalBackupRepositoryImpl(
-                Paths.get(configuration.getProperty("backup.directory")),
-                Paths.get(configuration.getProperty("cloned_path")),
+                Paths.get(configuration.getProperty("local_repository_dir")),
                 remoteBackupRepository,
                 Boolean.parseBoolean(configuration.getProperty("is.load.aws"))
         );
@@ -74,16 +73,13 @@ public class EntityFactory {
 
     public SnapshotSenderFactory getSnapshotSenderFactory(
             LocalBackupRepository localBackupRepository,
-            S3Repository s3Repository,
             ZFSProcessFactory zfsProcessFactory,
             ZFSFileWriterFactory zfsFileWriterFactory){
         return new SnapshotSenderFactoryImpl(
-                true,
                 localBackupRepository,
-                s3Repository,
                 zfsProcessFactory,
                 zfsFileWriterFactory,
-                Boolean.parseBoolean(configuration.getProperty("is.load.aws"))
+                Paths.get(configuration.getProperty("sender_temp_dir"))
         );
     }
 }

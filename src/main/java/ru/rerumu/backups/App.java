@@ -50,7 +50,6 @@ public class App {
                     ZFSFileWriterFactory zfsFileWriterFactory = entityFactory.getZFSFileWriterFactory();
                     SnapshotSenderFactory snapshotSenderFactory = entityFactory.getSnapshotSenderFactory(
                             localBackupRepository,
-                            s3Repository,
                             zfsProcessFactory,
                             zfsFileWriterFactory
                     );
@@ -75,7 +74,6 @@ public class App {
                     ZFSFileWriterFactory zfsFileWriterFactory = entityFactory.getZFSFileWriterFactory();
                     SnapshotSenderFactory snapshotSenderFactory = entityFactory.getSnapshotSenderFactory(
                             localBackupRepository,
-                            s3Repository,
                             zfsProcessFactory,
                             zfsFileWriterFactory
                     );
