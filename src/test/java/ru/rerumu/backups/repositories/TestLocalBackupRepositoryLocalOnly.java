@@ -36,6 +36,15 @@ public class TestLocalBackupRepositoryLocalOnly {
         return new JSONObject(jsonString);
     }
 
+    /**
+     * Test checks addition of the new part of new dataset to empty local repository.
+     * New metadata files should be created, directory for new dataset should be created,
+     * new part should be added to the new dataset directory.
+     * Backup metadata should contain only new dataset.
+     * Dataset metadata should contain only new part.
+     * New part should be present in dataset directory.
+     *
+     */
     @Test
     void shouldAddPartToNotExistingBackup(@TempDir Path tmpDir, @TempDir Path repositoryDir) throws Exception {
         LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(
@@ -58,11 +67,21 @@ public class TestLocalBackupRepositoryLocalOnly {
         datasetMeta.addPart(new PartMeta("part0", 0L));
         Assertions.assertTrue(Files.exists(repositoryDir.resolve("Test").resolve("_meta.json")));
         DatasetMeta resDatasetMeta = new DatasetMeta(readJson(repositoryDir.resolve("Test").resolve("_meta.json")));
-
         Assertions.assertEquals(backupMeta, resBackupMeta);
         Assertions.assertEquals(datasetMeta, resDatasetMeta);
+        Assertions.assertTrue(Files.exists(repositoryDir.resolve("Test").resolve("part0")));
     }
 
+    /**
+     * Test checks addition of the new part of new dataset to not empty local repository.
+     * Directory for new dataset should be created.
+     * New metadata file for new dataset should be created in new dataset directory.
+     * New part should be added to the new dataset directory.
+     * New dataset should be added to backup metadata.
+     * Dataset metadata should contain only new part.
+     * New part should be present in dataset directory.
+     *
+     */
     @Test
     void shouldAddDatasetToExistingBackup(@TempDir Path tmpDir, @TempDir Path repositoryDir) throws Exception {
         LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(
@@ -109,6 +128,13 @@ public class TestLocalBackupRepositoryLocalOnly {
         Assertions.assertEquals(backupMeta, res);
     }
 
+    // TODO: implement
+    /**
+     * Test checks addition of the new part of existing dataset to not empty local repository.
+     * New part should be added to the dataset directory.
+     * New part should be added to dataset metadata.
+     *
+     */
     @Test
     void shouldAddPartToSameDataset(@TempDir Path tmpDir, @TempDir Path repositoryDir) throws Exception {
         LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(
