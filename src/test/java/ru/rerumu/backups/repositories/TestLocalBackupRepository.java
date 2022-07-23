@@ -56,14 +56,14 @@ public class TestLocalBackupRepository {
                     DatasetMeta datasetMeta = new DatasetMeta();
                     datasetMeta.addPart(new PartMeta("part0", 10L));
                     Files.writeString(
-                            repositoryDir.resolve("Test").resolve("_meta.json"),
+                            repositoryDir.resolve("_meta.json"),
                             datasetMeta.toJSONObject().toString(),
                             StandardCharsets.UTF_8,
                             StandardOpenOption.CREATE,
                             StandardOpenOption.TRUNCATE_EXISTING,
                             StandardOpenOption.WRITE
                     );
-                    return repositoryDir.resolve("Test").resolve("_meta.json");
+                    return repositoryDir.resolve("_meta.json");
                 });
 
         Files.createFile(repositoryDir.resolve("testFile"));
@@ -107,14 +107,14 @@ public class TestLocalBackupRepository {
                     DatasetMeta datasetMeta = new DatasetMeta();
                     datasetMeta.addPart(new PartMeta("part0", 10L));
                     Files.writeString(
-                            repositoryDir.resolve("Test").resolve("_meta.json"),
+                            repositoryDir.resolve("_meta.json"),
                             datasetMeta.toJSONObject().toString(),
                             StandardCharsets.UTF_8,
                             StandardOpenOption.CREATE,
                             StandardOpenOption.TRUNCATE_EXISTING,
                             StandardOpenOption.WRITE
                     );
-                    return repositoryDir.resolve("Test").resolve("_meta.json");
+                    return repositoryDir.resolve("_meta.json");
                 });
 
         LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(
@@ -153,14 +153,14 @@ public class TestLocalBackupRepository {
                     DatasetMeta datasetMeta = new DatasetMeta();
                     datasetMeta.addPart(new PartMeta("part0", 10L));
                     Files.writeString(
-                            repositoryDir.resolve("Test").resolve("_meta.json"),
+                            repositoryDir.resolve("_meta.json"),
                             datasetMeta.toJSONObject().toString(),
                             StandardCharsets.UTF_8,
                             StandardOpenOption.CREATE,
                             StandardOpenOption.TRUNCATE_EXISTING,
                             StandardOpenOption.WRITE
                     );
-                    return repositoryDir.resolve("Test").resolve("_meta.json");
+                    return repositoryDir.resolve("_meta.json");
                 });
         Mockito.when(remoteBackupRepository.getPart(
                         Mockito.eq("Test"),
@@ -191,6 +191,10 @@ public class TestLocalBackupRepository {
         Assertions.assertTrue(Files.exists(repositoryDir.resolve("Test").resolve("part0")));
     }
 
+    void shouldGetParts(){
+        // TODO: write
+    }
+
     @Test
     void shouldGetNextPart(@TempDir Path repositoryDir) throws Exception {
         RemoteBackupRepository remoteBackupRepository = Mockito.mock(RemoteBackupRepository.class);
@@ -217,14 +221,14 @@ public class TestLocalBackupRepository {
                     datasetMeta.addPart(new PartMeta("part0", 10L));
                     datasetMeta.addPart(new PartMeta("part1", 10L));
                     Files.writeString(
-                            repositoryDir.resolve("Test").resolve("_meta.json"),
+                            repositoryDir.resolve("_meta.json"),
                             datasetMeta.toJSONObject().toString(),
                             StandardCharsets.UTF_8,
                             StandardOpenOption.CREATE,
                             StandardOpenOption.TRUNCATE_EXISTING,
                             StandardOpenOption.WRITE
                     );
-                    return repositoryDir.resolve("Test").resolve("_meta.json");
+                    return repositoryDir.resolve("_meta.json");
                 });
         Mockito.when(remoteBackupRepository.getPart(
                         Mockito.eq("Test"),
@@ -282,14 +286,14 @@ public class TestLocalBackupRepository {
                 .thenAnswer(invocationOnMock -> {
                     DatasetMeta datasetMeta = new DatasetMeta();
                     Files.writeString(
-                            repositoryDir.resolve("Test").resolve("_meta.json"),
+                            repositoryDir.resolve("_meta.json"),
                             datasetMeta.toJSONObject().toString(),
                             StandardCharsets.UTF_8,
                             StandardOpenOption.CREATE,
                             StandardOpenOption.TRUNCATE_EXISTING,
                             StandardOpenOption.WRITE
                     );
-                    return repositoryDir.resolve("Test").resolve("_meta.json");
+                    return repositoryDir.resolve("_meta.json");
                 });
 
         LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(
@@ -330,14 +334,14 @@ public class TestLocalBackupRepository {
                     DatasetMeta datasetMeta = new DatasetMeta();
                     datasetMeta.addPart(new PartMeta("part0", 10L));
                     Files.writeString(
-                            repositoryDir.resolve("Test").resolve("_meta.json"),
+                            repositoryDir.resolve("_meta.json"),
                             datasetMeta.toJSONObject().toString(),
                             StandardCharsets.UTF_8,
                             StandardOpenOption.CREATE,
                             StandardOpenOption.TRUNCATE_EXISTING,
                             StandardOpenOption.WRITE
                     );
-                    return repositoryDir.resolve("Test").resolve("_meta.json");
+                    return repositoryDir.resolve("_meta.json");
                 });
 
         Mockito.when(remoteBackupRepository.getDatasetMeta(Mockito.any(),Mockito.any()))
@@ -348,14 +352,14 @@ public class TestLocalBackupRepository {
                     DatasetMeta datasetMeta = new DatasetMeta();
                     datasetMeta.addPart(new PartMeta("part0", 10L));
                     Files.writeString(
-                            targetDir.resolve(datasetName).resolve("_meta.json"),
+                            targetDir.resolve("_meta.json"),
                             datasetMeta.toJSONObject().toString(),
                             StandardCharsets.UTF_8,
                             StandardOpenOption.CREATE,
                             StandardOpenOption.TRUNCATE_EXISTING,
                             StandardOpenOption.WRITE
                     );
-                    return targetDir.resolve(datasetName).resolve("_meta.json");
+                    return targetDir.resolve("_meta.json");
                 });
 
 

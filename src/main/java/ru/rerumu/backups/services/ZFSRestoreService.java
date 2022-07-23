@@ -52,26 +52,32 @@ public class ZFSRestoreService {
 
         for (String datasetName: datasetList) {
 
-            String currentPart = null;
+            for (String partName: localBackupRepository.getParts(datasetName)){
 
-            try {
-                while (true) {
-                    try {
-                        Path path = localBackupRepository.getNextPart(datasetName, currentPart);
-                        currentPart = path.getFileName().toString();
-                        snapshotReceiver.receiveSnapshotPart(path);
-                        localBackupRepository.clear(datasetName, currentPart);
-                    } catch (NoMorePartsException e) {
-                        logger.debug("No acceptable files found. Waiting 1 second before retry");
-                        Thread.sleep(1000);
-                    } catch (FinishedFlagException e) {
-                        logger.info("Finish flag found. Exiting loop");
-                        break;
-                    }
-                }
-            } finally {
-                snapshotReceiver.finish();
+                Path path = localBackupRepository.getPart(datasetName,partName);
+                snapshotReceiver.receiveSnapshotPart(path);
             }
+
+//            String currentPart = null;
+//
+//            try {
+//                while (true) {
+//                    try {
+//                        Path path = localBackupRepository.getNextPart(datasetName, currentPart);
+//                        currentPart = path.getFileName().toString();
+//                        snapshotReceiver.receiveSnapshotPart(path);
+//                        localBackupRepository.clear(datasetName, currentPart);
+//                    } catch (NoMorePartsException e) {
+//                        logger.debug("No acceptable files found. Waiting 1 second before retry");
+//                        Thread.sleep(1000);
+//                    } catch (FinishedFlagException e) {
+//                        logger.info("Finish flag found. Exiting loop");
+//                        break;
+//                    }
+//                }
+//            } finally {
+//                snapshotReceiver.finish();
+//            }
         }
     }
 }

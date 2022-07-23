@@ -254,7 +254,7 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
     @Override
     public void add(String datasetName, String partName, Path path)
             throws IOException, S3MissesFileException, NoSuchAlgorithmException, IncorrectHashException, InterruptedException {
-        waitLock();
+//        waitLock();
         clearRepositoryOnlyParts();
         Path newPath = repositoryDir.resolve(partName);
         Files.move(path,newPath);
@@ -264,7 +264,7 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
             push(datasetName, newPath);
             clearRepositoryOnlyParts();
         }
-        releaseLock();
+//        releaseLock();
     }
 
     private BackupMeta getBackupMeta() throws IOException, NoSuchAlgorithmException, IncorrectHashException {

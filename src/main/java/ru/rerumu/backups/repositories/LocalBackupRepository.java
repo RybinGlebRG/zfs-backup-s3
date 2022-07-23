@@ -17,6 +17,5 @@ public interface LocalBackupRepository {
 
     List<String> getDatasets() throws IOException, NoSuchAlgorithmException, IncorrectHashException;
     List<String> getParts(String datasetName) throws IOException, NoSuchAlgorithmException, IncorrectHashException;
-
     void add(String datasetName, String partName, Path path) throws IOException, S3MissesFileException, NoSuchAlgorithmException, IncorrectHashException, InterruptedException;
 }
