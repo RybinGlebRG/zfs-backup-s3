@@ -1,35 +1,25 @@
 package ru.rerumu.backups.repositories;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 import ru.rerumu.backups.exceptions.FinishedFlagException;
-import ru.rerumu.backups.exceptions.IncorrectHashException;
 import ru.rerumu.backups.exceptions.NoMorePartsException;
-import ru.rerumu.backups.exceptions.TooManyPartsException;
 import ru.rerumu.backups.models.meta.BackupMeta;
 import ru.rerumu.backups.models.meta.DatasetMeta;
 import ru.rerumu.backups.models.meta.PartMeta;
 import ru.rerumu.backups.repositories.impl.LocalBackupRepositoryImpl;
 
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
-import java.util.Random;
 
 
-public class TestLocalBackupRepository {
+public class TestLocalBackupRepositoryWithRemote {
 
     @Test
     void shouldClone(@TempDir Path repositoryDir) throws Exception {

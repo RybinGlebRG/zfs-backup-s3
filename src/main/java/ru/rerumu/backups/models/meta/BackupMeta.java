@@ -2,11 +2,9 @@ package ru.rerumu.backups.models.meta;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import ru.rerumu.backups.Generated;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class BackupMeta {
 
@@ -56,5 +54,18 @@ public class BackupMeta {
         return jsonObject;
     }
 
+    @Generated
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BackupMeta that = (BackupMeta) o;
+        return datasets.equals(that.datasets);
+    }
 
+    @Generated
+    @Override
+    public int hashCode() {
+        return Objects.hash(datasets);
+    }
 }

@@ -122,7 +122,7 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
         );
     }
 
-    public void addPartMeta(String datasetName, String partName, long partSize)
+    private void addPartMeta(String datasetName, String partName, long partSize)
             throws IOException, NoSuchAlgorithmException, IncorrectHashException {
         DatasetMeta datasetMeta;
         Path path = repositoryDir.resolve(datasetName).resolve("_meta.json");
@@ -170,6 +170,8 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
 //        setLock();
 //    }
 
+
+    // TODO: Check local exists?
     /**
      * Either loads file from S3 or resolves local file name. Local file have to exist in the moment of resolution.
      * Does not require locks, since remote repository case uses only one process and local repository case only
@@ -197,48 +199,49 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
         return path;
     }
 
-    @Deprecated
-    @Override
-    public Path getNextPart(String datasetName, String partName)
-            throws IOException,
-            NoSuchAlgorithmException,
-            IncorrectHashException,
-            InterruptedException,
-            FinishedFlagException,
-            NoMorePartsException {
-        String nextPart = null;
-
-        if (Files.exists(repositoryDir.resolve("finished"))){
-            throw new FinishedFlagException();
-        }
-        DatasetMeta datasetMeta = getDatasetMeta(datasetName);
-        boolean isFoundCurrent = false;
-
-        for (String part: datasetMeta.getParts()){
-
-            if (!isFoundCurrent && part.equals(partName)){
-                isFoundCurrent=true;
-                continue;
-            }
-
-            nextPart = part;
-            break;
-        }
-        if (nextPart==null){
-            throw new NoMorePartsException();
-        }
-
-        Path path = getPart(datasetName, partName);
-
-        return path;
-    }
+//    @Deprecated
+//    @Override
+//    public Path getNextPart(String datasetName, String partName)
+//            throws IOException,
+//            NoSuchAlgorithmException,
+//            IncorrectHashException,
+//            InterruptedException,
+//            FinishedFlagException,
+//            NoMorePartsException {
+//        String nextPart = null;
+//
+//        if (Files.exists(repositoryDir.resolve("finished"))){
+//            throw new FinishedFlagException();
+//        }
+//        DatasetMeta datasetMeta = getDatasetMeta(datasetName);
+//        boolean isFoundCurrent = false;
+//
+//        for (String part: datasetMeta.getParts()){
+//
+//            if (!isFoundCurrent && part.equals(partName)){
+//                isFoundCurrent=true;
+//                continue;
+//            }
+//
+//            nextPart = part;
+//            break;
+//        }
+//        if (nextPart==null){
+//            throw new NoMorePartsException();
+//        }
+//
+//        Path path = getPart(datasetName, partName);
+//
+//        return path;
+//    }
 
     /**
      * Gets datasets from local metadata
      */
     @Override
-    public List<String> getDatasets() throws IOException, NoSuchAlgorithmException, IncorrectHashException {
-        BackupMeta backupMeta = getBackupMeta();
+    public List<String> getDatasets() throws IOException {
+        Path backupMetaPath = repositoryDir.resolve("_meta.json");
+        BackupMeta backupMeta = new BackupMeta(readJson(backupMetaPath));
         return backupMeta.getDatasets();
     }
 
@@ -246,8 +249,9 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
      * Gets parts from local metadata
      */
     @Override
-    public List<String> getParts(String datasetName) throws IOException, NoSuchAlgorithmException, IncorrectHashException {
-        DatasetMeta datasetMeta = getDatasetMeta(datasetName);
+    public List<String> getParts(String datasetName) throws IOException {
+        Path datasetMetaPath = repositoryDir.resolve(datasetName).resolve("_meta.json");
+        DatasetMeta datasetMeta = new DatasetMeta(readJson(datasetMetaPath));
         return datasetMeta.getParts();
     }
 
@@ -255,7 +259,9 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
     public void add(String datasetName, String partName, Path path)
             throws IOException, S3MissesFileException, NoSuchAlgorithmException, IncorrectHashException, InterruptedException {
 //        waitLock();
-        clearRepositoryOnlyParts();
+        if (isUseS3){
+            clearRepositoryOnlyParts();
+        }
         Path newPath = repositoryDir.resolve(partName);
         Files.move(path,newPath);
         addDatasetMeta(datasetName);
@@ -267,15 +273,7 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
 //        releaseLock();
     }
 
-    private BackupMeta getBackupMeta() throws IOException, NoSuchAlgorithmException, IncorrectHashException {
-        Path backupMetaPath = repositoryDir.resolve("_meta.json");
-        return new BackupMeta(readJson(backupMetaPath));
-    }
 
-    private DatasetMeta getDatasetMeta(String datasetName) throws IOException, NoSuchAlgorithmException, IncorrectHashException {
-        Path datasetMetaPath = repositoryDir.resolve(datasetName).resolve("_meta.json");
-        return new DatasetMeta(readJson(datasetMetaPath));
-    }
 
     @Override
     public void delete(Path path) throws IOException {

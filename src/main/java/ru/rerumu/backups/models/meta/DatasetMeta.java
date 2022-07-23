@@ -2,9 +2,11 @@ package ru.rerumu.backups.models.meta;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import ru.rerumu.backups.Generated;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class DatasetMeta {
 
@@ -65,4 +67,18 @@ public class DatasetMeta {
     }
 
 
+    @Generated
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DatasetMeta that = (DatasetMeta) o;
+        return parts.equals(that.parts);
+    }
+
+    @Generated
+    @Override
+    public int hashCode() {
+        return Objects.hash(parts);
+    }
 }
