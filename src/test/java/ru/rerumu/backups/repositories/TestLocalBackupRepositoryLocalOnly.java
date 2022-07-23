@@ -79,7 +79,6 @@ public class TestLocalBackupRepositoryLocalOnly {
      * New part should be added to the new dataset directory.
      * New dataset should be added to backup metadata.
      * Dataset metadata should contain only new part.
-     * New part should be present in dataset directory.
      *
      */
     @Test
@@ -119,16 +118,20 @@ public class TestLocalBackupRepositoryLocalOnly {
 
         localBackupRepository.add("Test1", "part1", newPart);
 
-        backupMeta.addDataset("Test1");
-        BackupMeta res = new BackupMeta(readJson(repositoryDir.resolve("_meta.json")));
+        BackupMeta srcBackupMeta = new BackupMeta();
+        srcBackupMeta.addDataset("Test");
+        srcBackupMeta.addDataset("Test1");
+        BackupMeta resBackupMeta = new BackupMeta(readJson(repositoryDir.resolve("_meta.json")));
 
         DatasetMeta srcDatasetMeta = new DatasetMeta();
-        // TODO: write
+        srcDatasetMeta.addPart(new PartMeta("part1",0L));
+        DatasetMeta resDatasetMeta = new DatasetMeta(readJson(repositoryDir.resolve("Test1").resolve("_meta.json")));
 
-        Assertions.assertEquals(backupMeta, res);
+        Assertions.assertEquals(srcBackupMeta,resBackupMeta);
+        Assertions.assertEquals(srcDatasetMeta,resDatasetMeta);
+        Assertions.assertTrue(Files.exists(repositoryDir.resolve("Test1").resolve("part1")));
     }
 
-    // TODO: implement
     /**
      * Test checks addition of the new part of existing dataset to not empty local repository.
      * New part should be added to the dataset directory.
@@ -145,7 +148,6 @@ public class TestLocalBackupRepositoryLocalOnly {
 
         BackupMeta backupMeta = new BackupMeta();
         backupMeta.addDataset("Test");
-
         Files.writeString(
                 repositoryDir.resolve("_meta.json"),
                 backupMeta.toJSONObject().toString(),
@@ -154,78 +156,9 @@ public class TestLocalBackupRepositoryLocalOnly {
                 StandardOpenOption.TRUNCATE_EXISTING,
                 StandardOpenOption.WRITE
         );
-
         Files.createDirectory(repositoryDir.resolve("Test"));
-
         DatasetMeta datasetMeta = new DatasetMeta();
-        datasetMeta.addPart(new PartMeta("part0", 10L));
-
-        Files.writeString(
-                repositoryDir.resolve("Test").resolve("_meta.json"),
-                datasetMeta.toJSONObject().toString(),
-                StandardCharsets.UTF_8,
-                StandardOpenOption.CREATE,
-                StandardOpenOption.TRUNCATE_EXISTING,
-                StandardOpenOption.WRITE
-        );
-
-        Path newPart = tmpDir.resolve("part1");
-        Files.createFile(newPart);
-
-        localBackupRepository.add("Test", "part1", newPart);
-
-        BackupMeta res = new BackupMeta(readJson(repositoryDir.resolve("_meta.json")));
-
-        Assertions.assertEquals(backupMeta, res);
-    }
-
-    @Test
-    void shouldAddPartToNotExistingDataset(@TempDir Path tmpDir, @TempDir Path repositoryDir) throws Exception {
-        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(
-                repositoryDir,
-                null,
-                false
-        );
-
-        Path newPart = tmpDir.resolve("part0");
-        Files.createFile(newPart);
-
-        localBackupRepository.add("Test", "part0", newPart);
-
-
-        Assertions.assertTrue(Files.exists(repositoryDir.resolve("Test").resolve("_meta.json")));
-        DatasetMeta res = new DatasetMeta(readJson(repositoryDir.resolve("Test").resolve("_meta.json")));
-
-        DatasetMeta datasetMeta = new DatasetMeta();
-        datasetMeta.addPart(new PartMeta("part0", 0L));
-
-        Assertions.assertEquals(datasetMeta, res);
-    }
-
-    @Test
-    void shouldAddPartToExistingDataset(@TempDir Path tmpDir, @TempDir Path repositoryDir) throws Exception {
-        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(
-                repositoryDir,
-                null,
-                false
-        );
-        BackupMeta backupMeta = new BackupMeta();
-        backupMeta.addDataset("Test");
-
-        Files.writeString(
-                repositoryDir.resolve("_meta.json"),
-                backupMeta.toJSONObject().toString(),
-                StandardCharsets.UTF_8,
-                StandardOpenOption.CREATE,
-                StandardOpenOption.TRUNCATE_EXISTING,
-                StandardOpenOption.WRITE
-        );
-
-        Files.createDirectory(repositoryDir.resolve("Test"));
-
-        DatasetMeta datasetMeta = new DatasetMeta();
-        datasetMeta.addPart(new PartMeta("part0", 10L));
-
+        datasetMeta.addPart(new PartMeta("part0",10L));
         Files.writeString(
                 repositoryDir.resolve("Test").resolve("_meta.json"),
                 datasetMeta.toJSONObject().toString(),
@@ -237,15 +170,19 @@ public class TestLocalBackupRepositoryLocalOnly {
 
         Files.createFile(tmpDir.resolve("part1"));
 
-        localBackupRepository.add("Test", "part1", tmpDir.resolve("part1"));
+        localBackupRepository.add("Test","part1",tmpDir.resolve("part1"));
 
-        datasetMeta.addPart(new PartMeta("part1", 20L));
+        BackupMeta srcBackupMeta = new BackupMeta();
+        srcBackupMeta.addDataset("Test");
+        BackupMeta resBackupMeta = new BackupMeta(readJson(repositoryDir.resolve("_meta.json")));
 
-        Assertions.assertTrue(Files.exists(repositoryDir.resolve("Test").resolve("part1")));
-
+        DatasetMeta srcDatasetMeta = new DatasetMeta();
+        srcDatasetMeta.addPart(new PartMeta("part0",10L));
+        srcDatasetMeta.addPart(new PartMeta("part1",0L));
         DatasetMeta resDatasetMeta = new DatasetMeta(readJson(repositoryDir.resolve("Test").resolve("_meta.json")));
 
-        Assertions.assertEquals(datasetMeta, resDatasetMeta);
+        Assertions.assertEquals(srcBackupMeta, resBackupMeta);
+        Assertions.assertEquals(srcDatasetMeta, resDatasetMeta);
     }
 
     @Test

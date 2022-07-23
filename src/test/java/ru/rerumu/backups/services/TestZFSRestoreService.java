@@ -17,19 +17,18 @@ import java.util.concurrent.ExecutionException;
 
 class TestZFSRestoreService {
 
+    // TODO: Multiple datasets
     @Test
-    void shouldRestore(@TempDir Path tempDir) throws Exception{
+    void shouldRestore(@TempDir Path tempDir, @TempDir Path localRepositoryDir) throws Exception{
         LocalBackupRepository localBackupRepository = Mockito.mock(LocalBackupRepository.class);
         SnapshotReceiver snapshotReceiver = Mockito.mock(SnapshotReceiver.class);
 
         Mockito.when(localBackupRepository.getDatasets()).thenReturn(List.of("Test"));
-        Mockito.when(localBackupRepository.getNextPart(Mockito.eq("Test"),Mockito.eq(null)))
-                .thenReturn(tempDir.resolve("part0"));
-        Mockito.when(localBackupRepository.getNextPart(Mockito.eq("Test"),Mockito.eq("part0")))
-                .thenReturn(tempDir.resolve("part1"));
-        Mockito.when(localBackupRepository.getNextPart(Mockito.eq("Test"),Mockito.eq("part1")))
-                .thenThrow(new FinishedFlagException());
-
+        Mockito.when(localBackupRepository.getParts(Mockito.eq("Test"))).thenReturn(List.of("part0","part1"));
+        Mockito.when(localBackupRepository.getPart(Mockito.eq("Test"),Mockito.eq("part0")))
+                .thenReturn(localRepositoryDir.resolve("Test").resolve("part0"));
+        Mockito.when(localBackupRepository.getPart(Mockito.eq("Test"),Mockito.eq("part1")))
+                .thenReturn(localRepositoryDir.resolve("Test").resolve("part1"));
 
         InOrder inOrder = Mockito.inOrder(localBackupRepository,snapshotReceiver);
 
@@ -40,11 +39,12 @@ class TestZFSRestoreService {
 
         zfsRestoreService.zfsReceive();
 
-        inOrder.verify(localBackupRepository).getNextPart(Mockito.eq("Test"),Mockito.eq(null));
-        inOrder.verify(snapshotReceiver).receiveSnapshotPart(Mockito.eq(tempDir.resolve("part0")));
-        inOrder.verify(localBackupRepository).getNextPart(Mockito.eq("Test"),Mockito.eq("part0"));
-        inOrder.verify(snapshotReceiver).receiveSnapshotPart(Mockito.eq(tempDir.resolve("part1")));
-        inOrder.verify(localBackupRepository).getNextPart(Mockito.eq("Test"),Mockito.eq("part1"));
+        inOrder.verify(localBackupRepository).getDatasets();
+        inOrder.verify(localBackupRepository).getParts("Test");
+        inOrder.verify(localBackupRepository).getPart("Test","part0");
+        inOrder.verify(snapshotReceiver).receiveSnapshotPart(localRepositoryDir.resolve("Test").resolve("part0"));
+        inOrder.verify(localBackupRepository).getPart("Test","part1");
+        inOrder.verify(snapshotReceiver).receiveSnapshotPart(localRepositoryDir.resolve("Test").resolve("part1"));
         inOrder.verify(snapshotReceiver).finish();
 
     }

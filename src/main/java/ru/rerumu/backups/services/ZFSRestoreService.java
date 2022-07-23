@@ -44,19 +44,21 @@ public class ZFSRestoreService {
             IncorrectHashException {
         List<String> datasets = localBackupRepository.getDatasets();
 
-        for (String datasetName: datasetList){
-            if (!datasets.contains(datasetName)){
+        for (String datasetName : datasetList) {
+            if (!datasets.contains(datasetName)) {
                 throw new IllegalArgumentException();
             }
         }
+        try {
+            for (String datasetName : datasetList) {
 
-        for (String datasetName: datasetList) {
 
-            for (String partName: localBackupRepository.getParts(datasetName)){
+                for (String partName : localBackupRepository.getParts(datasetName)) {
 
-                Path path = localBackupRepository.getPart(datasetName,partName);
-                snapshotReceiver.receiveSnapshotPart(path);
-            }
+                    Path path = localBackupRepository.getPart(datasetName, partName);
+                    snapshotReceiver.receiveSnapshotPart(path);
+                }
+
 
 //            String currentPart = null;
 //
@@ -78,6 +80,9 @@ public class ZFSRestoreService {
 //            } finally {
 //                snapshotReceiver.finish();
 //            }
+            }
+        } finally {
+            snapshotReceiver.finish();
         }
     }
 }

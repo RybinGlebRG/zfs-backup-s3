@@ -262,10 +262,13 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
         if (isUseS3){
             clearRepositoryOnlyParts();
         }
-        Path newPath = repositoryDir.resolve(partName);
+        Path newPath = repositoryDir.resolve(datasetName).resolve(partName);
+        if (!Files.exists(repositoryDir.resolve(datasetName))){
+            Files.createDirectory(repositoryDir.resolve(datasetName));
+        }
         Files.move(path,newPath);
         addDatasetMeta(datasetName);
-        addPartMeta(datasetName,partName,Files.size(path));
+        addPartMeta(datasetName,partName,Files.size(newPath));
         if (isUseS3){
             push(datasetName, newPath);
             clearRepositoryOnlyParts();

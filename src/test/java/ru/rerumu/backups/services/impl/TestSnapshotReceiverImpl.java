@@ -24,7 +24,6 @@ class TestSnapshotReceiverImpl {
     @Test
     void shouldReceiveOne() throws IOException, CompressorException, ClassNotFoundException, EncryptException, IncorrectFilePartNameException, InterruptedException, ExecutionException {
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
-        LocalBackupRepository localBackupRepository = Mockito.mock(LocalBackupRepository.class);
         ZFSPool zfsPool = Mockito.mock(ZFSPool.class);
         ZFSFileReaderFactory zfsFileReaderFactory = Mockito.mock(ZFSFileReaderFactory.class);
         ZFSFileReader zfsFileReader = Mockito.mock(ZFSFileReader.class);
@@ -40,10 +39,10 @@ class TestSnapshotReceiverImpl {
                 zfsFileReaderFactory
         );
 
-        InOrder inOrder = Mockito.inOrder(zfsProcessFactory,zfsFileReaderFactory, localBackupRepository,zfsFileReader, zfsReceive);
 
         snapshotReceiver.receiveSnapshotPart(Paths.get("ExternalPool-Applications@auto-20220326-150000__ExternalPool-Applications@auto-20220327-150000.part0.ready"));
 
+        InOrder inOrder = Mockito.inOrder(zfsProcessFactory,zfsFileReaderFactory, zfsFileReader, zfsReceive);
 
         Mockito.verify(zfsProcessFactory,Mockito.times(1)).getZFSReceive(Mockito.any());
         inOrder.verify(zfsProcessFactory).getZFSReceive(Mockito.any());
@@ -54,16 +53,12 @@ class TestSnapshotReceiverImpl {
         Mockito.verify(zfsFileReader,Mockito.times(1)).read();
         inOrder.verify(zfsFileReader).read();
 
-        Mockito.verify(localBackupRepository,Mockito.times(1)).delete(Mockito.any());
-        inOrder.verify(localBackupRepository).delete(Mockito.any());
-
         Mockito.verify(zfsReceive,Mockito.never()).close();
     }
 
     @Test
     void shouldReceiveTwo() throws CompressorException, IOException, ClassNotFoundException, EncryptException, IncorrectFilePartNameException, InterruptedException, ExecutionException {
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
-        LocalBackupRepository localBackupRepository = Mockito.mock(LocalBackupRepository.class);
         ZFSPool zfsPool = Mockito.mock(ZFSPool.class);
         ZFSFileReaderFactory zfsFileReaderFactory = Mockito.mock(ZFSFileReaderFactory.class);
         ZFSFileReader zfsFileReader = Mockito.mock(ZFSFileReader.class);
@@ -79,7 +74,7 @@ class TestSnapshotReceiverImpl {
                 zfsFileReaderFactory
         );
 
-        InOrder inOrder = Mockito.inOrder(zfsProcessFactory,zfsFileReaderFactory, localBackupRepository,zfsFileReader,zfsReceive);
+        InOrder inOrder = Mockito.inOrder(zfsProcessFactory,zfsFileReaderFactory, zfsFileReader,zfsReceive);
 
         snapshotReceiver.receiveSnapshotPart(Paths.get("ExternalPool-Applications@auto-20220326-150000__ExternalPool-Applications@auto-20220327-150000.part0"));
         snapshotReceiver.receiveSnapshotPart(Paths.get("ExternalPool-Applications@auto-20220326-150000__ExternalPool-Applications@auto-20220328-150000.part0"));
@@ -94,9 +89,6 @@ class TestSnapshotReceiverImpl {
         Mockito.verify(zfsFileReader,Mockito.times(2)).read();
         inOrder.verify(zfsFileReader).read();
 
-        Mockito.verify(localBackupRepository,Mockito.times(2)).delete(Mockito.any());
-        inOrder.verify(localBackupRepository).delete(Mockito.any());
-
         Mockito.verify(zfsReceive,Mockito.times(1)).close();
         inOrder.verify(zfsReceive).close();
 
@@ -105,14 +97,11 @@ class TestSnapshotReceiverImpl {
         inOrder.verify(zfsFileReaderFactory).getZFSFileReader(Mockito.any(),Mockito.any());
 
         inOrder.verify(zfsFileReader).read();
-
-        inOrder.verify(localBackupRepository).delete(Mockito.any());
     }
 
     @Test
     void shouldReceiveMultipart() throws CompressorException, IOException, ClassNotFoundException, EncryptException, IncorrectFilePartNameException, InterruptedException, ExecutionException {
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
-        LocalBackupRepository localBackupRepository = Mockito.mock(LocalBackupRepository.class);
         ZFSPool zfsPool = Mockito.mock(ZFSPool.class);
         ZFSFileReaderFactory zfsFileReaderFactory = Mockito.mock(ZFSFileReaderFactory.class);
         ZFSFileReader zfsFileReader = Mockito.mock(ZFSFileReader.class);
@@ -128,7 +117,7 @@ class TestSnapshotReceiverImpl {
                 zfsFileReaderFactory
         );
 
-        InOrder inOrder = Mockito.inOrder(zfsProcessFactory,zfsFileReaderFactory, localBackupRepository,zfsFileReader, zfsReceive);
+        InOrder inOrder = Mockito.inOrder(zfsProcessFactory,zfsFileReaderFactory, zfsFileReader, zfsReceive);
 
         snapshotReceiver.receiveSnapshotPart(Paths.get("ExternalPool-Applications@auto-20220326-150000__ExternalPool-Applications@auto-20220327-150000.part0"));
         snapshotReceiver.receiveSnapshotPart(Paths.get("ExternalPool-Applications@auto-20220326-150000__ExternalPool-Applications@auto-20220327-150000.part1"));
@@ -143,16 +132,11 @@ class TestSnapshotReceiverImpl {
         Mockito.verify(zfsFileReader,Mockito.times(2)).read();
         inOrder.verify(zfsFileReader).read();
 
-        Mockito.verify(localBackupRepository,Mockito.times(2)).delete(Mockito.any());
-        inOrder.verify(localBackupRepository).delete(Mockito.any());
-
         Mockito.verify(zfsReceive,Mockito.never()).close();
 
         inOrder.verify(zfsFileReaderFactory).getZFSFileReader(Mockito.any(),Mockito.any());
 
         inOrder.verify(zfsFileReader).read();
-
-        inOrder.verify(localBackupRepository).delete(Mockito.any());
     }
 
 }
