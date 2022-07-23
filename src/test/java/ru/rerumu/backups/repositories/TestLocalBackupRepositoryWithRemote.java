@@ -1,25 +1,37 @@
-//package ru.rerumu.backups.repositories;
-//
-//import org.junit.jupiter.api.Assertions;
-//import org.junit.jupiter.api.Test;
-//import org.junit.jupiter.api.io.TempDir;
-//import org.mockito.InOrder;
-//import org.mockito.Mockito;
-//import ru.rerumu.backups.exceptions.FinishedFlagException;
-//import ru.rerumu.backups.exceptions.NoMorePartsException;
-//import ru.rerumu.backups.models.meta.BackupMeta;
-//import ru.rerumu.backups.models.meta.DatasetMeta;
-//import ru.rerumu.backups.models.meta.PartMeta;
-//import ru.rerumu.backups.repositories.impl.LocalBackupRepositoryImpl;
-//
-//import java.nio.charset.StandardCharsets;
-//import java.nio.file.Files;
-//import java.nio.file.Path;
-//import java.nio.file.StandardOpenOption;
-//import java.util.List;
-//
-//
-//public class TestLocalBackupRepositoryWithRemote {
+package ru.rerumu.backups.repositories;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.InOrder;
+import org.mockito.Mockito;
+import ru.rerumu.backups.exceptions.FinishedFlagException;
+import ru.rerumu.backups.exceptions.NoMorePartsException;
+import ru.rerumu.backups.models.meta.BackupMeta;
+import ru.rerumu.backups.models.meta.DatasetMeta;
+import ru.rerumu.backups.models.meta.PartMeta;
+import ru.rerumu.backups.repositories.impl.LocalBackupRepositoryImpl;
+
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.List;
+
+
+public class TestLocalBackupRepositoryWithRemote {
+
+    @Test
+    void shouldCloneEmpty(){
+        // TODO: write
+    }
+
+    @Test
+    void shouldCloneNotEmpty(){
+        // TODO: write
+    }
+
+
 //
 //    @Test
 //    void shouldClone(@TempDir Path repositoryDir) throws Exception {
@@ -372,4 +384,4 @@
 //        inOrder.verify(remoteBackupRepository).getDatasetMeta("Test",repositoryDir.resolve("Test"));
 //
 //    }
-//}
+}
