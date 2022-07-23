@@ -48,6 +48,7 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
         List<Path> filesToDelete = new ArrayList<>();
         try(Stream<Path> pathStream = Files.walk(repositoryDir)) {
                 pathStream
+                        .filter(path-> !path.equals(repositoryDir))
                         .sorted(Comparator.reverseOrder())
                         .forEach(filesToDelete::add);
         }
@@ -61,12 +62,9 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
         List<Path> filesToDelete = new ArrayList<>();
         try(Stream<Path> pathStream = Files.walk(repositoryDir)) {
             pathStream
+                    .filter(path->!Files.isDirectory(path) && !path.toString().equals("_meta.json"))
                     .sorted(Comparator.reverseOrder())
-                    .forEach(i->{
-                        if (!Files.isDirectory(i) && !i.toString().equals("_meta.json")){
-                            filesToDelete.add(i);
-                        }
-                    });
+                    .forEach(filesToDelete::add);
         }
 
         for (Path path: filesToDelete){
@@ -83,11 +81,21 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
         clearClone();
 
         Path backupMetaPath = remoteBackupRepository.getBackupMeta(repositoryDir);
-        BackupMeta backupMeta = new BackupMeta(new JSONObject(backupMetaPath));
+        BackupMeta backupMeta = new BackupMeta(readJson(backupMetaPath));
         List<String> datasets = backupMeta.getDatasets();
         for (String dataset: datasets){
+            Files.createDirectory(repositoryDir.resolve(dataset));
             Path datasetMetaPath = remoteBackupRepository.getDatasetMeta(dataset, repositoryDir.resolve(dataset));
         }
+    }
+
+    private JSONObject readJson(Path path) throws IOException {
+        String jsonString;
+        try(InputStream inputStream = Files.newInputStream(path);
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream)){
+            jsonString = new String(bufferedInputStream.readAllBytes(),StandardCharsets.UTF_8);
+        }
+        return new JSONObject(jsonString);
     }
 
     private void addDatasetMeta(String datasetName) throws IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
@@ -97,7 +105,7 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
         if (!Files.exists(path)) {
             backupMeta = new BackupMeta();
         } else {
-            backupMeta = new BackupMeta(new JSONObject(path));
+            backupMeta = new BackupMeta(readJson(path));
         }
         if (backupMeta.isAdded(datasetName)){
             return;
@@ -122,7 +130,7 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
         if (!Files.exists(path)){
             datasetMeta = new DatasetMeta();
         } else {
-            datasetMeta = new DatasetMeta(new JSONObject(path));
+            datasetMeta = new DatasetMeta(readJson(path));
         }
 
         datasetMeta.addPart(new PartMeta(partName,partSize));
@@ -143,24 +151,24 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
         remoteBackupRepository.add("", repositoryDir.resolve("_meta.json"));
     }
 
-    private void setLock() throws IOException {
-        Path path = repositoryDir.resolve("lock");
-        Files.createFile(path);
-    }
-
-    private void releaseLock() throws IOException {
-        Path path = repositoryDir.resolve("lock");
-        Files.delete(path);
-    }
-
-    private void waitLock() throws InterruptedException, IOException {
-        Path path = repositoryDir.resolve("lock");
-        while (Files.exists(path)) {
-            logger.debug("Repository locked. Waiting 1 second before retry");
-            Thread.sleep(1000);
-        }
-        setLock();
-    }
+//    private void setLock() throws IOException {
+//        Path path = repositoryDir.resolve("lock");
+//        Files.createFile(path);
+//    }
+//
+//    private void releaseLock() throws IOException {
+//        Path path = repositoryDir.resolve("lock");
+//        Files.delete(path);
+//    }
+//
+//    private void waitLock() throws InterruptedException, IOException {
+//        Path path = repositoryDir.resolve("lock");
+//        while (Files.exists(path)) {
+//            logger.debug("Repository locked. Waiting 1 second before retry");
+//            Thread.sleep(1000);
+//        }
+//        setLock();
+//    }
 
     /**
      * Either loads file from S3 or resolves local file name. Local file have to exist in the moment of resolution.
@@ -189,6 +197,7 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
         return path;
     }
 
+    @Deprecated
     @Override
     public Path getNextPart(String datasetName, String partName)
             throws IOException,
@@ -260,12 +269,12 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
 
     private BackupMeta getBackupMeta() throws IOException, NoSuchAlgorithmException, IncorrectHashException {
         Path backupMetaPath = repositoryDir.resolve("_meta.json");
-        return new BackupMeta(new JSONObject(backupMetaPath));
+        return new BackupMeta(readJson(backupMetaPath));
     }
 
     private DatasetMeta getDatasetMeta(String datasetName) throws IOException, NoSuchAlgorithmException, IncorrectHashException {
         Path datasetMetaPath = repositoryDir.resolve(datasetName).resolve("_meta.json");
-        return new DatasetMeta(new JSONObject(datasetMetaPath));
+        return new DatasetMeta(readJson(datasetMetaPath));
     }
 
     @Override
