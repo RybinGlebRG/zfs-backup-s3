@@ -45,7 +45,7 @@ public class TestLocalBackupRepositoryWithRemote {
                 )
                 .thenAnswer(invocationOnMock -> {
                     DatasetMeta datasetMeta = new DatasetMeta();
-                    datasetMeta.addPart(new PartMeta("part0", 10L));
+                    datasetMeta.addPart(new PartMeta("part0", 10L,"Test","1111"));
                     Files.writeString(
                             repositoryDir.resolve("Test").resolve("_meta.json"),
                             datasetMeta.toJSONObject().toString(),
@@ -129,7 +129,7 @@ public class TestLocalBackupRepositoryWithRemote {
                 )
                 .thenAnswer(invocationOnMock -> {
                     DatasetMeta datasetMeta = new DatasetMeta();
-                    datasetMeta.addPart(new PartMeta("part0", 10L));
+                    datasetMeta.addPart(new PartMeta("part0", 10L,"Test","1111"));
                     Files.writeString(
                             repositoryDir.resolve("Test").resolve("_meta.json"),
                             datasetMeta.toJSONObject().toString(),
@@ -197,7 +197,7 @@ public class TestLocalBackupRepositoryWithRemote {
                 )
                 .thenAnswer(invocationOnMock -> {
                     DatasetMeta datasetMeta = new DatasetMeta();
-                    datasetMeta.addPart(new PartMeta("part0", 10L));
+                    datasetMeta.addPart(new PartMeta("part0", 10L,"Test","1111"));
                     Files.writeString(
                             repositoryDir.resolve("Test").resolve("_meta.json"),
                             datasetMeta.toJSONObject().toString(),

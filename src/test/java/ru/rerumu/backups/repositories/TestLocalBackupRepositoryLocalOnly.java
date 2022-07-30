@@ -65,7 +65,7 @@ public class TestLocalBackupRepositoryLocalOnly {
         BackupMeta resBackupMeta = new BackupMeta(readJson(repositoryDir.resolve("_meta.json")));
 
         DatasetMeta datasetMeta = new DatasetMeta();
-        datasetMeta.addPart(new PartMeta("part0", 0L));
+        datasetMeta.addPart(new PartMeta("part0", 0L,"Test","d41d8cd98f00b204e9800998ecf8427e"));
         Assertions.assertTrue(Files.exists(repositoryDir.resolve("Test").resolve("_meta.json")));
         DatasetMeta resDatasetMeta = new DatasetMeta(readJson(repositoryDir.resolve("Test").resolve("_meta.json")));
         Assertions.assertEquals(backupMeta, resBackupMeta);
@@ -102,7 +102,7 @@ public class TestLocalBackupRepositoryLocalOnly {
         );
 
         DatasetMeta datasetMeta = new DatasetMeta();
-        datasetMeta.addPart(new PartMeta("part0",10L));
+        datasetMeta.addPart(new PartMeta("part0",10L,"Test","1111"));
         Files.createDirectory(repositoryDir.resolve("Test"));
         Files.writeString(
                 repositoryDir.resolve("Test").resolve("_meta.json"),
@@ -125,7 +125,7 @@ public class TestLocalBackupRepositoryLocalOnly {
         BackupMeta resBackupMeta = new BackupMeta(readJson(repositoryDir.resolve("_meta.json")));
 
         DatasetMeta srcDatasetMeta = new DatasetMeta();
-        srcDatasetMeta.addPart(new PartMeta("part1",0L));
+        srcDatasetMeta.addPart(new PartMeta("part1",0L,"Test1","d41d8cd98f00b204e9800998ecf8427e"));
         DatasetMeta resDatasetMeta = new DatasetMeta(readJson(repositoryDir.resolve("Test1").resolve("_meta.json")));
 
         Assertions.assertEquals(srcBackupMeta,resBackupMeta);
@@ -159,7 +159,7 @@ public class TestLocalBackupRepositoryLocalOnly {
         );
         Files.createDirectory(repositoryDir.resolve("Test"));
         DatasetMeta datasetMeta = new DatasetMeta();
-        datasetMeta.addPart(new PartMeta("part0",10L));
+        datasetMeta.addPart(new PartMeta("part0",10L,"Test","1111"));
         Files.writeString(
                 repositoryDir.resolve("Test").resolve("_meta.json"),
                 datasetMeta.toJSONObject().toString(),
@@ -178,8 +178,8 @@ public class TestLocalBackupRepositoryLocalOnly {
         BackupMeta resBackupMeta = new BackupMeta(readJson(repositoryDir.resolve("_meta.json")));
 
         DatasetMeta srcDatasetMeta = new DatasetMeta();
-        srcDatasetMeta.addPart(new PartMeta("part0",10L));
-        srcDatasetMeta.addPart(new PartMeta("part1",0L));
+        srcDatasetMeta.addPart(new PartMeta("part0",10L,"Test","1111"));
+        srcDatasetMeta.addPart(new PartMeta("part1",0L,"Test","d41d8cd98f00b204e9800998ecf8427e"));
         DatasetMeta resDatasetMeta = new DatasetMeta(readJson(repositoryDir.resolve("Test").resolve("_meta.json")));
 
         Assertions.assertEquals(srcBackupMeta, resBackupMeta);
@@ -216,9 +216,9 @@ public class TestLocalBackupRepositoryLocalOnly {
     void shouldGetParts(@TempDir Path repositoryDir) throws Exception {
         Files.createDirectory(repositoryDir.resolve("Test"));
         DatasetMeta datasetMeta = new DatasetMeta();
-        datasetMeta.addPart(new PartMeta("part0", 10L));
-        datasetMeta.addPart(new PartMeta("1part0", 20L));
-        datasetMeta.addPart(new PartMeta("1part1", 30L));
+        datasetMeta.addPart(new PartMeta("part0", 10L,"Test","1111"));
+        datasetMeta.addPart(new PartMeta("1part0", 20L,"Test","1111"));
+        datasetMeta.addPart(new PartMeta("1part1", 30L,"Test","1111"));
         Files.writeString(
                 repositoryDir.resolve("Test").resolve("_meta.json"),
                 datasetMeta.toJSONObject().toString(),

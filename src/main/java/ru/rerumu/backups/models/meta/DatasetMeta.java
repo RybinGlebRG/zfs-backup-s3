@@ -21,7 +21,9 @@ public class DatasetMeta {
             parts.add(
                     new PartMeta(
                             tmp.get("partName").toString(),
-                            Long.parseLong(tmp.get("partSize").toString())
+                            Long.parseLong(tmp.get("partSize").toString()),
+                            tmp.get("datasetName").toString(),
+                            tmp.get("md5Hex").toString()
                     )
             );
         }
@@ -43,6 +45,15 @@ public class DatasetMeta {
         }
 
         return res;
+    }
+
+    public PartMeta getPartMeta(String partName){
+        for(PartMeta part: parts){
+            if (part.getPartName().equals(partName)){
+                return part;
+            }
+        }
+        throw new IllegalArgumentException();
     }
 
     public JSONObject toJSONObject(){

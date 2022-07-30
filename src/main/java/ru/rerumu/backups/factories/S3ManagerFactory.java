@@ -19,12 +19,13 @@ public interface S3ManagerFactory {
             S3Client s3Client
     ) throws IOException;
 
-    S3Manager getDownloadManager(
-            S3Storage s3Storage,
-            String key,
-            S3Client s3Client,
-            Path tmpDir,
-            long size);
+//    S3Manager getDownloadManager(
+//            S3Storage s3Storage,
+//            String key,
+//            S3Client s3Client,
+//            Path tmpDir,
+//            Long size,
+//            String storedMd5Hex);
 
     S3Manager getDownloadManager(
             S3Storage s3Storage,

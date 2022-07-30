@@ -9,6 +9,7 @@ import ru.rerumu.backups.models.meta.DatasetMeta;
 import ru.rerumu.backups.models.meta.PartMeta;
 import ru.rerumu.backups.repositories.LocalBackupRepository;
 import ru.rerumu.backups.repositories.RemoteBackupRepository;
+import ru.rerumu.backups.utils.MD5;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -127,7 +128,7 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
         );
     }
 
-    private void addPartMeta(String datasetName, String partName, long partSize)
+    private void addPartMeta(String datasetName, String partName, long partSize, String md5Hex)
             throws IOException, NoSuchAlgorithmException, IncorrectHashException {
         DatasetMeta datasetMeta;
         Path path = repositoryDir.resolve(datasetName).resolve("_meta.json");
@@ -138,7 +139,7 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
             datasetMeta = new DatasetMeta(readJson(path));
         }
 
-        datasetMeta.addPart(new PartMeta(partName,partSize));
+        datasetMeta.addPart(new PartMeta(partName,partSize,datasetName,md5Hex));
         Files.writeString(
                 path,
                 datasetMeta.toJSONObject().toString(),
@@ -156,25 +157,11 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
         remoteBackupRepository.add("", repositoryDir.resolve("_meta.json"));
     }
 
-//    private void setLock() throws IOException {
-//        Path path = repositoryDir.resolve("lock");
-//        Files.createFile(path);
-//    }
-//
-//    private void releaseLock() throws IOException {
-//        Path path = repositoryDir.resolve("lock");
-//        Files.delete(path);
-//    }
-//
-//    private void waitLock() throws InterruptedException, IOException {
-//        Path path = repositoryDir.resolve("lock");
-//        while (Files.exists(path)) {
-//            logger.debug("Repository locked. Waiting 1 second before retry");
-//            Thread.sleep(1000);
-//        }
-//        setLock();
-//    }
-
+    private PartMeta getPartMeta(String datasetName, String partName) throws IOException {
+        Path datasetMetaPath = repositoryDir.resolve(datasetName).resolve("_meta.json");
+        DatasetMeta datasetMeta = new DatasetMeta(readJson(datasetMetaPath));
+        return datasetMeta.getPartMeta(partName);
+    }
 
     /**
      * Either loads file from S3 or resolves local file name. Local file have to exist in the moment of resolution.
@@ -189,6 +176,8 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
         if (isUseS3) {
             // Clearing space
             clearRepositoryOnlyParts();
+
+            PartMeta partMeta = getPartMeta(datasetName, partName);
 
             path = remoteBackupRepository.getPart(
                     datasetName,
@@ -205,42 +194,6 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
 
         return path;
     }
-
-//    @Deprecated
-//    @Override
-//    public Path getNextPart(String datasetName, String partName)
-//            throws IOException,
-//            NoSuchAlgorithmException,
-//            IncorrectHashException,
-//            InterruptedException,
-//            FinishedFlagException,
-//            NoMorePartsException {
-//        String nextPart = null;
-//
-//        if (Files.exists(repositoryDir.resolve("finished"))){
-//            throw new FinishedFlagException();
-//        }
-//        DatasetMeta datasetMeta = getDatasetMeta(datasetName);
-//        boolean isFoundCurrent = false;
-//
-//        for (String part: datasetMeta.getParts()){
-//
-//            if (!isFoundCurrent && part.equals(partName)){
-//                isFoundCurrent=true;
-//                continue;
-//            }
-//
-//            nextPart = part;
-//            break;
-//        }
-//        if (nextPart==null){
-//            throw new NoMorePartsException();
-//        }
-//
-//        Path path = getPart(datasetName, partName);
-//
-//        return path;
-//    }
 
     /**
      * Gets datasets from local metadata
@@ -275,11 +228,10 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
         }
         Files.move(path,newPath);
         addDatasetMeta(datasetName);
-        addPartMeta(datasetName,partName,Files.size(newPath));
+        addPartMeta(datasetName,partName,Files.size(newPath),MD5.getMD5Hex(newPath));
         if (isUseS3){
             push(datasetName, newPath);
             clearRepositoryOnlyParts();
         }
-//        releaseLock();
     }
 }

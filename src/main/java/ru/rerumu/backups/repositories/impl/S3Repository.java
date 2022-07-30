@@ -5,29 +5,19 @@ import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.*;
 import ru.rerumu.backups.factories.S3ClientFactory;
 import ru.rerumu.backups.factories.S3ManagerFactory;
-import ru.rerumu.backups.models.meta.BackupMeta;
-import ru.rerumu.backups.models.meta.DatasetMeta;
 import ru.rerumu.backups.models.S3Storage;
-import ru.rerumu.backups.models.meta.PartMeta;
 import ru.rerumu.backups.repositories.RemoteBackupRepository;
 import ru.rerumu.backups.services.S3Manager;
 import ru.rerumu.backups.services.impl.ListManager;
 import software.amazon.awssdk.services.s3.S3Client;
-import org.json.JSONObject;
 
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Stream;
 
-// TODO: Multipart download
 public class S3Repository implements RemoteBackupRepository {
 
     private final Logger logger = LoggerFactory.getLogger(S3Repository.class);
@@ -83,6 +73,18 @@ public class S3Repository implements RemoteBackupRepository {
 
         }
     }
+
+//    private void download(String key, Path target) throws IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
+//        if (!isFileExists(key)){
+//            throw new S3MissesFileException();
+//        }
+//        try (S3Client s3Client = s3ClientFactory.getS3Client(s3Storage);) {
+//
+//            S3Manager s3Manager = s3ManagerFactory.getDownloadManager(s3Storage,key,s3Client,target);
+//            s3Manager.run();
+//
+//        }
+//    }
 
     private boolean isFileExists(String key) throws IOException, NoSuchAlgorithmException, IncorrectHashException {
         try(S3Client s3Client = s3ClientFactory.getS3Client(s3Storage)){
