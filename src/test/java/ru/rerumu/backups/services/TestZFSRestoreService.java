@@ -17,7 +17,6 @@ import java.util.concurrent.ExecutionException;
 
 class TestZFSRestoreService {
 
-    // TODO: Multiple datasets
     @Test
     void shouldRestore(@TempDir Path tempDir, @TempDir Path localRepositoryDir) throws Exception{
         LocalBackupRepository localBackupRepository = Mockito.mock(LocalBackupRepository.class);
@@ -54,12 +53,12 @@ class TestZFSRestoreService {
         LocalBackupRepository localBackupRepository = Mockito.mock(LocalBackupRepository.class);
         SnapshotReceiver snapshotReceiver = Mockito.mock(SnapshotReceiver.class);
 
-        Mockito.when(localBackupRepository.getDatasets()).thenReturn(List.of("NotTest"));
+        Mockito.when(localBackupRepository.getDatasets()).thenReturn(List.of("NotTest","NotTest1"));
 
         ZFSRestoreService zfsRestoreService = new ZFSRestoreService(
                 localBackupRepository,
                 snapshotReceiver,
-                List.of("Test"));
+                List.of("Test","Test1"));
 
         Assertions.assertThrows(IllegalArgumentException.class,zfsRestoreService::zfsReceive);
     }

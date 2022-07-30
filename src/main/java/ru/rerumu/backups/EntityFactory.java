@@ -1,6 +1,7 @@
 package ru.rerumu.backups;
 
 import ru.rerumu.backups.exceptions.IncorrectHashException;
+import ru.rerumu.backups.exceptions.NoDatasetMetaException;
 import ru.rerumu.backups.factories.SnapshotSenderFactory;
 import ru.rerumu.backups.factories.ZFSFileWriterFactory;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
@@ -26,7 +27,7 @@ public class EntityFactory {
     public EntityFactory() throws IOException {
     }
 
-    public LocalBackupRepository getLocalBackupRepository(RemoteBackupRepository remoteBackupRepository) throws IOException, NoSuchAlgorithmException, IncorrectHashException {
+    public LocalBackupRepository getLocalBackupRepository(RemoteBackupRepository remoteBackupRepository) throws IOException, NoSuchAlgorithmException, IncorrectHashException, NoDatasetMetaException {
         return new LocalBackupRepositoryImpl(
                 Paths.get(configuration.getProperty("local_repository_dir")),
                 remoteBackupRepository,

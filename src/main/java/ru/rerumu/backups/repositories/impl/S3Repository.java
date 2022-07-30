@@ -2,8 +2,7 @@ package ru.rerumu.backups.repositories.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.backups.exceptions.IncorrectHashException;
-import ru.rerumu.backups.exceptions.S3MissesFileException;
+import ru.rerumu.backups.exceptions.*;
 import ru.rerumu.backups.factories.S3ClientFactory;
 import ru.rerumu.backups.factories.S3ManagerFactory;
 import ru.rerumu.backups.models.meta.BackupMeta;
@@ -73,7 +72,10 @@ public class S3Repository implements RemoteBackupRepository {
         }
     }
 
-    private void download(String key, Path target) throws IOException, NoSuchAlgorithmException, IncorrectHashException {
+    private void download(String key, Path target) throws IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
+        if (!isFileExists(key)){
+            throw new S3MissesFileException();
+        }
         try (S3Client s3Client = s3ClientFactory.getS3Client(s3Storage);) {
 
             S3Manager s3Manager = s3ManagerFactory.getDownloadManager(s3Storage,key,s3Client,target);
@@ -110,25 +112,40 @@ public class S3Repository implements RemoteBackupRepository {
     }
 
     @Override
-    public Path getPart(String datasetName, String partName, Path targetDir) throws IOException, NoSuchAlgorithmException, IncorrectHashException {
+    public Path getPart(String datasetName, String partName, Path targetDir) throws IOException, NoSuchAlgorithmException, IncorrectHashException, NoPartFoundException {
         String key = s3Storage.getPrefix().toString() + "/" + datasetName + "/" + partName;
         Path path = targetDir.resolve(partName);
-        download(key,path);
+        try {
+            download(key, path);
+        } catch (S3MissesFileException e){
+            logger.warn(String.format("Part '%s' of dataset '%s' not found on s3",partName,datasetName));
+            throw new NoPartFoundException();
+        }
         return path;
     }
 
     @Override
     public Path getBackupMeta(Path targetDir)
-            throws IOException, NoSuchAlgorithmException, IncorrectHashException {
+            throws IOException, NoSuchAlgorithmException, IncorrectHashException, NoBackupMetaException {
         Path path = targetDir.resolve("_meta.json");
-        download(s3Storage.getPrefix()+"/_meta.json",path);
+        try {
+            download(s3Storage.getPrefix()+"/_meta.json",path);
+        } catch (S3MissesFileException e){
+            logger.warn("Backup meta is not found on S3");
+            throw new NoBackupMetaException();
+        }
         return path;
     }
 
     @Override
-    public Path getDatasetMeta(String datasetName, Path targetDir) throws IOException, NoSuchAlgorithmException, IncorrectHashException {
+    public Path getDatasetMeta(String datasetName, Path targetDir) throws IOException, NoSuchAlgorithmException, IncorrectHashException, NoDatasetMetaException {
         Path path = targetDir.resolve("_meta.json");
-        download(s3Storage.getPrefix()+"/"+datasetName+"/_meta.json",path);
+        try {
+            download(s3Storage.getPrefix()+"/"+datasetName+"/_meta.json",path);
+        } catch (S3MissesFileException e){
+            logger.warn(String.format("Metadata for dataset '%s' not found on S3",datasetName));
+            throw new NoDatasetMetaException();
+        }
         return path;
     }
 

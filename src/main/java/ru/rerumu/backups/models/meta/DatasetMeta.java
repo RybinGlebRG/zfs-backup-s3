@@ -31,15 +31,6 @@ public class DatasetMeta {
 
     }
 
-    public boolean isAdded(String partName){
-        for (PartMeta part: parts){
-            if (part.getPartName().equals(partName)){
-                return true;
-            }
-        }
-        return false;
-    }
-
     public void addPart(PartMeta partMeta){
         parts.add(partMeta);
     }

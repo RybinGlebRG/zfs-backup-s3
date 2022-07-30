@@ -46,8 +46,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import static org.mockito.Matchers.eq;
-
 // TODO: Fix
 @Disabled
 public class TestBackupRestoreIncremental {
@@ -62,11 +60,7 @@ public class TestBackupRestoreIncremental {
     private List<byte[]> resBytes;
 
     private BackupController setupBackup(Path restoreDir, Path repositoryDir, Path senderTempDir)
-            throws IOException,
-            NoSuchAlgorithmException,
-            InterruptedException,
-            IncorrectHashException,
-            S3MissesFileException {
+            throws Exception {
         // s3Loader
         RemoteBackupRepository remoteBackupRepository = Mockito.mock(RemoteBackupRepository.class);
 
@@ -155,7 +149,7 @@ public class TestBackupRestoreIncremental {
         Mockito.when(zfsProcessFactory.getZFSListFilesystems("ExternalPool"))
                 .thenReturn(zfsListFilesystems);
 
-        Mockito.when(zfsProcessFactory.getZFSGetDatasetProperty(Mockito.any(),eq("encryption")))
+        Mockito.when(zfsProcessFactory.getZFSGetDatasetProperty(Mockito.any(),Mockito.eq("encryption")))
                 .thenReturn(zfsGetDatasetProperty);
 
         Mockito.when(zfsProcessFactory.getZFSListSnapshots("ExternalPool"))
@@ -195,7 +189,7 @@ public class TestBackupRestoreIncremental {
         return backupController;
     }
 
-    private RestoreController setupRestore(Path restoreDir, Path localRepositoryDir) throws IOException, ExecutionException, InterruptedException, NoSuchAlgorithmException, IncorrectHashException {
+    private RestoreController setupRestore(Path restoreDir, Path localRepositoryDir) throws Exception {
         RemoteBackupRepository remoteBackupRepository = Mockito.mock(RemoteBackupRepository.class);
 
         LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(

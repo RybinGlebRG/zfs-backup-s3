@@ -8,6 +8,7 @@ import org.mockito.InOrder;
 import org.mockito.Mockito;
 import ru.rerumu.backups.exceptions.FinishedFlagException;
 import ru.rerumu.backups.exceptions.NoMorePartsException;
+import ru.rerumu.backups.exceptions.NoPartFoundException;
 import ru.rerumu.backups.models.meta.BackupMeta;
 import ru.rerumu.backups.models.meta.DatasetMeta;
 import ru.rerumu.backups.models.meta.PartMeta;
@@ -245,10 +246,25 @@ public class TestLocalBackupRepositoryLocalOnly {
                 null,
                 false
         );
+        Files.createDirectory(repositoryDir.resolve("Test"));
+        Files.createFile(repositoryDir.resolve("Test").resolve("part0"));
 
         Path part = localBackupRepository.getPart("Test", "part0");
 
         Assertions.assertEquals(repositoryDir.resolve("Test").resolve("part0"), part);
 
+    }
+
+    @Test
+    void shouldGetPartButNoFile(@TempDir Path repositoryDir) throws Exception {
+        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(
+                repositoryDir,
+                null,
+                false
+        );
+
+        Assertions.assertThrows(NoPartFoundException.class,
+                ()->localBackupRepository.getPart("Test", "part0")
+        );
     }
 }

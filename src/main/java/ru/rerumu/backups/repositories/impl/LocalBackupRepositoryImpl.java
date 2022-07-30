@@ -17,6 +17,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class LocalBackupRepositoryImpl implements LocalBackupRepository {
@@ -33,7 +34,7 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
     public LocalBackupRepositoryImpl(
             Path repositoryDir,
             RemoteBackupRepository remoteBackupRepository,
-            boolean isUseS3) throws IOException, NoSuchAlgorithmException, IncorrectHashException {
+            boolean isUseS3) throws IOException, NoSuchAlgorithmException, IncorrectHashException, NoDatasetMetaException {
 
         this.repositoryDir = repositoryDir;
         this.remoteBackupRepository = remoteBackupRepository;
@@ -45,12 +46,12 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
     }
 
     private void clearClone() throws IOException {
-        List<Path> filesToDelete = new ArrayList<>();
+        List<Path> filesToDelete;
         try(Stream<Path> pathStream = Files.walk(repositoryDir)) {
-                pathStream
+            filesToDelete = pathStream
                         .filter(path-> !path.equals(repositoryDir))
                         .sorted(Comparator.reverseOrder())
-                        .forEach(filesToDelete::add);
+                        .collect(Collectors.toCollection(ArrayList::new));
         }
 
         for (Path path: filesToDelete){
@@ -59,12 +60,12 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
     }
 
     private void clearRepositoryOnlyParts() throws IOException {
-        List<Path> filesToDelete = new ArrayList<>();
+        List<Path> filesToDelete;
         try(Stream<Path> pathStream = Files.walk(repositoryDir)) {
-            pathStream
-                    .filter(path->!Files.isDirectory(path) && !path.toString().equals("_meta.json"))
+            filesToDelete = pathStream
+                    .filter(path->!Files.isDirectory(path) && !path.getFileName().toString().equals("_meta.json"))
                     .sorted(Comparator.reverseOrder())
-                    .forEach(filesToDelete::add);
+                    .collect(Collectors.toCollection(ArrayList::new));
         }
 
         for (Path path: filesToDelete){
@@ -73,20 +74,24 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
     }
 
     /**
-     * Clones S3 repository metadata to local repository. Does not require lock, since does not share directory
-     * with other processes
+     * Clones S3 repository metadata to local repository
      *
      */
-    private void cloneRepository() throws IOException, NoSuchAlgorithmException, IncorrectHashException {
+    private void cloneRepository() throws IOException, NoSuchAlgorithmException, IncorrectHashException, NoDatasetMetaException {
         clearClone();
-
-        Path backupMetaPath = remoteBackupRepository.getBackupMeta(repositoryDir);
-        BackupMeta backupMeta = new BackupMeta(readJson(backupMetaPath));
-        List<String> datasets = backupMeta.getDatasets();
-        for (String dataset: datasets){
-            Files.createDirectory(repositoryDir.resolve(dataset));
-            Path datasetMetaPath = remoteBackupRepository.getDatasetMeta(dataset, repositoryDir.resolve(dataset));
+        try {
+            Path backupMetaPath = remoteBackupRepository.getBackupMeta(repositoryDir);
+            BackupMeta backupMeta = new BackupMeta(readJson(backupMetaPath));
+            List<String> datasets = backupMeta.getDatasets();
+            for (String dataset: datasets){
+                Files.createDirectory(repositoryDir.resolve(dataset));
+                Path datasetMetaPath = remoteBackupRepository.getDatasetMeta(dataset, repositoryDir.resolve(dataset));
+            }
+        } catch (NoBackupMetaException e){
+            logger.warn("Remote repository is empty");
         }
+
+
     }
 
     private JSONObject readJson(Path path) throws IOException {
@@ -171,7 +176,6 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
 //    }
 
 
-    // TODO: Check local exists?
     /**
      * Either loads file from S3 or resolves local file name. Local file have to exist in the moment of resolution.
      * Does not require locks, since remote repository case uses only one process and local repository case only
@@ -179,7 +183,7 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
      */
     @Override
     public Path getPart(String datasetName, String partName)
-            throws IOException, NoSuchAlgorithmException, IncorrectHashException, InterruptedException {
+            throws IOException, NoSuchAlgorithmException, IncorrectHashException, InterruptedException, NoPartFoundException {
 
         Path path;
         if (isUseS3) {
@@ -194,6 +198,9 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
 
         } else {
             path = repositoryDir.resolve(datasetName).resolve(partName);
+            if (!Files.exists(path)){
+                throw new NoPartFoundException();
+            }
         }
 
         return path;
@@ -259,9 +266,9 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
     public void add(String datasetName, String partName, Path path)
             throws IOException, S3MissesFileException, NoSuchAlgorithmException, IncorrectHashException, InterruptedException {
 //        waitLock();
-        if (isUseS3){
-            clearRepositoryOnlyParts();
-        }
+//        if (isUseS3){
+//            clearRepositoryOnlyParts();
+//        }
         Path newPath = repositoryDir.resolve(datasetName).resolve(partName);
         if (!Files.exists(repositoryDir.resolve(datasetName))){
             Files.createDirectory(repositoryDir.resolve(datasetName));
@@ -274,20 +281,5 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
             clearRepositoryOnlyParts();
         }
 //        releaseLock();
-    }
-
-
-
-    @Override
-    public void delete(Path path) throws IOException {
-        logger.info(String.format("Deleting file '%s'",path.toString()));
-        Files.delete(path);
-        logger.info(String.format("File '%s' deleted",path.toString()));
-    }
-
-    @Override
-    public void clear(String datasetName, String partName) throws IOException {
-        Path path = repositoryDir.resolve(datasetName).resolve(partName);
-        Files.delete(path);
     }
 }
