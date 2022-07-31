@@ -47,6 +47,7 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
     }
 
     private void clearClone() throws IOException {
+        logger.info("Clearing clone directory");
         List<Path> filesToDelete;
         try(Stream<Path> pathStream = Files.walk(repositoryDir)) {
             filesToDelete = pathStream
@@ -58,6 +59,7 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
         for (Path path: filesToDelete){
             Files.delete(path);
         }
+        logger.info("Clearing clone directory finished");
     }
 
     private void clearRepositoryOnlyParts() throws IOException {
@@ -79,6 +81,7 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
      *
      */
     private void cloneRepository() throws IOException, NoSuchAlgorithmException, IncorrectHashException, NoDatasetMetaException {
+        logger.info("Cloning repository");
         clearClone();
         try {
             Path backupMetaPath = remoteBackupRepository.getBackupMeta(repositoryDir);
@@ -91,8 +94,7 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
         } catch (NoBackupMetaException e){
             logger.warn("Remote repository is empty");
         }
-
-
+        logger.info("Cloning repository finished");
     }
 
     private JSONObject readJson(Path path) throws IOException {
@@ -182,7 +184,8 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
             path = remoteBackupRepository.getPart(
                     datasetName,
                     partName,
-                    repositoryDir.resolve(datasetName)
+                    repositoryDir.resolve(datasetName),
+                    partMeta
             );
 
         } else {
@@ -200,8 +203,10 @@ public class LocalBackupRepositoryImpl implements LocalBackupRepository {
      */
     @Override
     public List<String> getDatasets() throws IOException {
+        logger.info("Getting datasets from backup metadata");
         Path backupMetaPath = repositoryDir.resolve("_meta.json");
         BackupMeta backupMeta = new BackupMeta(readJson(backupMetaPath));
+        logger.debug(String.format("Got datasets: %s",backupMeta.getDatasets()));
         return backupMeta.getDatasets();
     }
 

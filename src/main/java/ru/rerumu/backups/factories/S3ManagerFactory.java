@@ -31,7 +31,13 @@ public interface S3ManagerFactory {
             S3Storage s3Storage,
             String key,
             S3Client s3Client,
-            Path tmpDir);
+            Path path);
+    S3Manager getDownloadManager(
+            S3Storage s3Storage,
+            String key,
+            S3Client s3Client,
+            Path path,
+            String storedMd5Hex);
 
     ListManager getListManager(
             S3Storage s3Storage,

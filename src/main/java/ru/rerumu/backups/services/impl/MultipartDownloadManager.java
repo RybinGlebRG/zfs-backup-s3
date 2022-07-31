@@ -1,5 +1,7 @@
 package ru.rerumu.backups.services.impl;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.IncorrectHashException;
@@ -17,6 +19,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MultipartDownloadManager extends AbstractS3Manager {
 
@@ -29,26 +33,47 @@ public class MultipartDownloadManager extends AbstractS3Manager {
     private final String storedMd5Hex;
     private final int maxPartSize;
 
+    private final List<byte[]> md5List = new ArrayList<>();
+
     public MultipartDownloadManager(
             S3Storage s3Storage,
             String key,
             S3Client s3Client,
             Path path,
             int maxPartSize
-    ){
+    ) {
         this.s3Storage = s3Storage;
         this.key = key;
         this.s3Client = s3Client;
         this.path = path;
-        SizeLoader sizeLoader = new SizeLoader(s3Storage,key,s3Client);
+        SizeLoader sizeLoader = new SizeLoader(s3Storage, key, s3Client);
         this.size = sizeLoader.getSize();
-        ETAGLoader etagLoader = new ETAGLoader(s3Storage,key,s3Client);
-        this.storedMd5Hex = etagLoader.getETag();
+        ETAGLoader etagLoader = new ETAGLoader(s3Storage, key, s3Client);
+        this.storedMd5Hex = StringUtils.strip(etagLoader.getETag(),"\"");
+        this.maxPartSize = maxPartSize;
+    }
+
+    public MultipartDownloadManager(
+            S3Storage s3Storage,
+            String key,
+            S3Client s3Client,
+            Path path,
+            int maxPartSize,
+            String storedMd5Hex
+    ) {
+        this.s3Storage = s3Storage;
+        this.key = key;
+        this.s3Client = s3Client;
+        this.path = path;
+        SizeLoader sizeLoader = new SizeLoader(s3Storage, key, s3Client);
+        this.size = sizeLoader.getSize();
+        this.storedMd5Hex = storedMd5Hex;
         this.maxPartSize = maxPartSize;
     }
 
 
     private void downloadRange(long start, long finish) throws NoSuchAlgorithmException, IOException, IncorrectHashException {
+        logger.debug(String.format("Loading range from '%d' to '%d'", start, finish));
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .range(String.format("bytes=%d-%d", start, finish))
                 .key(key)
@@ -58,12 +83,7 @@ public class MultipartDownloadManager extends AbstractS3Manager {
         byte[] responseBytes = response.asByteArray();
 
         GetObjectResponse getObjectResponse = response.response();
-        String eTag = getObjectResponse.eTag();
-        String md5 = MD5.getMD5Hex(responseBytes);
-
-        if (!(eTag.equals('"' + md5 + '"'))) {
-            throw new IncorrectHashException();
-        }
+        md5List.add(MD5.getMD5Bytes(responseBytes));
 
         Files.write(
                 path,
@@ -72,18 +92,31 @@ public class MultipartDownloadManager extends AbstractS3Manager {
                 StandardOpenOption.APPEND,
                 StandardOpenOption.WRITE
         );
+        logger.debug("Finished loading range");
     }
 
     private void finish() throws NoSuchAlgorithmException, IOException, IncorrectHashException {
-        String gotMd5 = MD5.getMD5Hex(path);
-        if (!gotMd5.equals(storedMd5Hex)) {
+        String md5;
+        if (storedMd5Hex.contains("-")) {
+            byte[] concatenatedMd5 = new byte[0];
+            for (byte[] bytes : md5List) {
+                concatenatedMd5 = ArrayUtils.addAll(concatenatedMd5, bytes);
+            }
+            md5 = getMD5Hex(concatenatedMd5)+"-" + md5List.size();
+        } else {
+            md5=MD5.getMD5Hex(path);
+        }
+
+        logger.info(String.format("Calculated md5='%s'", md5));
+        logger.info(String.format("Stored md5='%s'", storedMd5Hex));
+        if (!storedMd5Hex.equals(md5)) {
             throw new IncorrectHashException();
         }
     }
 
     @Override
     public void run() throws NoSuchAlgorithmException, IOException, IncorrectHashException {
-        final long MAX_END = size-1;
+        final long MAX_END = size - 1;
 
         long start = 0;
         long end = Math.min((start + maxPartSize), MAX_END);
@@ -91,12 +124,12 @@ public class MultipartDownloadManager extends AbstractS3Manager {
         while (true) {
             downloadRange(start, end);
 
-            if (end==MAX_END){
+            if (end == MAX_END) {
                 break;
             }
 
-            start=end+1;
-            end = Math.min(start+maxPartSize,MAX_END);
+            start = end + 1;
+            end = Math.min(start + maxPartSize, MAX_END);
         }
 
         finish();

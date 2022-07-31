@@ -34,17 +34,17 @@ public class SnapshotReceiverImpl implements SnapshotReceiver {
             ZFSProcessFactory zfsProcessFactory,
             ZFSPool zfsPool,
             ZFSFileReaderFactory zfsFileReaderFactory
-    ){
+    ) {
         this.zfsProcessFactory = zfsProcessFactory;
         this.zfsPool = zfsPool;
         this.zfsFileReaderFactory = zfsFileReaderFactory;
     }
 
-    private boolean isNextPart(ZFSStreamPart previousStream, ZFSStreamPart nextStream){
+    private boolean isNextPart(ZFSStreamPart previousStream, ZFSStreamPart nextStream) {
         logger.info("isNextPart");
-        logger.info(String.format("Previous stream - %s",previousStream.toString()));
-        logger.info(String.format("Next stream - %s",nextStream.toString()));
-        if (previousStream.getStreamName().equals(nextStream.getStreamName()) && nextStream.getPartNumber() == previousStream.getPartNumber()+1){
+        logger.info(String.format("Previous stream - %s", previousStream.toString()));
+        logger.info(String.format("Next stream - %s", nextStream.toString()));
+        if (previousStream.getStreamName().equals(nextStream.getStreamName()) && nextStream.getPartNumber() == previousStream.getPartNumber() + 1) {
             logger.info("isNextPart - true");
             return true;
         }
@@ -54,11 +54,11 @@ public class SnapshotReceiverImpl implements SnapshotReceiver {
 
     @Override
     public void receiveSnapshotPart(Path path) throws IncorrectFilePartNameException, CompressorException, IOException, ClassNotFoundException, EncryptException, InterruptedException, ExecutionException {
-        if (zfsReceive==null){
+        if (zfsReceive == null) {
             zfsReceive = zfsProcessFactory.getZFSReceive(zfsPool);
         }
         nextStream = new ZFSStreamPart(path);
-        if (previousStream != null && !isNextPart(previousStream,nextStream)){
+        if (previousStream != null && !isNextPart(previousStream, nextStream)) {
             logger.info("Stream ended");
             zfsReceive.close();
             zfsReceive = zfsProcessFactory.getZFSReceive(zfsPool);
@@ -67,7 +67,7 @@ public class SnapshotReceiverImpl implements SnapshotReceiver {
         ZFSFileReader zfsFileReader = zfsFileReaderFactory.getZFSFileReader(zfsReceive.getBufferedOutputStream(), nextStream.getFullPath());
         try {
             zfsFileReader.read();
-        } catch (EOFException e){
+        } catch (EOFException e) {
             logger.info(String.format("End of file '%s'", nextStream.getFullPath().toString()));
             previousStream = nextStream;
         }
@@ -75,6 +75,8 @@ public class SnapshotReceiverImpl implements SnapshotReceiver {
 
     @Override
     public void finish() throws IOException, InterruptedException, ExecutionException {
-        zfsReceive.close();
+        if (zfsReceive != null) {
+            zfsReceive.close();
+        }
     }
 }

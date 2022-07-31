@@ -29,6 +29,8 @@ public class ListManager  {
     public void run() throws IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
         String filename = Paths.get(key).getFileName().toString();
 
+        logger.info(String.format("Searching for prefix='%s'",key));
+
         ListObjectsRequest listObjects = ListObjectsRequest.builder()
                 .bucket(s3Storage.getBucketName())
                 .prefix(key)

@@ -228,6 +228,11 @@ public class TestLocalBackupRepositoryWithRemote {
         Assertions.assertTrue(Files.exists(repositoryDir.resolve("Test").resolve("_meta.json")));
 
         Mockito.verify(remoteBackupRepository)
-                .getPart("Test","part0",repositoryDir.resolve("Test"));
+                .getPart(
+                        "Test",
+                        "part0",
+                        repositoryDir.resolve("Test"),
+                        new PartMeta("part0", 10L,"Test","1111")
+                );
     }
 }

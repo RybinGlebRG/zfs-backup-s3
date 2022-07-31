@@ -9,6 +9,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Optional;
 
 public class S3ManagerFactoryImpl implements S3ManagerFactory {
     private final int maxPartSize;
@@ -18,7 +19,12 @@ public class S3ManagerFactoryImpl implements S3ManagerFactory {
     }
 
     @Override
-    public S3Manager getUploadManager(BufferedInputStream bufferedInputStream, long size, S3Storage s3Storage, String key, S3Client s3Client)
+    public S3Manager getUploadManager(
+            BufferedInputStream bufferedInputStream,
+            long size,
+            S3Storage s3Storage,
+            String key,
+            S3Client s3Client)
             throws IOException {
         if (size > maxPartSize) {
             return new MultipartUploadManager(bufferedInputStream, size, s3Storage, key, s3Client, maxPartSize);
@@ -26,6 +32,7 @@ public class S3ManagerFactoryImpl implements S3ManagerFactory {
             return new OnepartUploadManager(bufferedInputStream, s3Storage, key, s3Client);
         }
     }
+
 
 //    @Override
 //    public S3Manager getDownloadManager(S3Storage s3Storage, String key, S3Client s3Client, Path path, Long size, String storedMd5Hex) {
@@ -39,6 +46,11 @@ public class S3ManagerFactoryImpl implements S3ManagerFactory {
     @Override
     public S3Manager getDownloadManager(S3Storage s3Storage, String key, S3Client s3Client, Path path) {
         return new MultipartDownloadManager(s3Storage, key, s3Client, path, maxPartSize);
+    }
+
+    @Override
+    public S3Manager getDownloadManager(S3Storage s3Storage, String key, S3Client s3Client, Path path, String storedMd5Hex) {
+        return new MultipartDownloadManager(s3Storage, key, s3Client, path, maxPartSize,storedMd5Hex);
     }
 
     @Override

@@ -6,6 +6,7 @@ import ru.rerumu.backups.exceptions.*;
 import ru.rerumu.backups.factories.S3ClientFactory;
 import ru.rerumu.backups.factories.S3ManagerFactory;
 import ru.rerumu.backups.models.S3Storage;
+import ru.rerumu.backups.models.meta.PartMeta;
 import ru.rerumu.backups.repositories.RemoteBackupRepository;
 import ru.rerumu.backups.services.S3Manager;
 import ru.rerumu.backups.services.impl.ListManager;
@@ -25,17 +26,13 @@ public class S3Repository implements RemoteBackupRepository {
     private final S3ClientFactory s3ClientFactory;
     private final S3Storage s3Storage;
 
-    private final Path tmpDir;
-
     public S3Repository(
             final List<S3Storage> s3Storages,
             S3ManagerFactory S3ManagerFactory,
-            S3ClientFactory s3ClientFactory,
-            Path tmpDir) {
+            S3ClientFactory s3ClientFactory) {
         this.s3ManagerFactory = S3ManagerFactory;
         this.s3ClientFactory = s3ClientFactory;
         this.s3Storage = s3Storages.get(0);
-        this.tmpDir = tmpDir;
     }
 
     private void upload(Path path, String key)
@@ -74,17 +71,17 @@ public class S3Repository implements RemoteBackupRepository {
         }
     }
 
-//    private void download(String key, Path target) throws IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
-//        if (!isFileExists(key)){
-//            throw new S3MissesFileException();
-//        }
-//        try (S3Client s3Client = s3ClientFactory.getS3Client(s3Storage);) {
-//
-//            S3Manager s3Manager = s3ManagerFactory.getDownloadManager(s3Storage,key,s3Client,target);
-//            s3Manager.run();
-//
-//        }
-//    }
+    private void download(String key, Path target, String storedMd5Hex) throws IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
+        if (!isFileExists(key)){
+            throw new S3MissesFileException();
+        }
+        try (S3Client s3Client = s3ClientFactory.getS3Client(s3Storage);) {
+
+            S3Manager s3Manager = s3ManagerFactory.getDownloadManager(s3Storage,key,s3Client,target,storedMd5Hex);
+            s3Manager.run();
+
+        }
+    }
 
     private boolean isFileExists(String key) throws IOException, NoSuchAlgorithmException, IncorrectHashException {
         try(S3Client s3Client = s3ClientFactory.getS3Client(s3Storage)){
@@ -114,11 +111,12 @@ public class S3Repository implements RemoteBackupRepository {
     }
 
     @Override
-    public Path getPart(String datasetName, String partName, Path targetDir) throws IOException, NoSuchAlgorithmException, IncorrectHashException, NoPartFoundException {
+    public Path getPart(String datasetName, String partName, Path targetDir, PartMeta partMeta)
+            throws IOException, NoSuchAlgorithmException, IncorrectHashException, NoPartFoundException {
         String key = s3Storage.getPrefix().toString() + "/" + datasetName + "/" + partName;
         Path path = targetDir.resolve(partName);
         try {
-            download(key, path);
+            download(key, path, partMeta.getMd5Hex());
         } catch (S3MissesFileException e){
             logger.warn(String.format("Part '%s' of dataset '%s' not found on s3",partName,datasetName));
             throw new NoPartFoundException();

@@ -14,6 +14,7 @@ import ru.rerumu.backups.exceptions.S3MissesFileException;
 import ru.rerumu.backups.factories.S3ClientFactory;
 import ru.rerumu.backups.factories.S3ManagerFactory;
 import ru.rerumu.backups.models.S3Storage;
+import ru.rerumu.backups.models.meta.PartMeta;
 import ru.rerumu.backups.repositories.impl.S3Repository;
 import ru.rerumu.backups.services.S3Manager;
 import ru.rerumu.backups.services.impl.ListManager;
@@ -52,8 +53,7 @@ public class TestS3Repository {
         RemoteBackupRepository remoteBackupRepository = new S3Repository(
                 List.of(s3Storage),
                 s3ManagerFactory,
-                s3ClientFactory,
-                tmpDir
+                s3ClientFactory
         );
 
         Mockito.when(s3ClientFactory.getS3Client(Mockito.any()))
@@ -81,8 +81,7 @@ public class TestS3Repository {
         RemoteBackupRepository remoteBackupRepository = new S3Repository(
                 List.of(s3Storage),
                 s3ManagerFactory,
-                s3ClientFactory,
-                tmpDir
+                s3ClientFactory
         );
 
         Mockito.when(s3ClientFactory.getS3Client(Mockito.any()))
@@ -111,8 +110,7 @@ public class TestS3Repository {
         RemoteBackupRepository remoteBackupRepository = new S3Repository(
                 List.of(s3Storage),
                 s3ManagerFactory,
-                s3ClientFactory,
-                tmpDir
+                s3ClientFactory
         );
 
         Mockito.when(s3ClientFactory.getS3Client(Mockito.any()))
@@ -159,8 +157,7 @@ public class TestS3Repository {
         RemoteBackupRepository remoteBackupRepository = new S3Repository(
                 List.of(s3Storage),
                 s3ManagerFactory,
-                s3ClientFactory,
-                tmpDir
+                s3ClientFactory
         );
 
         Mockito.when(s3ClientFactory.getS3Client(Mockito.any()))
@@ -198,7 +195,7 @@ public class TestS3Repository {
 
     }
     @Test
-    void shouldGetPart(@TempDir Path tmpDir, @TempDir Path otherDir) throws Exception {
+    void shouldGetPart(@TempDir Path otherDir) throws Exception {
         S3Storage s3Storage = new S3Storage(
                 null,
                 "TestBucket",
@@ -210,8 +207,7 @@ public class TestS3Repository {
         RemoteBackupRepository remoteBackupRepository = new S3Repository(
                 List.of(s3Storage),
                 s3ManagerFactory,
-                s3ClientFactory,
-                tmpDir
+                s3ClientFactory
         );
 
         Mockito.when(s3ManagerFactory.getListManager(Mockito.any(), Mockito.any(), Mockito.any()))
@@ -222,10 +218,13 @@ public class TestS3Repository {
                 Mockito.any(),
                 Mockito.any(),
                 Mockito.any(),
+                Mockito.any(),
                 Mockito.any())
         ).thenReturn(s3Manager);
 
-        remoteBackupRepository.getPart("Test","part0",otherDir);
+        PartMeta partMeta = new PartMeta("part0",0L,"Test","1111");
+
+        remoteBackupRepository.getPart("Test","part0",otherDir,partMeta);
 
         Mockito.verify(s3ManagerFactory).getListManager(
                 Mockito.any(),
@@ -236,12 +235,13 @@ public class TestS3Repository {
                 Mockito.any(),
                 Mockito.eq("TestPrefix/Test/part0"),
                 Mockito.any(),
-                Mockito.eq(otherDir.resolve("part0"))
+                Mockito.eq(otherDir.resolve("part0")),
+                Mockito.any()
         );
     }
 
     @Test
-    void shouldGetPartButNoFile(@TempDir Path tmpDir, @TempDir Path otherDir) throws Exception {
+    void shouldGetPartButNoFile(@TempDir Path otherDir) throws Exception {
         S3Storage s3Storage = new S3Storage(
                 null,
                 "TestBucket",
@@ -253,8 +253,7 @@ public class TestS3Repository {
         RemoteBackupRepository remoteBackupRepository = new S3Repository(
                 List.of(s3Storage),
                 s3ManagerFactory,
-                s3ClientFactory,
-                tmpDir
+                s3ClientFactory
         );
 
         Mockito.when(s3ManagerFactory.getListManager(Mockito.any(), Mockito.any(), Mockito.any()))
@@ -263,10 +262,11 @@ public class TestS3Repository {
                 .thenReturn(s3Client);
         Mockito.doThrow(new S3MissesFileException()).when(listManager).run();
 
+        PartMeta partMeta = new PartMeta("part0",0L,"Test","1111");
 
         Assertions.assertThrows(
                 NoPartFoundException.class,
-                ()->remoteBackupRepository.getPart("Test","part0",otherDir)
+                ()->remoteBackupRepository.getPart("Test","part0",otherDir,partMeta)
         );
 
         Mockito.verify(s3ManagerFactory).getListManager(
@@ -275,6 +275,7 @@ public class TestS3Repository {
                 Mockito.any()
         );
         Mockito.verify(s3ManagerFactory, Mockito.never()).getDownloadManager(
+                Mockito.any(),
                 Mockito.any(),
                 Mockito.any(),
                 Mockito.any(),
@@ -295,8 +296,7 @@ public class TestS3Repository {
         RemoteBackupRepository remoteBackupRepository = new S3Repository(
                 List.of(s3Storage),
                 s3ManagerFactory,
-                s3ClientFactory,
-                tmpDir
+                s3ClientFactory
         );
 
         Mockito.when(s3ClientFactory.getS3Client(Mockito.any()))
@@ -342,8 +342,7 @@ public class TestS3Repository {
         RemoteBackupRepository remoteBackupRepository = new S3Repository(
                 List.of(s3Storage),
                 s3ManagerFactory,
-                s3ClientFactory,
-                tmpDir
+                s3ClientFactory
         );
 
         Mockito.when(s3ClientFactory.getS3Client(Mockito.any()))
@@ -384,8 +383,7 @@ public class TestS3Repository {
         RemoteBackupRepository remoteBackupRepository = new S3Repository(
                 List.of(s3Storage),
                 s3ManagerFactory,
-                s3ClientFactory,
-                tmpDir
+                s3ClientFactory
         );
 
         Mockito.when(s3ClientFactory.getS3Client(Mockito.any()))
@@ -430,8 +428,7 @@ public class TestS3Repository {
         RemoteBackupRepository remoteBackupRepository = new S3Repository(
                 List.of(s3Storage),
                 s3ManagerFactory,
-                s3ClientFactory,
-                tmpDir
+                s3ClientFactory
         );
 
         Mockito.when(s3ClientFactory.getS3Client(Mockito.any()))
