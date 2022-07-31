@@ -1,12 +1,15 @@
 package ru.rerumu.backups;
 
+import ru.rerumu.backups.exceptions.IncorrectHashException;
+import ru.rerumu.backups.exceptions.NoDatasetMetaException;
 import ru.rerumu.backups.factories.SnapshotSenderFactory;
 import ru.rerumu.backups.factories.ZFSFileWriterFactory;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
 import ru.rerumu.backups.factories.impl.*;
 import ru.rerumu.backups.models.S3Storage;
-import ru.rerumu.backups.repositories.FilePartRepository;
-import ru.rerumu.backups.repositories.impl.FilePartRepositoryImpl;
+import ru.rerumu.backups.repositories.LocalBackupRepository;
+import ru.rerumu.backups.repositories.RemoteBackupRepository;
+import ru.rerumu.backups.repositories.impl.LocalBackupRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.S3Repository;
 import software.amazon.awssdk.regions.Region;
 
@@ -14,6 +17,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,9 +27,11 @@ public class EntityFactory {
     public EntityFactory() throws IOException {
     }
 
-    public FilePartRepository getFilePartRepository(){
-        return new FilePartRepositoryImpl(
-                Paths.get(configuration.getProperty("backup.directory"))
+    public LocalBackupRepository getLocalBackupRepository(RemoteBackupRepository remoteBackupRepository) throws IOException, NoSuchAlgorithmException, IncorrectHashException, NoDatasetMetaException {
+        return new LocalBackupRepositoryImpl(
+                Paths.get(configuration.getProperty("local_repository_dir")),
+                remoteBackupRepository,
+                Boolean.parseBoolean(configuration.getProperty("is.load.aws"))
         );
     }
 
@@ -49,8 +55,7 @@ public class EntityFactory {
                 new S3ManagerFactoryImpl(
                         Integer.parseInt(configuration.getProperty("max_part_size"))
                 ),
-                new S3ClientFactoryImpl(),
-                Paths.get(configuration.getProperty("temp_dir"))
+                new S3ClientFactoryImpl()
         );
     }
 
@@ -67,17 +72,14 @@ public class EntityFactory {
     }
 
     public SnapshotSenderFactory getSnapshotSenderFactory(
-            FilePartRepository filePartRepository,
-            S3Repository s3Repository,
+            LocalBackupRepository localBackupRepository,
             ZFSProcessFactory zfsProcessFactory,
             ZFSFileWriterFactory zfsFileWriterFactory){
         return new SnapshotSenderFactoryImpl(
-                true,
-                filePartRepository,
-                s3Repository,
+                localBackupRepository,
                 zfsProcessFactory,
                 zfsFileWriterFactory,
-                Boolean.parseBoolean(configuration.getProperty("is.load.aws"))
+                Paths.get(configuration.getProperty("sender_temp_dir"))
         );
     }
 }

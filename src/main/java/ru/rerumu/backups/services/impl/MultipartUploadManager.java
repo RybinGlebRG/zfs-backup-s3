@@ -57,12 +57,14 @@ public class MultipartUploadManager extends AbstractS3Manager {
     }
 
     private void abort(){
+        logger.info(String.format("Aborting upload by id '%s'",uploadId));
         AbortMultipartUploadRequest abortMultipartUploadRequest = AbortMultipartUploadRequest.builder()
                 .bucket(s3Storage.getBucketName())
                 .key(key)
                 .uploadId(uploadId)
                 .build();
         s3Client.abortMultipartUpload(abortMultipartUploadRequest);
+        logger.info(String.format("Upload '%s' aborted",uploadId));
     }
 
     public void run() throws IOException, NoSuchAlgorithmException, IncorrectHashException {

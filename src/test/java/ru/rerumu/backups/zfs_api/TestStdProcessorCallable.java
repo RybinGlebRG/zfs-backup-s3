@@ -51,7 +51,7 @@ class TestStdProcessorCallable {
         InputStream inputStream = new ByteArrayInputStream(buf);
         BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
         StdProcessor stdProcessor = Mockito.mock(StdProcessor.class);
-        Mockito.doThrow(IOException.class).when(stdProcessor).process(Mockito.any());
+        Mockito.doThrow(UnsupportedOperationException.class).when(stdProcessor).process(Mockito.any());
 
         ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
 

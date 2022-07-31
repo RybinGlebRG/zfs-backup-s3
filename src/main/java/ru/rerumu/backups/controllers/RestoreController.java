@@ -13,11 +13,13 @@ public class RestoreController {
         this.zfsRestoreService = zfsRestoreService;
     }
 
-    public void restore(){
+    public int restore(){
         try {
             zfsRestoreService.zfsReceive();
+            return 0;
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
+            return 1;
         }
     }
 }

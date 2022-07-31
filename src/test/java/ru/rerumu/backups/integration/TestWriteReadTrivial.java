@@ -22,17 +22,17 @@ public class TestWriteReadTrivial {
 
     @Test
     void shouldWriteReadSame(@TempDir Path tempDir) throws IOException, CompressorException, ClassNotFoundException, EncryptException, FileHitSizeLimitException, ZFSStreamEndedException {
-        String password = "jNfdCfxcWUqg5xa";
         int chunkSize = 1024;
         long filePartSize = 1000;
-        ZFSFileWriter zfsFileWriter = new ZFSFileWriterTrivial(chunkSize,filePartSize);
+        Path path = tempDir.resolve("test");
+        ZFSFileWriter zfsFileWriter = new ZFSFileWriterTrivial(chunkSize,filePartSize,path);
         byte[] srcBuf = new byte[700];
         new Random().nextBytes(srcBuf);
-        Path path = tempDir.resolve("test");
+
 
         try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(srcBuf);
              BufferedInputStream bufferedInputStream = new BufferedInputStream(byteArrayInputStream)) {
-            zfsFileWriter.write(bufferedInputStream, path);
+            zfsFileWriter.write(bufferedInputStream);
         } catch (ZFSStreamEndedException ignored) {
 
         }
@@ -56,10 +56,9 @@ public class TestWriteReadTrivial {
 
     @Test
     void shouldWriteReadSameTwoFiles(@TempDir Path tempDir) throws IOException, CompressorException, ClassNotFoundException, EncryptException, FileHitSizeLimitException, ZFSStreamEndedException {
-        String password = "jNfdCfxcWUqg5xa";
         int chunkSize = 1024;
         long filePartSize = 1000;
-        ZFSFileWriter zfsFileWriter = new ZFSFileWriterTrivial(chunkSize,filePartSize);
+//        ZFSFileWriter zfsFileWriter = new ZFSFileWriterTrivial(chunkSize,filePartSize);
         byte[] srcBuf = new byte[1100];
         new Random().nextBytes(srcBuf);
 //        Path path = tempDir.resolve("test");
@@ -68,13 +67,18 @@ public class TestWriteReadTrivial {
         pathList.add(tempDir.resolve("test1"));
         pathList.add(tempDir.resolve("test2"));
 
+        List<ZFSFileWriter> zfsFileWriterList = new ArrayList<>();
+        zfsFileWriterList.add(new ZFSFileWriterTrivial(chunkSize,filePartSize,pathList.get(0)));
+        zfsFileWriterList.add(new ZFSFileWriterTrivial(chunkSize,filePartSize,pathList.get(1)));
+
         int n = 0;
 
         try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(srcBuf);
              BufferedInputStream bufferedInputStream = new BufferedInputStream(byteArrayInputStream)) {
             while (true) {
                 try {
-                    zfsFileWriter.write(bufferedInputStream, pathList.get(n));
+                    ZFSFileWriter zfsFileWriter = zfsFileWriterList.get(n);
+                    zfsFileWriter.write(bufferedInputStream);
                 } catch (ZFSStreamEndedException ignored) {
                     break;
                 } catch (FileHitSizeLimitException e) {

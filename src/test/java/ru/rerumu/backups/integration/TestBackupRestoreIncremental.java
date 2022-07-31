@@ -1,10 +1,14 @@
 package ru.rerumu.backups.integration;
 
+import ch.qos.logback.classic.Level;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.controllers.BackupController;
 import ru.rerumu.backups.controllers.RestoreController;
 import ru.rerumu.backups.exceptions.IncorrectHashException;
@@ -13,16 +17,16 @@ import ru.rerumu.backups.factories.SnapshotSenderFactory;
 import ru.rerumu.backups.factories.ZFSFileReaderFactory;
 import ru.rerumu.backups.factories.ZFSFileWriterFactory;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
-import ru.rerumu.backups.factories.impl.SnapshotSenderFactoryImpl;
-import ru.rerumu.backups.factories.impl.ZFSFileReaderFactoryImpl;
-import ru.rerumu.backups.factories.impl.ZFSFileWriterFactoryImpl;
+import ru.rerumu.backups.factories.impl.*;
+import ru.rerumu.backups.models.S3Storage;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSPool;
-import ru.rerumu.backups.repositories.FilePartRepository;
+import ru.rerumu.backups.repositories.LocalBackupRepository;
 import ru.rerumu.backups.repositories.RemoteBackupRepository;
 import ru.rerumu.backups.repositories.ZFSFileSystemRepository;
 import ru.rerumu.backups.repositories.ZFSSnapshotRepository;
-import ru.rerumu.backups.repositories.impl.FilePartRepositoryImpl;
+import ru.rerumu.backups.repositories.impl.LocalBackupRepositoryImpl;
+import ru.rerumu.backups.repositories.impl.S3Repository;
 import ru.rerumu.backups.repositories.impl.ZFSFileSystemRepositoryImpl;
 import ru.rerumu.backups.repositories.impl.ZFSSnapshotRepositoryImpl;
 import ru.rerumu.backups.services.DatasetPropertiesChecker;
@@ -31,12 +35,15 @@ import ru.rerumu.backups.services.ZFSBackupService;
 import ru.rerumu.backups.services.ZFSRestoreService;
 import ru.rerumu.backups.services.impl.SnapshotReceiverImpl;
 import ru.rerumu.backups.zfs_api.*;
+import software.amazon.awssdk.regions.Region;
 
 import java.io.*;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,8 +52,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
-import static org.mockito.Matchers.eq;
 
 @Disabled
 public class TestBackupRestoreIncremental {
@@ -59,27 +64,28 @@ public class TestBackupRestoreIncremental {
 
     private List<byte[]> srcBytesList;
     private List<byte[]> resBytes;
+    private final String prefix = RandomStringUtils.random(10, true, false);
 
-    private BackupController setupBackup(Path backupDir, Path restoreDir)
-            throws IOException,
-            NoSuchAlgorithmException,
-            InterruptedException,
-            IncorrectHashException,
-            S3MissesFileException {
-        FilePartRepository filePartRepository = new FilePartRepositoryImpl(backupDir);
+    private BackupController setupBackup( Path localRepositoryDir, Path senderTmpDir)
+            throws Exception {
+        RemoteBackupRepository remoteBackupRepository = new S3Repository(List.of(
+                new S3Storage(
+                        Region.of(System.getProperty("region")),
+                        System.getProperty("bucket"),
+                        System.getProperty("keyId"),
+                        System.getProperty("secretKey"),
+                        Paths.get("level-0/" + prefix),
+                        new URI(System.getProperty("endpoint")),
+                        "STANDARD"
+                )),
+                new S3ManagerFactoryImpl(6_000_000),
+                new S3ClientFactoryImpl());
+        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(
+                localRepositoryDir,
+                remoteBackupRepository,
+                true
+        );
 
-        // s3Loader
-        RemoteBackupRepository remoteBackupRepository = Mockito.mock(RemoteBackupRepository.class);
-
-        Mockito.doAnswer(invocationOnMock -> {
-            Object[] args = invocationOnMock.getArguments();
-            String filename = ((Path) args[1]).getFileName().toString();
-            Files.copy((Path) args[1], restoreDir.resolve(filename + ".ready"));
-            while (Files.exists(restoreDir.resolve(filename + ".ready"))) {
-                Thread.sleep(1000);
-            }
-            return null;
-        }).when(remoteBackupRepository).add(Mockito.any(), Mockito.any());
 
         // zfsListFilesystems
         ZFSListFilesystems zfsListFilesystems = Mockito.mock(ZFSListFilesystems.class);
@@ -95,14 +101,18 @@ public class TestBackupRestoreIncremental {
         processWrappers.add(Mockito.mock(ZFSListSnapshots.class));
 
         List<String> stringSnapshots = new ArrayList<>();
-        stringSnapshots.add("ExternalPool@auto-20220326-150000\n" +
-                "ExternalPool@auto-2022.03.27-06.00.00\n" +
-                "ExternalPool@auto-20220327-150000\n" +
-                "ExternalPool@auto-20220328-150000\n");
-        stringSnapshots.add("ExternalPool/Applications@auto-20220326-150000\n" +
-                "ExternalPool/Applications@auto-2022.03.27-06.00.00\n" +
-                "ExternalPool/Applications@auto-20220327-150000\n" +
-                "ExternalPool/Applications@auto-20220328-150000\n");
+        stringSnapshots.add(
+                "ExternalPool@auto-20220326-150000\n" +
+                        "ExternalPool@auto-2022.03.27-06.00.00\n" +
+                        "ExternalPool@auto-20220327-150000\n" +
+                        "ExternalPool@auto-20220328-150000\n"
+        );
+        stringSnapshots.add(
+                "ExternalPool/Applications@auto-20220326-150000\n" +
+                        "ExternalPool/Applications@auto-2022.03.27-06.00.00\n" +
+                        "ExternalPool/Applications@auto-20220327-150000\n" +
+                        "ExternalPool/Applications@auto-20220328-150000\n"
+        );
 
         for (int i = 0; i < processWrappers.size(); i++) {
             Mockito.when(processWrappers.get(i).getBufferedInputStream())
@@ -146,7 +156,7 @@ public class TestBackupRestoreIncremental {
         Mockito.when(zfsProcessFactory.getZFSListFilesystems("ExternalPool"))
                 .thenReturn(zfsListFilesystems);
 
-        Mockito.when(zfsProcessFactory.getZFSGetDatasetProperty(Mockito.any(),eq("encryption")))
+        Mockito.when(zfsProcessFactory.getZFSGetDatasetProperty(Mockito.any(), Mockito.eq("encryption")))
                 .thenReturn(zfsGetDatasetProperty);
 
         Mockito.when(zfsProcessFactory.getZFSListSnapshots("ExternalPool"))
@@ -169,12 +179,13 @@ public class TestBackupRestoreIncremental {
         ZFSSnapshotRepository zfsSnapshotRepository = new ZFSSnapshotRepositoryImpl(zfsProcessFactory);
         ZFSFileSystemRepository zfsFileSystemRepository = new ZFSFileSystemRepositoryImpl(zfsProcessFactory, zfsSnapshotRepository);
         ZFSFileWriterFactory zfsFileWriterFactory = new ZFSFileWriterFactoryImpl(
-                1070,
-                1024);
+                1_000_000,
+                6_000_000);
         SnapshotSenderFactory snapshotSenderFactory = new SnapshotSenderFactoryImpl(
-                true,
-                filePartRepository, remoteBackupRepository, zfsProcessFactory, zfsFileWriterFactory,
-                true
+                localBackupRepository,
+                zfsProcessFactory,
+                zfsFileWriterFactory,
+                senderTmpDir
         );
         ZFSBackupService zfsBackupService = new ZFSBackupService(
                 zfsFileSystemRepository,
@@ -185,8 +196,24 @@ public class TestBackupRestoreIncremental {
         return backupController;
     }
 
-    private RestoreController setupRestore(Path restoreDir) throws IOException, ExecutionException, InterruptedException {
-        FilePartRepository filePartRepository = new FilePartRepositoryImpl(restoreDir);
+    private RestoreController setupRestore( Path localRepositoryDir) throws Exception {
+        RemoteBackupRepository remoteBackupRepository = new S3Repository(List.of(
+                new S3Storage(
+                        Region.of(System.getProperty("region")),
+                        System.getProperty("bucket"),
+                        System.getProperty("keyId"),
+                        System.getProperty("secretKey"),
+                        Paths.get("level-0/" + prefix),
+                        new URI(System.getProperty("endpoint")),
+                        "STANDARD"
+                )),
+                new S3ManagerFactoryImpl(6_000_000),
+                new S3ClientFactoryImpl());
+        LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(
+                localRepositoryDir,
+                remoteBackupRepository,
+                true
+        );
 
         ZFSReceive zfsReceive = Mockito.mock(ZFSReceive.class);
         List<ByteArrayOutputStream> byteArrayOutputStreamList = new ArrayList<>();
@@ -201,8 +228,8 @@ public class TestBackupRestoreIncremental {
         bufferedOutputStreamList.add(tmpBuf1);
 
         Mockito.doAnswer(invocationOnMock -> {
-            bufferedOutputStreamList.get(bufferedOutputStreamList.size()-1).flush();
-            byte[] tmp = byteArrayOutputStreamList.get(byteArrayOutputStreamList.size()-1).toByteArray();
+            bufferedOutputStreamList.get(bufferedOutputStreamList.size() - 1).flush();
+            byte[] tmp = byteArrayOutputStreamList.get(byteArrayOutputStreamList.size() - 1).toByteArray();
             resBytes.add(tmp);
 
             ByteArrayOutputStream tmpArray = new ByteArrayOutputStream();
@@ -216,7 +243,7 @@ public class TestBackupRestoreIncremental {
 
         Mockito.when(zfsReceive.getBufferedOutputStream())
                 .thenAnswer(invocationOnMock -> {
-                    BufferedOutputStream tmpBuf = bufferedOutputStreamList.get(bufferedOutputStreamList.size()-1);
+                    BufferedOutputStream tmpBuf = bufferedOutputStreamList.get(bufferedOutputStreamList.size() - 1);
                     return tmpBuf;
                 });
 
@@ -229,60 +256,49 @@ public class TestBackupRestoreIncremental {
         SnapshotReceiver snapshotReceiver = new SnapshotReceiverImpl(
                 zfsProcessFactory,
                 new ZFSPool("ReceivePool"),
-                filePartRepository,
-                zfsFileReaderFactory,
-                true
+                zfsFileReaderFactory
         );
 
         ZFSRestoreService zfsRestoreService = new ZFSRestoreService(
-                "84fBS1KsChnuaV0",
-                zfsProcessFactory,
-                true,
-                filePartRepository,
-                snapshotReceiver);
+                localBackupRepository,
+                snapshotReceiver,
+                List.of("ExternalPool", "ExternalPool-Applications"));
 
         RestoreController restoreController = new RestoreController(zfsRestoreService);
         return restoreController;
     }
 
 
-
     @Test
-    void shouldBackupRestoreIncremental(@TempDir Path backupDir, @TempDir Path restoreDir) throws IOException, NoSuchAlgorithmException, InterruptedException, IncorrectHashException, ExecutionException, S3MissesFileException {
+    void shouldBackupRestoreIncremental(
+            @TempDir Path localRepositoryDir,
+            @TempDir Path senderTmpDir
+    ) throws Exception {
+        ((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME))
+                .setLevel(Level.TRACE);
+        ((ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class))
+                .setLevel(Level.INFO);
+        ((ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.http.apache.internal.conn.IdleConnectionReaper.class))
+                .setLevel(Level.INFO);
+        ((ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class))
+                .setLevel(Level.INFO);
+        ((ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.http.apache.internal.conn.SdkTlsSocketFactory.class))
+                .setLevel(Level.INFO);
+        ((ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.http.apache.internal.net.SdkSslSocket.class))
+                .setLevel(Level.INFO);
 
-        BackupController backupController = setupBackup(backupDir,restoreDir);
-        RestoreController restoreController = setupRestore(restoreDir);
-
-        ExecutorService executorService = Executors.newFixedThreadPool(2);
-        Future<?> backupFuture = executorService.submit(() -> {
-            backupController.backupIncremental(
-                    "ExternalPool@auto-2022.03.27-06.00.00",
-                    "ExternalPool@auto-20220327-150000");
-        });
-
-        Future<?> restoreFuture = executorService.submit(()->{
-            restoreController.restore();
-        }
+        BackupController backupController = setupBackup(localRepositoryDir,senderTmpDir);
+        int backupRes = backupController.backupIncremental(
+                "ExternalPool@auto-2022.03.27-06.00.00",
+                "ExternalPool@auto-20220327-150000"
         );
 
-        backupFuture.get();
+        Assertions.assertEquals(0,backupRes);
 
-        while (true) {
-            boolean isFoundFile = true;
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(restoreDir)) {
-                isFoundFile = false;
-                for (Path item : stream) {
-                    isFoundFile = true;
-                }
-            }
-            if (!isFoundFile) {
-                break;
-            }
-            Thread.sleep(10000);
-        }
-        Files.createFile(restoreDir.resolve("finished"));
+        RestoreController restoreController = setupRestore(localRepositoryDir);
+        int restoreRes = restoreController.restore();
 
-        restoreFuture.get();
+        Assertions.assertEquals(0,restoreRes);
 
         Assertions.assertEquals(srcBytesList.size(), resBytes.size());
 

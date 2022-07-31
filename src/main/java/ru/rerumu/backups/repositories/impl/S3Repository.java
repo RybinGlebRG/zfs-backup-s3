@@ -1,30 +1,22 @@
 package ru.rerumu.backups.repositories.impl;
 
-import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.backups.exceptions.IncorrectHashException;
-import ru.rerumu.backups.exceptions.S3MissesFileException;
+import ru.rerumu.backups.exceptions.*;
 import ru.rerumu.backups.factories.S3ClientFactory;
 import ru.rerumu.backups.factories.S3ManagerFactory;
-import ru.rerumu.backups.models.BackupMeta;
 import ru.rerumu.backups.models.S3Storage;
+import ru.rerumu.backups.models.meta.PartMeta;
 import ru.rerumu.backups.repositories.RemoteBackupRepository;
 import ru.rerumu.backups.services.S3Manager;
 import ru.rerumu.backups.services.impl.ListManager;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.*;
-import org.json.JSONObject;
 
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.List;
 
 public class S3Repository implements RemoteBackupRepository {
@@ -34,17 +26,13 @@ public class S3Repository implements RemoteBackupRepository {
     private final S3ClientFactory s3ClientFactory;
     private final S3Storage s3Storage;
 
-    private final Path tmpDir;
-
     public S3Repository(
             final List<S3Storage> s3Storages,
             S3ManagerFactory S3ManagerFactory,
-            S3ClientFactory s3ClientFactory,
-            Path tmpDir) {
+            S3ClientFactory s3ClientFactory) {
         this.s3ManagerFactory = S3ManagerFactory;
         this.s3ClientFactory = s3ClientFactory;
         this.s3Storage = s3Storages.get(0);
-        this.tmpDir = tmpDir;
     }
 
     private void upload(Path path, String key)
@@ -71,10 +59,25 @@ public class S3Repository implements RemoteBackupRepository {
         }
     }
 
-    private void download(String key, Path target) throws IOException, NoSuchAlgorithmException, IncorrectHashException {
+    private void download(String key, Path target) throws IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
+        if (!isFileExists(key)){
+            throw new S3MissesFileException();
+        }
         try (S3Client s3Client = s3ClientFactory.getS3Client(s3Storage);) {
 
             S3Manager s3Manager = s3ManagerFactory.getDownloadManager(s3Storage,key,s3Client,target);
+            s3Manager.run();
+
+        }
+    }
+
+    private void download(String key, Path target, String storedMd5Hex) throws IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
+        if (!isFileExists(key)){
+            throw new S3MissesFileException();
+        }
+        try (S3Client s3Client = s3ClientFactory.getS3Client(s3Storage);) {
+
+            S3Manager s3Manager = s3ManagerFactory.getDownloadManager(s3Storage,key,s3Client,target,storedMd5Hex);
             s3Manager.run();
 
         }
@@ -90,62 +93,60 @@ public class S3Repository implements RemoteBackupRepository {
         return true;
     }
 
-    // TODO: Check already added
-    // TODO: Use
-    private void addDatasetMeta(String datasetName) throws IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
-        if (!isFileExists(s3Storage.getPrefix()+"/_meta.json")){
-            BackupMeta backupMeta = new BackupMeta();
-            backupMeta.addDataset(datasetName);
-
-            Path path = tmpDir.resolve("_meta.json");
-            Files.writeString(
-                    path,
-                    backupMeta.toJSONObject().toString(),
-                    StandardCharsets.UTF_8,
-                    StandardOpenOption.CREATE,
-                    StandardOpenOption.TRUNCATE_EXISTING,
-                    StandardOpenOption.WRITE);
-            upload(path,s3Storage.getPrefix()+"/_meta.json");
-            Files.delete(path);
-        } else {
-            Path path = tmpDir.resolve("_meta.json");
-            download(s3Storage.getPrefix()+"/_meta.json",path);
-
-            BackupMeta backupMeta = new BackupMeta(new JSONObject(path));
-            backupMeta.addDataset(datasetName);
-
-            Files.writeString(
-                    path,
-                    backupMeta.toJSONObject().toString(),
-                    StandardCharsets.UTF_8,
-                    StandardOpenOption.CREATE,
-                    StandardOpenOption.TRUNCATE_EXISTING,
-                    StandardOpenOption.WRITE
-            );
-            upload(path,s3Storage.getPrefix()+"/_meta.json");
-            Files.delete(path);
-        }
-    }
-
-    public void addPartMeta(String datasetName, String partName, long partSize){
-        // TODO: Write
-    }
-
     @Override
-    public void add(final String datasetName, final Path path)
+    public void add(String prefix, Path path)
             throws
             IOException,
             NoSuchAlgorithmException,
             IncorrectHashException,
             S3MissesFileException {
-        String key = s3Storage.getPrefix().toString() + "/" + datasetName + "/" + path.getFileName().toString();
+        String key = s3Storage.getPrefix().toString() + "/" + prefix + path.getFileName().toString();
         upload(path, key);
         logger.info(String.format("Checking sent file '%s'", path.getFileName().toString()));
-        if (!isFileExists(datasetName, path.getFileName().toString())) {
+        if (!isFileExists(key)) {
             logger.error(String.format("File '%s' not found on S3", path.getFileName().toString()));
             throw new S3MissesFileException();
         }
         logger.info(String.format("File '%s' found on S3", path.getFileName().toString()));
+    }
+
+    @Override
+    public Path getPart(String datasetName, String partName, Path targetDir, PartMeta partMeta)
+            throws IOException, NoSuchAlgorithmException, IncorrectHashException, NoPartFoundException {
+        String key = s3Storage.getPrefix().toString() + "/" + datasetName + "/" + partName;
+        Path path = targetDir.resolve(partName);
+        try {
+            download(key, path, partMeta.getMd5Hex());
+        } catch (S3MissesFileException e){
+            logger.warn(String.format("Part '%s' of dataset '%s' not found on s3",partName,datasetName));
+            throw new NoPartFoundException();
+        }
+        return path;
+    }
+
+    @Override
+    public Path getBackupMeta(Path targetDir)
+            throws IOException, NoSuchAlgorithmException, IncorrectHashException, NoBackupMetaException {
+        Path path = targetDir.resolve("_meta.json");
+        try {
+            download(s3Storage.getPrefix()+"/_meta.json",path);
+        } catch (S3MissesFileException e){
+            logger.warn("Backup meta is not found on S3");
+            throw new NoBackupMetaException();
+        }
+        return path;
+    }
+
+    @Override
+    public Path getDatasetMeta(String datasetName, Path targetDir) throws IOException, NoSuchAlgorithmException, IncorrectHashException, NoDatasetMetaException {
+        Path path = targetDir.resolve("_meta.json");
+        try {
+            download(s3Storage.getPrefix()+"/"+datasetName+"/_meta.json",path);
+        } catch (S3MissesFileException e){
+            logger.warn(String.format("Metadata for dataset '%s' not found on S3",datasetName));
+            throw new NoDatasetMetaException();
+        }
+        return path;
     }
 
     @Override

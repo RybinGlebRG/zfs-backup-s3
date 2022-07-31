@@ -34,6 +34,8 @@ public class TestS3 {
     void shouldSendOnepart(@TempDir Path tempDir, @TempDir Path tempDownloadDir) throws URISyntaxException, IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         logger.setLevel(Level.TRACE);
+        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
+        logger.setLevel(Level.INFO);
         S3Repository s3Repository = new S3Repository(List.of(
                 new S3Storage(
                         Region.of(System.getProperty("region")),
@@ -45,8 +47,7 @@ public class TestS3 {
                         "STANDARD"
                 )),
                 new S3ManagerFactoryImpl(500_000_000),
-                new S3ClientFactoryImpl(),
-                tempDownloadDir
+                new S3ClientFactoryImpl()
         );
 
 
@@ -88,8 +89,7 @@ public class TestS3 {
                         "STANDARD"
                 )),
                 new S3ManagerFactoryImpl(6_291_456),
-                new S3ClientFactoryImpl(),
-                tempDownloadDir
+                new S3ClientFactoryImpl()
         );
 
 
@@ -126,8 +126,7 @@ public class TestS3 {
                         "STANDARD"
                 )),
                 new S3ManagerFactoryImpl(500_000_000),
-                new S3ClientFactoryImpl(),
-                tempDownloadDir
+                new S3ClientFactoryImpl()
         );
 
 
