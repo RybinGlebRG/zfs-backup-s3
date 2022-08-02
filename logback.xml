@@ -21,4 +21,10 @@
     <root level="DEBUG">
         <appender-ref ref="fout" />
     </root>
+	
+	<logger name="software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain" level="info"/>
+	<logger name="software.amazon.awssdk.http.apache.internal.conn.IdleConnectionReaper" level="info"/>
+	<logger name="software.amazon.awssdk.auth.signer.Aws4Signer" level="info"/>
+	<logger name="software.amazon.awssdk.http.apache.internal.conn.SdkTlsSocketFactory" level="info"/>
+	<logger name="software.amazon.awssdk.http.apache.internal.net.SdkSslSocket" level="info"/>
 </configuration>
