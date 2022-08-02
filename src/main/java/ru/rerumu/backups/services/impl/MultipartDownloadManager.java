@@ -95,6 +95,7 @@ public class MultipartDownloadManager extends AbstractS3Manager {
         logger.debug("Finished loading range");
     }
 
+    // TODO: Concatenation should not work
     private void finish() throws NoSuchAlgorithmException, IOException, IncorrectHashException {
         String md5;
         if (storedMd5Hex.contains("-")) {

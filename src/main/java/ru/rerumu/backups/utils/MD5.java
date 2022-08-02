@@ -58,7 +58,7 @@ public class MD5 {
         MessageDigest md = MessageDigest.getInstance("MD5");
         try (InputStream inputStream = Files.newInputStream(path) ;
              BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream)) {
-
+            // TODO: file can be too big
             String md5 = Hex.encodeHexString(md.digest(bufferedInputStream.readAllBytes()));
 //            logger.info(String.format("Part hex MD5: '%s'", md5));
             return md5;
