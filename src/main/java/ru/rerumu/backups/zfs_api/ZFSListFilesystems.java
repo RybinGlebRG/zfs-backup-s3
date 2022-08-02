@@ -24,9 +24,8 @@ public class ZFSListFilesystems {
                 )
         );
 
-        processWrapper.setStderrProcessor(logger::error);
-
         processWrapper.run();
+        processWrapper.setStderrProcessor(logger::error);
 
     }
 

@@ -27,8 +27,9 @@ public class ZFSGetDatasetPropertyImpl implements ZFSGetDatasetProperty {
                         "zfs","get","-Hp","-d","0","-t","filesystem,volume","-o","value",propertyName,datasetName
                 )
         );
-        processWrapper.setStderrProcessor(logger::error);
+
         processWrapper.run();
+        processWrapper.setStderrProcessor(logger::error);
     }
 
     @Override

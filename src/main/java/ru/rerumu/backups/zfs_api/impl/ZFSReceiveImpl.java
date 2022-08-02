@@ -22,10 +22,9 @@ public class ZFSReceiveImpl implements ZFSReceive {
                 List.of("zfs", "receive", "-duvF", pool)
         );
 
+        processWrapper.run();
         processWrapper.setStderrProcessor(logger::error);
         processWrapper.setStdinProcessor(logger::debug);
-
-        processWrapper.run();
     }
 
     public BufferedOutputStream getBufferedOutputStream() {

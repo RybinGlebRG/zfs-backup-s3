@@ -31,7 +31,7 @@ class TestZFSSendMultiIncrementalEncrypted {
 
         inOrder.verify(processWrapperFactory)
                 .getProcessWrapper(List.of(
-                        "zfs", "send", "-vpPIw","Test@level0","Test@level1"
+                        "zfs", "send", "-vpPw","-I","Test@level0","Test@level1"
                 ));
 
         inOrder.verify(processWrapper).setStderrProcessor(Mockito.any());

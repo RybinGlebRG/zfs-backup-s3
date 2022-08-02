@@ -43,7 +43,8 @@ public class ZFSFileSystemRepositoryImpl implements ZFSFileSystemRepository {
     private EncryptionProperty getEncryption(String datasetName)
             throws IOException, ExecutionException, InterruptedException {
         String tmp = getProperty("encryption",datasetName);
-        if (tmp.equals("on")){
+        // TODO: test
+        if (List.of("on","aes-128-ccm","aes-192-ccm","aes-256-ccm","aes-128-gcm","aes-192-gcm","aes-256-gcm").contains(tmp)){
             return EncryptionProperty.ON;
         } else if (tmp.equals("off")){
             return EncryptionProperty.OFF;

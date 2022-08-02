@@ -28,12 +28,11 @@ public class ZFSSendMultiIncrementalEncrypted  implements ZFSSend {
 //        setStderrProcessor(logger::debug);
 
         processWrapper = processWrapperFactory.getProcessWrapper(
-                List.of("zfs", "send", "-vpPIw", baseSnapshot.getFullName(), incrementalSnapshot.getFullName())
+                List.of("zfs", "send", "-vpPw", "-I",baseSnapshot.getFullName(), incrementalSnapshot.getFullName())
         );
 
-        processWrapper.setStderrProcessor(logger::error);
-
         processWrapper.run();
+        processWrapper.setStderrProcessor(logger::debug);
     }
 
     @Override

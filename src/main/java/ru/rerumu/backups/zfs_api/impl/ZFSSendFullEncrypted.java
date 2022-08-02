@@ -23,9 +23,8 @@ public class ZFSSendFullEncrypted implements ZFSSend {
                 List.of("zfs","send","-vpPw",fullSnapshot.getFullName())
         );
 
-        processWrapper.setStderrProcessor(logger::error);
-
         processWrapper.run();
+        processWrapper.setStderrProcessor(logger::debug);
     }
 
     @Override

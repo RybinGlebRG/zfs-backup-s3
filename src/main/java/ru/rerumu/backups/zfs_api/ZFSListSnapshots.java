@@ -24,9 +24,8 @@ public class ZFSListSnapshots  {
                 )
         );
 
-        processWrapper.setStderrProcessor(logger::error);
-
         processWrapper.run();
+        processWrapper.setStderrProcessor(logger::error);
     }
 
     public BufferedInputStream getBufferedInputStream() {
