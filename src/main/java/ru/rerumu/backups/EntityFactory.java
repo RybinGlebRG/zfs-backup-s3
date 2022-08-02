@@ -68,7 +68,7 @@ public class EntityFactory {
     public ZFSFileWriterFactory getZFSFileWriterFactory(){
         return new ZFSFileWriterFactoryImpl(
                 Integer.parseInt(configuration.getProperty("chunk.size")),
-                Long.parseLong(configuration.getProperty("max_part_size")));
+                Long.parseLong(configuration.getProperty("max_file_size")));
     }
 
     public SnapshotSenderFactory getSnapshotSenderFactory(
