@@ -20,29 +20,17 @@ public class ZFSFileReaderTrivial implements ZFSFileReader {
     }
 
     @Override
-    public void read() throws IOException, ClassNotFoundException, EOFException {
+    public void read() throws IOException {
         logger.info(String.format("Starting reading from file '%s'", path.toString()));
 
-        try (InputStream inputStream = Files.newInputStream(path);
-             ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)) {
-            logger.info(String.format("Reading file '%s'", path.toString()));
-            while (true) {
-                logger.trace("Reading object from stream");
-                Object object = objectInputStream.readUnshared();
-                if (object instanceof ZFSStreamChunk) {
-                    logger.trace("Trying to cast to ZFSStreamChunk");
-                    ZFSStreamChunk zfsStreamChunk = (ZFSStreamChunk) object;
-
-                    logger.trace("Writing chunk to stream");
-                    bufferedOutputStream.write(zfsStreamChunk.getChunk());
-                    logger.trace("End writing chunk to stream");
-                } else {
-                    logger.error("Object is not instance of ZFSStreamChunk");
-                    throw new IOException();
-                }
-
+        try(InputStream inputStream = Files.newInputStream(path);
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream)) {
+            int len;
+            byte[] buf = new byte[8192];
+            while((len=bufferedInputStream.read(buf))!=-1){
+                bufferedOutputStream.write(buf,0,len);
             }
-
         }
+
     }
 }

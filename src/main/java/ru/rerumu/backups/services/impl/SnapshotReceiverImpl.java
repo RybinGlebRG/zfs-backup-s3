@@ -65,12 +65,11 @@ public class SnapshotReceiverImpl implements SnapshotReceiver {
         }
         logger.info(String.format("Got next stream - %s", nextStream.toString()));
         ZFSFileReader zfsFileReader = zfsFileReaderFactory.getZFSFileReader(zfsReceive.getBufferedOutputStream(), nextStream.getFullPath());
-        try {
-            zfsFileReader.read();
-        } catch (EOFException e) {
-            logger.info(String.format("End of file '%s'", nextStream.getFullPath().toString()));
-            previousStream = nextStream;
-        }
+
+        zfsFileReader.read();
+        logger.info(String.format("End of file '%s'", nextStream.getFullPath().toString()));
+        previousStream = nextStream;
+
     }
 
     @Override

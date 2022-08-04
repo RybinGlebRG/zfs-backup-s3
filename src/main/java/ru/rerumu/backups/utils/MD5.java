@@ -16,7 +16,7 @@ import java.security.NoSuchAlgorithmException;
 
 public class MD5 {
 
-//    private final Logger logger = LoggerFactory.getLogger(AbstractS3Manager.class);
+    private static final Logger logger = LoggerFactory.getLogger(MD5.class);
 
     public static String getMD5Hex(byte[] bytes)
             throws NoSuchAlgorithmException,
@@ -58,9 +58,13 @@ public class MD5 {
         MessageDigest md = MessageDigest.getInstance("MD5");
         try (InputStream inputStream = Files.newInputStream(path) ;
              BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream)) {
-            // TODO: file can be too big
-            String md5 = Hex.encodeHexString(md.digest(bufferedInputStream.readAllBytes()));
-//            logger.info(String.format("Part hex MD5: '%s'", md5));
+            byte[] buf = new byte[8192];
+            int len;
+            while((len= bufferedInputStream.read(buf))!=-1){
+                md.update(buf,0,len);
+            }
+            String md5 = Hex.encodeHexString(md.digest());
+            logger.info(String.format("Part hex MD5: '%s'", md5));
             return md5;
 
         }

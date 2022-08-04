@@ -8,16 +8,14 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 public class ZFSFileWriterFactoryImpl implements ZFSFileWriterFactory {
-    private final int chunkSize;
     private final long filePartSize;
 
-    public ZFSFileWriterFactoryImpl(int chunkSize, long filePartSize) {
-        this.chunkSize = chunkSize;
+    public ZFSFileWriterFactoryImpl(long filePartSize) {
         this.filePartSize = filePartSize;
     }
 
     @Override
     public ZFSFileWriter getZFSFileWriter(Path path) throws IOException {
-        return new ZFSFileWriterTrivial(chunkSize, filePartSize, path);
+        return new ZFSFileWriterTrivial(filePartSize, path);
     }
 }

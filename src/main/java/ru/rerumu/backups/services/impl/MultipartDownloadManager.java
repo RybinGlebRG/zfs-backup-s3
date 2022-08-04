@@ -95,18 +95,8 @@ public class MultipartDownloadManager extends AbstractS3Manager {
         logger.debug("Finished loading range");
     }
 
-    // TODO: Concatenation should not work
     private void finish() throws NoSuchAlgorithmException, IOException, IncorrectHashException {
-        String md5;
-        if (storedMd5Hex.contains("-")) {
-            byte[] concatenatedMd5 = new byte[0];
-            for (byte[] bytes : md5List) {
-                concatenatedMd5 = ArrayUtils.addAll(concatenatedMd5, bytes);
-            }
-            md5 = getMD5Hex(concatenatedMd5)+"-" + md5List.size();
-        } else {
-            md5=MD5.getMD5Hex(path);
-        }
+        String md5 = MD5.getMD5Hex(path);
 
         logger.info(String.format("Calculated md5='%s'", md5));
         logger.info(String.format("Stored md5='%s'", storedMd5Hex));

@@ -43,7 +43,6 @@ class TestSnapshotReceiverImpl {
     void shouldReceiveOne() throws Exception {
         Mockito.when(zfsFileReaderFactory.getZFSFileReader(Mockito.any(),Mockito.any())).thenReturn(zfsFileReader);
         Mockito.when(zfsProcessFactory.getZFSReceive(Mockito.any())).thenReturn(zfsReceive);
-        Mockito.doThrow(new EOFException()).when(zfsFileReader).read();
 
         SnapshotReceiver snapshotReceiver = new SnapshotReceiverImpl(
                 zfsProcessFactory,
@@ -69,16 +68,9 @@ class TestSnapshotReceiverImpl {
     }
 
     @Test
-    void shouldReceiveTwo() throws CompressorException, IOException, ClassNotFoundException, EncryptException, IncorrectFilePartNameException, InterruptedException, ExecutionException {
-//        ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
-//        ZFSPool zfsPool = Mockito.mock(ZFSPool.class);
-//        ZFSFileReaderFactory zfsFileReaderFactory = Mockito.mock(ZFSFileReaderFactory.class);
-//        ZFSFileReader zfsFileReader = Mockito.mock(ZFSFileReader.class);
-//        ZFSReceive zfsReceive = Mockito.mock(ZFSReceive.class);
-
+    void shouldReceiveTwo() throws Exception {
         Mockito.when(zfsFileReaderFactory.getZFSFileReader(Mockito.any(),Mockito.any())).thenReturn(zfsFileReader);
         Mockito.when(zfsProcessFactory.getZFSReceive(Mockito.any())).thenReturn(zfsReceive);
-        Mockito.doThrow(new EOFException()).when(zfsFileReader).read();
 
         SnapshotReceiver snapshotReceiver = new SnapshotReceiverImpl(
                 zfsProcessFactory,
@@ -112,16 +104,9 @@ class TestSnapshotReceiverImpl {
     }
 
     @Test
-    void shouldReceiveMultipart() throws CompressorException, IOException, ClassNotFoundException, EncryptException, IncorrectFilePartNameException, InterruptedException, ExecutionException {
-//        ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
-//        ZFSPool zfsPool = Mockito.mock(ZFSPool.class);
-//        ZFSFileReaderFactory zfsFileReaderFactory = Mockito.mock(ZFSFileReaderFactory.class);
-//        ZFSFileReader zfsFileReader = Mockito.mock(ZFSFileReader.class);
-//        ZFSReceive zfsReceive = Mockito.mock(ZFSReceive.class);
-
+    void shouldReceiveMultipart() throws Exception {
         Mockito.when(zfsFileReaderFactory.getZFSFileReader(Mockito.any(),Mockito.any())).thenReturn(zfsFileReader);
         Mockito.when(zfsProcessFactory.getZFSReceive(Mockito.any())).thenReturn(zfsReceive);
-        Mockito.doThrow(new EOFException()).when(zfsFileReader).read();
 
         SnapshotReceiver snapshotReceiver = new SnapshotReceiverImpl(
                 zfsProcessFactory,

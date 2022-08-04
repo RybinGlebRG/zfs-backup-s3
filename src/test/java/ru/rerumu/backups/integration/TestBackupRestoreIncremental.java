@@ -179,7 +179,6 @@ public class TestBackupRestoreIncremental {
         ZFSSnapshotRepository zfsSnapshotRepository = new ZFSSnapshotRepositoryImpl(zfsProcessFactory);
         ZFSFileSystemRepository zfsFileSystemRepository = new ZFSFileSystemRepositoryImpl(zfsProcessFactory, zfsSnapshotRepository);
         ZFSFileWriterFactory zfsFileWriterFactory = new ZFSFileWriterFactoryImpl(
-                1_000_000,
                 6_000_000);
         SnapshotSenderFactory snapshotSenderFactory = new SnapshotSenderFactoryImpl(
                 localBackupRepository,
