@@ -17,7 +17,7 @@ public class BackupController {
         this.zfsBackupService = zfsBackupService;
     }
 
-    public void backupFull(
+    public int backupFull(
             String fullSnapshot){
         try {
             logger.info("Start 'sendFull'");
@@ -27,10 +27,33 @@ public class BackupController {
                     targetSnapshot.getName(),
                     targetSnapshot.getDataset()
             );
+            return 0;
 
-            // TODO: Kill processes and threads if exception
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
+            return 1;
+        }
+    }
+
+    public int backupIncremental(
+            String baseSnapshotName,
+            String targetSnapshotName
+    ){
+        try {
+            logger.info("Starting incremental backup");
+
+            Snapshot baseSnapshot = new Snapshot(baseSnapshotName);
+            Snapshot targetSnapshot = new Snapshot(targetSnapshotName);
+            zfsBackupService.zfsBackupIncremental(
+                    baseSnapshot.getDataset(),
+                    baseSnapshot.getName(),
+                    targetSnapshot.getName()
+            );
+            return 0;
+
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return 1;
         }
     }
 }

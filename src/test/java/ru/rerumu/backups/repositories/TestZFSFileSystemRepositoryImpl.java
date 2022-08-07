@@ -4,10 +4,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import ru.rerumu.backups.models.Snapshot;
-import ru.rerumu.backups.models.ZFSFileSystem;
+import ru.rerumu.backups.models.ZFSDataset;
+import ru.rerumu.backups.models.zfs_dataset_properties.EncryptionProperty;
 import ru.rerumu.backups.repositories.impl.ZFSFileSystemRepositoryImpl;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
 import ru.rerumu.backups.zfs_api.ProcessWrapper;
+import ru.rerumu.backups.zfs_api.ZFSGetDatasetProperty;
+import ru.rerumu.backups.zfs_api.ZFSListFilesystems;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -23,17 +26,38 @@ public class TestZFSFileSystemRepositoryImpl {
     void shouldGetFileSystems() throws IOException, InterruptedException, ExecutionException {
         ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
         ZFSSnapshotRepository zfsSnapshotRepository = Mockito.mock(ZFSSnapshotRepository.class);
-        ProcessWrapper zfsListFilesystems = Mockito.mock(ProcessWrapper.class);
+        ZFSListFilesystems zfsListFilesystems = Mockito.mock(ZFSListFilesystems.class);
+        ZFSGetDatasetProperty zfsProperty = Mockito.mock(ZFSGetDatasetProperty.class);
 
+        // Datasets
         Mockito.when(zfsProcessFactory.getZFSListFilesystems("ExternalPool/Applications"))
                 .thenReturn(zfsListFilesystems);
         Mockito.when(zfsListFilesystems.getBufferedInputStream())
                 .thenAnswer(invocationOnMock -> {
-                    String tmp =  "ExternalPool/Applications"+"\n"
-                            +"ExternalPool/Applications/virtual_box"+"\n";
+                    String tmp = "ExternalPool/Applications" + "\n"
+                            + "ExternalPool/Applications/virtual_box" + "\n";
                     byte[] buf = tmp.getBytes(StandardCharsets.UTF_8);
                     return new BufferedInputStream(new ByteArrayInputStream(buf));
                 });
+
+        // Properties
+        Mockito.when(zfsProcessFactory.getZFSGetDatasetProperty(
+                "ExternalPool/Applications", "encryption"
+                ))
+                .thenReturn(zfsProperty);
+        Mockito.when(zfsProcessFactory.getZFSGetDatasetProperty(
+                                "ExternalPool/Applications/virtual_box",
+                                "encryption"
+                ))
+                .thenReturn(zfsProperty);
+        Mockito.when(zfsProperty.getBufferedInputStream())
+                .thenAnswer(invocationOnMock -> {
+                    String tmp = "on" + "\n";
+                    byte[] buf = tmp.getBytes(StandardCharsets.UTF_8);
+                    return new BufferedInputStream(new ByteArrayInputStream(buf));
+                });
+
+        // Snapshots
         Mockito.when(zfsSnapshotRepository.getAllSnapshotsOrdered("ExternalPool/Applications"))
                 .thenAnswer(invocationOnMock -> {
                     List<Snapshot> snapshotList = new ArrayList<>();
@@ -55,8 +79,7 @@ public class TestZFSFileSystemRepositoryImpl {
                 zfsProcessFactory,
                 zfsSnapshotRepository);
 
-        List<ZFSFileSystem> zfsFileSystemList = zfsFileSystemRepository.getFilesystemsTreeList("ExternalPool/Applications");
-
+        List<ZFSDataset> zfsDatasetList = zfsFileSystemRepository.getFilesystemsTreeList("ExternalPool/Applications");
 
 
         List<Snapshot> src1 = new ArrayList<>();
@@ -69,11 +92,143 @@ public class TestZFSFileSystemRepositoryImpl {
         src2.add(new Snapshot("ExternalPool/Applications@auto-20210106-060000"));
         src2.add(new Snapshot("ExternalPool/Applications@auto-20210106-150000"));
 
-        List<ZFSFileSystem> src = new ArrayList<>();
-        src.add(new ZFSFileSystem("ExternalPool/Applications",src2));
-        src.add(new ZFSFileSystem("ExternalPool/Applications/virtual_box",src1));
+        List<ZFSDataset> src = new ArrayList<>();
+        src.add(new ZFSDataset("ExternalPool/Applications", src2, EncryptionProperty.ON));
+        src.add(new ZFSDataset("ExternalPool/Applications/virtual_box", src1, EncryptionProperty.ON));
 
 
-        Assertions.assertEquals(src,zfsFileSystemList);
+        Assertions.assertEquals(src, zfsDatasetList);
+    }
+
+    @Test
+    void shouldReadPropertyEncryptionOff() throws Exception{
+        ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
+        ZFSSnapshotRepository zfsSnapshotRepository = Mockito.mock(ZFSSnapshotRepository.class);
+        ZFSListFilesystems zfsListFilesystems = Mockito.mock(ZFSListFilesystems.class);
+        ZFSGetDatasetProperty zfsProperty = Mockito.mock(ZFSGetDatasetProperty.class);
+
+        // Datasets
+        Mockito.when(zfsProcessFactory.getZFSListFilesystems("ExternalPool/Applications"))
+                .thenReturn(zfsListFilesystems);
+        Mockito.when(zfsListFilesystems.getBufferedInputStream())
+                .thenAnswer(invocationOnMock -> {
+                    String tmp = "ExternalPool/Applications" + "\n";
+                    byte[] buf = tmp.getBytes(StandardCharsets.UTF_8);
+                    return new BufferedInputStream(new ByteArrayInputStream(buf));
+                });
+
+        // Properties
+        Mockito.when(zfsProcessFactory.getZFSGetDatasetProperty(
+                        "ExternalPool/Applications", "encryption"
+                ))
+                .thenReturn(zfsProperty);
+
+        Mockito.when(zfsProperty.getBufferedInputStream())
+                .thenAnswer(invocationOnMock -> {
+                    String tmp = "off" + "\n";
+                    byte[] buf = tmp.getBytes(StandardCharsets.UTF_8);
+                    return new BufferedInputStream(new ByteArrayInputStream(buf));
+                });
+
+        // Snapshots
+        Mockito.when(zfsSnapshotRepository.getAllSnapshotsOrdered("ExternalPool/Applications"))
+                .thenReturn(new ArrayList<>());
+
+        ZFSFileSystemRepository zfsFileSystemRepository = new ZFSFileSystemRepositoryImpl(
+                zfsProcessFactory,
+                zfsSnapshotRepository);
+        List<ZFSDataset> zfsDatasetList = zfsFileSystemRepository.getFilesystemsTreeList("ExternalPool/Applications");
+
+        Assertions.assertEquals(1,zfsDatasetList.size());
+        Assertions.assertFalse(zfsDatasetList.get(0).isEncryptionEnabled());
+
+    }
+
+    @Test
+    void shouldReadPropertyEncryptionOn() throws Exception{
+        ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
+        ZFSSnapshotRepository zfsSnapshotRepository = Mockito.mock(ZFSSnapshotRepository.class);
+        ZFSListFilesystems zfsListFilesystems = Mockito.mock(ZFSListFilesystems.class);
+        ZFSGetDatasetProperty zfsProperty = Mockito.mock(ZFSGetDatasetProperty.class);
+
+        // Datasets
+        Mockito.when(zfsProcessFactory.getZFSListFilesystems("ExternalPool/Applications"))
+                .thenReturn(zfsListFilesystems);
+        Mockito.when(zfsListFilesystems.getBufferedInputStream())
+                .thenAnswer(invocationOnMock -> {
+                    String tmp = "ExternalPool/Applications" + "\n";
+                    byte[] buf = tmp.getBytes(StandardCharsets.UTF_8);
+                    return new BufferedInputStream(new ByteArrayInputStream(buf));
+                });
+
+        // Properties
+        Mockito.when(zfsProcessFactory.getZFSGetDatasetProperty(
+                        "ExternalPool/Applications", "encryption"
+                ))
+                .thenReturn(zfsProperty);
+
+        Mockito.when(zfsProperty.getBufferedInputStream())
+                .thenAnswer(invocationOnMock -> {
+                    String tmp = "on" + "\n";
+                    byte[] buf = tmp.getBytes(StandardCharsets.UTF_8);
+                    return new BufferedInputStream(new ByteArrayInputStream(buf));
+                });
+
+        // Snapshots
+        Mockito.when(zfsSnapshotRepository.getAllSnapshotsOrdered("ExternalPool/Applications"))
+                .thenReturn(new ArrayList<>());
+
+        ZFSFileSystemRepository zfsFileSystemRepository = new ZFSFileSystemRepositoryImpl(
+                zfsProcessFactory,
+                zfsSnapshotRepository);
+        List<ZFSDataset> zfsDatasetList = zfsFileSystemRepository.getFilesystemsTreeList("ExternalPool/Applications");
+
+        Assertions.assertEquals(1,zfsDatasetList.size());
+        Assertions.assertTrue(zfsDatasetList.get(0).isEncryptionEnabled());
+
+    }
+
+    @Test
+    void shouldReadPropertyEncryptionException() throws Exception{
+        ZFSProcessFactory zfsProcessFactory = Mockito.mock(ZFSProcessFactory.class);
+        ZFSSnapshotRepository zfsSnapshotRepository = Mockito.mock(ZFSSnapshotRepository.class);
+        ZFSListFilesystems zfsListFilesystems = Mockito.mock(ZFSListFilesystems.class);
+        ZFSGetDatasetProperty zfsProperty = Mockito.mock(ZFSGetDatasetProperty.class);
+
+        // Datasets
+        Mockito.when(zfsProcessFactory.getZFSListFilesystems("ExternalPool/Applications"))
+                .thenReturn(zfsListFilesystems);
+        Mockito.when(zfsListFilesystems.getBufferedInputStream())
+                .thenAnswer(invocationOnMock -> {
+                    String tmp = "ExternalPool/Applications" + "\n";
+                    byte[] buf = tmp.getBytes(StandardCharsets.UTF_8);
+                    return new BufferedInputStream(new ByteArrayInputStream(buf));
+                });
+
+        // Properties
+        Mockito.when(zfsProcessFactory.getZFSGetDatasetProperty(
+                        "ExternalPool/Applications", "encryption"
+                ))
+                .thenReturn(zfsProperty);
+
+        Mockito.when(zfsProperty.getBufferedInputStream())
+                .thenAnswer(invocationOnMock -> {
+                    String tmp = "other" + "\n";
+                    byte[] buf = tmp.getBytes(StandardCharsets.UTF_8);
+                    return new BufferedInputStream(new ByteArrayInputStream(buf));
+                });
+
+        // Snapshots
+        Mockito.when(zfsSnapshotRepository.getAllSnapshotsOrdered("ExternalPool/Applications"))
+                .thenReturn(new ArrayList<>());
+
+        ZFSFileSystemRepository zfsFileSystemRepository = new ZFSFileSystemRepositoryImpl(
+                zfsProcessFactory,
+                zfsSnapshotRepository);
+
+        Assertions.assertThrows(IllegalArgumentException.class,()->{
+            zfsFileSystemRepository.getFilesystemsTreeList("ExternalPool/Applications");
+        });
+
     }
 }

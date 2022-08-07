@@ -2,98 +2,108 @@ package ru.rerumu.backups.repositories.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.backups.exceptions.IncorrectHashException;
-import ru.rerumu.backups.exceptions.S3MissesFileException;
+import ru.rerumu.backups.exceptions.*;
+import ru.rerumu.backups.factories.S3ClientFactory;
+import ru.rerumu.backups.factories.S3ManagerFactory;
 import ru.rerumu.backups.models.S3Storage;
+import ru.rerumu.backups.models.meta.PartMeta;
 import ru.rerumu.backups.repositories.RemoteBackupRepository;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import ru.rerumu.backups.services.S3Manager;
+import ru.rerumu.backups.services.impl.ListManager;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectResponse;
-import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
-import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
-import software.amazon.awssdk.services.s3.model.S3Object;
-import org.apache.commons.codec.binary.Hex;
 
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 public class S3Repository implements RemoteBackupRepository {
 
-    private final List<S3Storage> storages;
     private final Logger logger = LoggerFactory.getLogger(S3Repository.class);
+    private final S3ManagerFactory s3ManagerFactory;
+    private final S3ClientFactory s3ClientFactory;
+    private final S3Storage s3Storage;
 
-    public S3Repository(final List<S3Storage> s3Storages) {
-        this.storages = s3Storages;
+    public S3Repository(
+            final List<S3Storage> s3Storages,
+            S3ManagerFactory S3ManagerFactory,
+            S3ClientFactory s3ClientFactory) {
+        this.s3ManagerFactory = S3ManagerFactory;
+        this.s3ClientFactory = s3ClientFactory;
+        this.s3Storage = s3Storages.get(0);
     }
 
-    private String getMD5(final Path path)
-            throws NoSuchAlgorithmException,
-            IOException {
-        MessageDigest md = MessageDigest.getInstance("MD5");
-        try (InputStream inputStream = Files.newInputStream(path);
-             BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream)) {
-            String md5 = '"' + Hex.encodeHexString(md.digest(bufferedInputStream.readAllBytes())) + '"';
-            logger.info(String.format("Hex MD5: '%s'", md5));
-            return md5;
-        }
-    }
-
-    private void upload(final String datasetName, final Path path)
+    private void upload(Path path, String key)
             throws
             IOException,
             NoSuchAlgorithmException,
             IncorrectHashException {
-        if (storages.size()==0){
-            throw new IllegalArgumentException();
-        }
-        for (S3Storage s3Storage : storages) {
-            logger.info(String.format("Uploading file %s", path.toString()));
-            String key = s3Storage.getPrefix().toString() + "/" + datasetName + "/" + path.getFileName().toString();
-            logger.info(String.format("Target: %s", key));
-            String md5 = getMD5(path);
 
+        logger.info(String.format("Uploading file %s", path.toString()));
+        logger.info(String.format("Target: %s", key));
 
-            S3Client s3Client = S3Client.builder()
-                    .region(s3Storage.getRegion())
-                    .endpointOverride(s3Storage.getEndpoint())
-                    .credentialsProvider(StaticCredentialsProvider.create(s3Storage.getCredentials()))
-                    .build();
+        try (S3Client s3Client = s3ClientFactory.getS3Client(s3Storage);
+             BufferedInputStream bufferedInputStream = new BufferedInputStream(Files.newInputStream(path))) {
 
-            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                    .bucket(s3Storage.getBucketName())
-                    .key(key)
-                    .storageClass(s3Storage.getStorageClass())
-                    .build();
+            S3Manager s3Manager = s3ManagerFactory.getUploadManager(
+                    bufferedInputStream,
+                    Files.size(path),
+                    s3Storage,
+                    key,
+                    s3Client
+            );
+            s3Manager.run();
 
-            PutObjectResponse putObjectResponse = s3Client.putObject(putObjectRequest, path);
-            String eTag = putObjectResponse.eTag();
-            logger.info(String.format("Uploaded file '%s'", path.toString()));
-            logger.info(String.format("ETag='%s'", eTag));
-            if (!(eTag.equals(md5))) {
-                throw new IncorrectHashException();
-            }
         }
     }
 
+    private void download(String key, Path target) throws IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
+        if (!isFileExists(key)){
+            throw new S3MissesFileException();
+        }
+        try (S3Client s3Client = s3ClientFactory.getS3Client(s3Storage);) {
+
+            S3Manager s3Manager = s3ManagerFactory.getDownloadManager(s3Storage,key,s3Client,target);
+            s3Manager.run();
+
+        }
+    }
+
+    private void download(String key, Path target, String storedMd5Hex) throws IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException {
+        if (!isFileExists(key)){
+            throw new S3MissesFileException();
+        }
+        try (S3Client s3Client = s3ClientFactory.getS3Client(s3Storage);) {
+
+            S3Manager s3Manager = s3ManagerFactory.getDownloadManager(s3Storage,key,s3Client,target,storedMd5Hex);
+            s3Manager.run();
+
+        }
+    }
+
+    private boolean isFileExists(String key) throws IOException, NoSuchAlgorithmException, IncorrectHashException {
+        try(S3Client s3Client = s3ClientFactory.getS3Client(s3Storage)){
+            ListManager listManager = s3ManagerFactory.getListManager(s3Storage,key,s3Client);
+            listManager.run();
+        } catch (S3MissesFileException e ){
+            return false;
+        }
+        return true;
+    }
+
     @Override
-    public void add(final String datasetName, final Path path)
+    public void add(String prefix, Path path)
             throws
             IOException,
             NoSuchAlgorithmException,
             IncorrectHashException,
             S3MissesFileException {
-        upload(datasetName, path);
+        String key = s3Storage.getPrefix().toString() + "/" + prefix + path.getFileName().toString();
+        upload(path, key);
         logger.info(String.format("Checking sent file '%s'", path.getFileName().toString()));
-        if (!isFileExists(datasetName, path.getFileName().toString())) {
+        if (!isFileExists(key)) {
             logger.error(String.format("File '%s' not found on S3", path.getFileName().toString()));
             throw new S3MissesFileException();
         }
@@ -101,39 +111,49 @@ public class S3Repository implements RemoteBackupRepository {
     }
 
     @Override
-    public boolean isFileExists(final String datasetName, final String filename) {
-
-        for (S3Storage s3Storage : storages) {
-            S3Client s3Client = S3Client.builder()
-                    .region(s3Storage.getRegion())
-                    .endpointOverride(s3Storage.getEndpoint())
-                    .credentialsProvider(StaticCredentialsProvider.create(s3Storage.getCredentials()))
-                    .build();
-
-            String prefix = s3Storage.getPrefix().toString() + "/" + datasetName + "/" + filename;
-
-            ListObjectsRequest listObjects = ListObjectsRequest.builder()
-                    .bucket(s3Storage.getBucketName())
-                    .prefix(prefix)
-                    .build();
-
-            ListObjectsResponse res = s3Client.listObjects(listObjects);
-            List<S3Object> s3Objects = res.contents();
-            logger.info(String.format("Found on S3:\n'%s'", s3Objects));
-
-            if (s3Objects.size() > 1) {
-                throw new IllegalArgumentException();
-            }
-
-            for (S3Object s3Object : s3Objects) {
-                String tmp = Paths.get(s3Object.key()).getFileName().toString();
-                if (tmp.equals(filename)) {
-                    return true;
-                }
-            }
-
+    public Path getPart(String datasetName, String partName, Path targetDir, PartMeta partMeta)
+            throws IOException, NoSuchAlgorithmException, IncorrectHashException, NoPartFoundException {
+        String key = s3Storage.getPrefix().toString() + "/" + datasetName + "/" + partName;
+        Path path = targetDir.resolve(partName);
+        try {
+            download(key, path, partMeta.getMd5Hex());
+        } catch (S3MissesFileException e){
+            logger.warn(String.format("Part '%s' of dataset '%s' not found on s3",partName,datasetName));
+            throw new NoPartFoundException();
         }
-        return false;
+        return path;
+    }
+
+    @Override
+    public Path getBackupMeta(Path targetDir)
+            throws IOException, NoSuchAlgorithmException, IncorrectHashException, NoBackupMetaException {
+        Path path = targetDir.resolve("_meta.json");
+        try {
+            download(s3Storage.getPrefix()+"/_meta.json",path);
+        } catch (S3MissesFileException e){
+            logger.warn("Backup meta is not found on S3");
+            throw new NoBackupMetaException();
+        }
+        return path;
+    }
+
+    @Override
+    public Path getDatasetMeta(String datasetName, Path targetDir) throws IOException, NoSuchAlgorithmException, IncorrectHashException, NoDatasetMetaException {
+        Path path = targetDir.resolve("_meta.json");
+        try {
+            download(s3Storage.getPrefix()+"/"+datasetName+"/_meta.json",path);
+        } catch (S3MissesFileException e){
+            logger.warn(String.format("Metadata for dataset '%s' not found on S3",datasetName));
+            throw new NoDatasetMetaException();
+        }
+        return path;
+    }
+
+    @Override
+    public boolean isFileExists(final String datasetName, final String filename) throws IOException, NoSuchAlgorithmException, IncorrectHashException {
+        String key = s3Storage.getPrefix().toString() + "/" + datasetName + "/" + filename;
+
+        return isFileExists(key);
     }
 
 }

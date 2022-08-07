@@ -3,11 +3,13 @@ package ru.rerumu.backups.repositories.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.models.Snapshot;
-import ru.rerumu.backups.models.ZFSFileSystem;
+import ru.rerumu.backups.models.ZFSDataset;
+import ru.rerumu.backups.models.zfs_dataset_properties.EncryptionProperty;
 import ru.rerumu.backups.repositories.ZFSFileSystemRepository;
 import ru.rerumu.backups.repositories.ZFSSnapshotRepository;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
-import ru.rerumu.backups.zfs_api.ProcessWrapper;
+import ru.rerumu.backups.zfs_api.ZFSGetDatasetProperty;
+import ru.rerumu.backups.zfs_api.ZFSListFilesystems;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -27,9 +29,42 @@ public class ZFSFileSystemRepositoryImpl implements ZFSFileSystemRepository {
         this.zfsSnapshotRepository = zfsSnapshotRepository;
     }
 
+    private String getProperty(String propertyName, String datasetName)
+            throws IOException,
+            ExecutionException,
+            InterruptedException {
+        ZFSGetDatasetProperty process = zfsProcessFactory.getZFSGetDatasetProperty(datasetName,propertyName);
+        byte[] buf = process.getBufferedInputStream().readAllBytes();
+        process.close();
+
+        return (new String(buf, StandardCharsets.UTF_8)).strip();
+    }
+
+    private EncryptionProperty getEncryption(String datasetName)
+            throws IOException, ExecutionException, InterruptedException {
+        String tmp = getProperty("encryption",datasetName);
+        if (List.of("on","aes-128-ccm","aes-192-ccm","aes-256-ccm","aes-128-gcm","aes-192-gcm","aes-256-gcm").contains(tmp)){
+            return EncryptionProperty.ON;
+        } else if (tmp.equals("off")){
+            return EncryptionProperty.OFF;
+        } else {
+            throw new IllegalArgumentException();
+        }
+    }
+
+//    private CompressionProperty getCompression(String datasetName)
+//            throws IOException, ExecutionException, InterruptedException {
+//        String tmp = getProperty("compression",datasetName);
+//        if (tmp.equals("lz4")){
+//            return CompressionProperty.LZ4;
+//        } else {
+//            throw new IllegalArgumentException();
+//        }
+//    }
+
     @Override
-    public List<ZFSFileSystem> getFilesystemsTreeList(String fileSystemName) throws IOException, InterruptedException, ExecutionException {
-        ProcessWrapper zfsListFilesystems = zfsProcessFactory.getZFSListFilesystems(fileSystemName);
+    public List<ZFSDataset> getFilesystemsTreeList(String fileSystemName) throws IOException, InterruptedException, ExecutionException {
+        ZFSListFilesystems zfsListFilesystems = zfsProcessFactory.getZFSListFilesystems(fileSystemName);
         byte[] buf = zfsListFilesystems.getBufferedInputStream().readAllBytes();
         zfsListFilesystems.close();
 
@@ -37,16 +72,18 @@ public class ZFSFileSystemRepositoryImpl implements ZFSFileSystemRepository {
         logger.debug(String.format("Got filesystems: \n%s",str));
         String[] lines = str.split("\\n");
 
-        List<ZFSFileSystem> zfsFileSystemList = new ArrayList<>();
+        List<ZFSDataset> zfsDatasetList = new ArrayList<>();
 
         // Already sorted
         for (String line: lines){
+            line = line.strip();
             logger.debug(String.format("Getting snapshots for filesystem '%s'",line));
             List<Snapshot> snapshotList = zfsSnapshotRepository.getAllSnapshotsOrdered(line);
             logger.debug(String.format("Got snapshots: \n%s",snapshotList));
-            zfsFileSystemList.add(new ZFSFileSystem(line,snapshotList));
+            ZFSDataset zfsDataset = new ZFSDataset(line,snapshotList,getEncryption(line));
+            zfsDatasetList.add(zfsDataset);
         }
 
-        return zfsFileSystemList;
+        return zfsDatasetList;
     }
 }

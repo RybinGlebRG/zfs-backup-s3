@@ -4,51 +4,60 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.*;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
-import ru.rerumu.backups.repositories.FilePartRepository;
+import ru.rerumu.backups.repositories.LocalBackupRepository;
+import ru.rerumu.backups.repositories.RemoteBackupRepository;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class ZFSRestoreService {
 
-    private final String password;
     private final Logger logger = LoggerFactory.getLogger(ZFSRestoreService.class);
-    private final ZFSProcessFactory zfsProcessFactory;
-    private final boolean isDelete;
-    private final FilePartRepository filePartRepository;
+    private final LocalBackupRepository localBackupRepository;
     private final SnapshotReceiver snapshotReceiver;
+    private final List<String> datasetList;
 
-    public ZFSRestoreService(String password,
-                             ZFSProcessFactory zfsProcessFactory,
-                             boolean isDelete,
-                             FilePartRepository filePartRepository,
-                             SnapshotReceiver snapshotReceiver) {
-        this.password = password;
-        this.zfsProcessFactory = zfsProcessFactory;
-        this.isDelete = isDelete;
-        this.filePartRepository = filePartRepository;
+    public ZFSRestoreService(LocalBackupRepository localBackupRepository,
+                             SnapshotReceiver snapshotReceiver,
+                             List<String> datasetList) {
+        this.localBackupRepository = localBackupRepository;
         this.snapshotReceiver = snapshotReceiver;
+        this.datasetList = datasetList;
     }
 
-    public void zfsReceive() throws FinishedFlagException, NoMorePartsException, IOException, TooManyPartsException, IncorrectFilePartNameException, CompressorException, ClassNotFoundException, EncryptException, InterruptedException, ExecutionException {
+    public void zfsReceive()
+            throws FinishedFlagException,
+            NoMorePartsException,
+            IOException,
+            TooManyPartsException,
+            IncorrectFilePartNameException,
+            CompressorException,
+            ClassNotFoundException,
+            EncryptException,
+            InterruptedException,
+            ExecutionException,
+            NoSuchAlgorithmException,
+            IncorrectHashException, NoPartFoundException {
+        List<String> datasets = localBackupRepository.getDatasets();
 
+        for (String datasetName : datasetList) {
+            if (!datasets.contains(datasetName)) {
+                throw new IllegalArgumentException();
+            }
+        }
         try {
-            while (true) {
-                try {
-                    Path nextPath = filePartRepository.getNextInputPath();
-                    snapshotReceiver.receiveSnapshotPart(nextPath);
-                } catch (NoMorePartsException e) {
-                    logger.debug("No acceptable files found. Waiting 1 second before retry");
-                    Thread.sleep(1000);
-                } catch (FinishedFlagException e) {
-                    logger.info("Finish flag found. Exiting loop");
-                    break;
+            for (String datasetName : datasetList) {
+                for (String partName : localBackupRepository.getParts(datasetName)) {
+                    Path path = localBackupRepository.getPart(datasetName, partName);
+                    snapshotReceiver.receiveSnapshotPart(path);
                 }
             }
         } finally {
             snapshotReceiver.finish();
         }
-
     }
 }

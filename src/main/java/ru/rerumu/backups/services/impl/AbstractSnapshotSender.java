@@ -6,7 +6,7 @@ import ru.rerumu.backups.exceptions.*;
 import ru.rerumu.backups.factories.ZFSFileWriterFactory;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
 import ru.rerumu.backups.models.Snapshot;
-import ru.rerumu.backups.repositories.FilePartRepository;
+import ru.rerumu.backups.repositories.LocalBackupRepository;
 import ru.rerumu.backups.repositories.RemoteBackupRepository;
 import ru.rerumu.backups.services.SnapshotSender;
 import ru.rerumu.backups.services.ZFSFileWriter;
@@ -22,50 +22,25 @@ import java.util.concurrent.ExecutionException;
 public abstract class AbstractSnapshotSender implements SnapshotSender {
     private final Logger logger = LoggerFactory.getLogger(AbstractSnapshotSender.class);
 
-    protected final FilePartRepository filePartRepository;
-    protected final RemoteBackupRepository remoteBackupRepository;
+    protected final LocalBackupRepository localBackupRepository;
     protected final ZFSProcessFactory zfsProcessFactory;
     protected final ZFSFileWriterFactory zfsFileWriterFactory;
-    protected final boolean isLoadS3;
+    private final Path tempDir;
 
     public AbstractSnapshotSender(
-            FilePartRepository filePartRepository,
-            RemoteBackupRepository remoteBackupRepository,
+            LocalBackupRepository localBackupRepository,
             ZFSProcessFactory zfsProcessFactory,
             ZFSFileWriterFactory zfsFileWriterFactory,
-            boolean isLoadS3
+            Path tempDir
     ) {
-        this.filePartRepository = filePartRepository;
-        this.remoteBackupRepository = remoteBackupRepository;
+        this.localBackupRepository = localBackupRepository;
         this.zfsProcessFactory = zfsProcessFactory;
         this.zfsFileWriterFactory = zfsFileWriterFactory;
-        this.isLoadS3 = isLoadS3;
+        this.tempDir =tempDir;
     }
 
     private String escapeSymbols(final String srcString) {
         return srcString.replace('/', '-');
-    }
-
-    private void processCreatedFile(
-            final String datasetName,
-            final Path path
-    )
-            throws IOException,
-            InterruptedException,
-            NoSuchAlgorithmException,
-            IncorrectHashException,
-            S3MissesFileException {
-        if (isLoadS3) {
-            remoteBackupRepository.add(datasetName, path);
-            filePartRepository.delete(path);
-        } else {
-            Path readyPath = filePartRepository.markReady(path);
-            while (Files.exists(readyPath)) {
-                logger.debug("Last part exists. Waiting 1 second before retry");
-                Thread.sleep(1000);
-            }
-        }
-
     }
 
     private void sendStream(
@@ -81,19 +56,20 @@ public abstract class AbstractSnapshotSender implements SnapshotSender {
             IncorrectHashException,
             S3MissesFileException {
         int n = 0;
-        ZFSFileWriter zfsFileWriter = zfsFileWriterFactory.getZFSFileWriter();
+
         while (true) {
-            Path newFilePath = filePartRepository.createNewFilePath(streamMark, n);
+            Path newFilePath = tempDir.resolve(streamMark+".part"+n);
+            ZFSFileWriter zfsFileWriter = zfsFileWriterFactory.getZFSFileWriter(newFilePath);
             n++;
             try {
-                zfsFileWriter.write(zfsSend.getBufferedInputStream(), newFilePath);
+                zfsFileWriter.write(zfsSend.getBufferedInputStream());
             } catch (FileHitSizeLimitException e) {
-                processCreatedFile(datasetName, newFilePath);
+                localBackupRepository.add(datasetName,newFilePath.getFileName().toString(),newFilePath);
                 logger.debug(String.format(
                         "File '%s' processed",
                         newFilePath));
             } catch (ZFSStreamEndedException e) {
-                processCreatedFile(datasetName, newFilePath);
+                localBackupRepository.add(datasetName,newFilePath.getFileName().toString(),newFilePath);
                 logger.debug(String.format(
                         "File '%s' processed",
                         newFilePath));
