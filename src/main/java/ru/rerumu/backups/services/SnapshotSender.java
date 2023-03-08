@@ -11,6 +11,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+@Deprecated
 public interface SnapshotSender {
 
 //    @Deprecated

@@ -19,45 +19,56 @@ import ru.rerumu.backups.zfs_api.ZFSSend;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.ExecutionException;
 
 public class SendServiceImpl implements SendService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     protected final ZFSProcessFactory zfsProcessFactory;
-    protected final ZFSFileWriterFactory zfsFileWriterFactory;
-    private final Path tempDir;
-
-    private final RemoteBackupRepository remoteBackupRepository;
-
-    private final S3Repository s3Repository;
-
     private final S3StreamRepositoryImpl s3StreamRepository;
 
 
     public SendServiceImpl(
             ZFSProcessFactory zfsProcessFactory,
-            ZFSFileWriterFactory zfsFileWriterFactory,
-            Path tempDir,
-            RemoteBackupRepository remoteBackupRepository,
-            S3Repository s3Repository,
             S3StreamRepositoryImpl s3StreamRepository
     ) {
         this.zfsProcessFactory = zfsProcessFactory;
-        this.zfsFileWriterFactory = zfsFileWriterFactory;
-        this.tempDir =tempDir;
-        this.remoteBackupRepository = remoteBackupRepository;
-        this.s3Repository = s3Repository;
         this.s3StreamRepository = s3StreamRepository;
+    }
+
+    private String escapeSymbols(String srcString) {
+        return srcString.replace('/', '-');
     }
 
     @Override
     public void send(Snapshot snapshot)
             throws IOException,
             CompressorException,
-            EncryptException
-    {
-        ZFSSend zfsSend = zfsProcessFactory.getZFSSendReplicate(snapshot);
-        s3StreamRepository.add("",zfsSend.getBufferedInputStream());
+            EncryptException,
+            ExecutionException,
+            InterruptedException,
+            S3MissesFileException,
+            NoSuchAlgorithmException,
+            IncorrectHashException {
+        ZFSSend zfsSend = null;
+        try {
+            zfsSend = zfsProcessFactory.getZFSSendReplicate(snapshot);
+            String prefix = String.format(
+                    "%s/level-0-%s/",
+                    escapeSymbols(snapshot.getDataset()),
+                    escapeSymbols(snapshot.getName())
+            );
+            s3StreamRepository.add(prefix, zfsSend.getBufferedInputStream());
+        } catch (Exception e) {
+            if (zfsSend != null) {
+                zfsSend.kill();
+            }
+            throw e;
+        } finally {
+            if (zfsSend != null) {
+                zfsSend.close();
+            }
+        }
     }
 }

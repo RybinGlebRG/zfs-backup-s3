@@ -2,18 +2,18 @@ package ru.rerumu.backups.repositories.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.backups.exceptions.CompressorException;
-import ru.rerumu.backups.exceptions.EncryptException;
-import ru.rerumu.backups.exceptions.FileHitSizeLimitException;
-import ru.rerumu.backups.exceptions.ZFSStreamEndedException;
+import ru.rerumu.backups.exceptions.*;
 import ru.rerumu.backups.factories.ZFSFileWriterFactory;
 import ru.rerumu.backups.repositories.S3Repository;
 import ru.rerumu.backups.services.ZFSFileWriter;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.UUID;
 
 public class S3StreamRepositoryImpl implements S3Repository {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -31,28 +31,35 @@ public class S3StreamRepositoryImpl implements S3Repository {
     }
 
     @Override
-    public void add(String prefix, Path path) {
-
+    public void add(String prefix, Path path)
+            throws S3MissesFileException,
+            IOException,
+            NoSuchAlgorithmException,
+            IncorrectHashException {
+        s3Repository.add(prefix,path);
     }
 
     @Override
-    public List<String> getAll(String prefix) {
-        return null;
+    public List<String> listAll(String prefix)
+    {
+        return s3Repository.listAll(prefix);
     }
 
     @Override
     public String getOne(String prefix) {
-        return null;
+        return s3Repository.getOne(prefix);
     }
 
     public void add(String prefix, BufferedInputStream bufferedInputStream)
             throws IOException,
             CompressorException,
-            EncryptException
-    {
+            EncryptException,
+            S3MissesFileException,
+            NoSuchAlgorithmException,
+            IncorrectHashException {
         int n = 0;
         while (true) {
-            Path newFilePath = tempDir.resolve(prefix+".part"+n);
+            Path newFilePath = tempDir.resolve(UUID.randomUUID() +".part"+n);
             ZFSFileWriter zfsFileWriter = zfsFileWriterFactory.getZFSFileWriter(newFilePath);
             n++;
             try {
@@ -60,11 +67,13 @@ public class S3StreamRepositoryImpl implements S3Repository {
             } catch (FileHitSizeLimitException e) {
                 // TODO: metadata?
                 s3Repository.add(prefix,newFilePath);
+                Files.delete(newFilePath);
                 logger.debug(String.format(
                         "File '%s' processed",
                         newFilePath));
             } catch (ZFSStreamEndedException e) {
                 s3Repository.add(prefix,newFilePath);
+                Files.delete(newFilePath);
                 logger.debug(String.format(
                         "File '%s' processed",
                         newFilePath));
