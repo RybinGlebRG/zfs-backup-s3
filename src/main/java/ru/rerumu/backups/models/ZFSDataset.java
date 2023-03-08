@@ -32,55 +32,6 @@ public class ZFSDataset {
         return snapshotList.get(0);
     }
 
-//    public List<Snapshot> getIncrementalSnapshots(String upperSnapshotName) throws SnapshotNotFoundException {
-//        List<Snapshot> res = new ArrayList<>();
-//        int n=0;
-//        boolean isUpperFound = false;
-//        for (Snapshot snapshot: snapshotList){
-//            if (n==0){
-//                n++;
-//                continue;
-//            }
-//            res.add(snapshot);
-//            if (snapshot.getName().equals(upperSnapshotName)){
-//                isUpperFound = true;
-//                break;
-//            }
-//        }
-//        if (!isUpperFound){
-//            throw new SnapshotNotFoundException();
-//        }
-//        return res;
-//    }
-
-//    public List<Snapshot> getIncrementalSnapshots(String lowerSnapshotName,String upperSnapshotName) throws SnapshotNotFoundException {
-//        List<Snapshot> res = new ArrayList<>();
-//        int n=0;
-//        boolean isLowerFound = false;
-//        boolean isUpperFound = false;
-//        for (Snapshot snapshot: snapshotList){
-//            if (n==0){
-//                n++;
-//                continue;
-//            }
-//            if (snapshot.getName().equals(lowerSnapshotName)){
-//                isLowerFound = true;
-//            }
-//            if (!isLowerFound){
-//                continue;
-//            }
-//            res.add(snapshot);
-//            if (snapshot.getName().equals(upperSnapshotName)){
-//                isUpperFound = true;
-//                break;
-//            }
-//        }
-//        if (!isLowerFound || !isUpperFound){
-//            throw new SnapshotNotFoundException();
-//        }
-//        return res;
-//    }
-
     public List<Snapshot> getSnapshots(String upperSnapshotName) throws SnapshotNotFoundException {
         List<Snapshot> res = new ArrayList<>();
 

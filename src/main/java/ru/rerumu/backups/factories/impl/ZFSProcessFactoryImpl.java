@@ -23,6 +23,11 @@ public class ZFSProcessFactoryImpl implements ZFSProcessFactory {
     }
 
     @Override
+    public ZFSSend getZFSSendReplicate(Snapshot snapshot) throws IOException {
+        return new ZFSSendReplicate(snapshot, processWrapperFactory);
+    }
+
+    @Override
     public ZFSGetDatasetProperty getZFSGetDatasetProperty(String datasetName, String propertyName) throws IOException {
         return new ZFSGetDatasetPropertyImpl(propertyName, datasetName,processWrapperFactory);
     }
