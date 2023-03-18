@@ -5,9 +5,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
 
-public interface ZFSSend {
+public interface ZFSSend extends AutoCloseable{
 
     BufferedInputStream getBufferedInputStream();
-    void close() throws InterruptedException, IOException, ExecutionException;
-    void kill() throws InterruptedException, IOException, ExecutionException;
+    void close();
+    void kill();
 }

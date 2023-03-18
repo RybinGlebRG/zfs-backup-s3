@@ -13,10 +13,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class ZFSSendMultiIncrementalEncrypted  implements ZFSSend {
+public class ZFSSendMultiIncrementalEncrypted  extends ZFSAbstractSend {
     protected final Logger logger = LoggerFactory.getLogger(ZFSSendMultiIncrementalEncrypted.class);
 
-    private final ProcessWrapper processWrapper;
+//    private final ProcessWrapper processWrapper;
 
     public ZFSSendMultiIncrementalEncrypted(
             Snapshot baseSnapshot,
@@ -27,26 +27,11 @@ public class ZFSSendMultiIncrementalEncrypted  implements ZFSSend {
 
 //        setStderrProcessor(logger::debug);
 
-        processWrapper = processWrapperFactory.getProcessWrapper(
+       super(processWrapperFactory.getProcessWrapper(
                 List.of("zfs", "send", "-vpPw", "-I",baseSnapshot.getFullName(), incrementalSnapshot.getFullName())
-        );
+        ));
 
         processWrapper.run();
         processWrapper.setStderrProcessor(logger::debug);
-    }
-
-    @Override
-    public BufferedInputStream getBufferedInputStream() {
-        return processWrapper.getBufferedInputStream();
-    }
-
-    @Override
-    public void close() throws InterruptedException, IOException, ExecutionException {
-        processWrapper.close();
-    }
-
-    @Override
-    public void kill() throws InterruptedException, IOException, ExecutionException {
-        processWrapper.kill();
     }
 }

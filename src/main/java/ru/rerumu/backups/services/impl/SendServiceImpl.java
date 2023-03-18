@@ -21,11 +21,13 @@ import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ExecutionException;
 
+
+// TODO: User resume tokens?
 public class SendServiceImpl implements SendService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    protected final ZFSProcessFactory zfsProcessFactory;
+    private final ZFSProcessFactory zfsProcessFactory;
     private final S3StreamRepositoryImpl s3StreamRepository;
 
 
@@ -46,28 +48,20 @@ public class SendServiceImpl implements SendService {
             throws IOException,
             CompressorException,
             EncryptException,
-            ExecutionException,
-            InterruptedException,
             S3MissesFileException,
             NoSuchAlgorithmException,
             IncorrectHashException {
-        ZFSSend zfsSend = null;
-        try {
-            zfsSend = zfsProcessFactory.getZFSSendReplicate(snapshot);
+        try (ZFSSend zfsSend = zfsProcessFactory.getZFSSendReplicate(snapshot)){
             String prefix = String.format(
                     "%s/level-0-%s/",
                     escapeSymbols(snapshot.getDataset()),
                     escapeSymbols(snapshot.getName())
             );
-            s3StreamRepository.add(prefix, zfsSend.getBufferedInputStream());
-        } catch (Exception e) {
-            if (zfsSend != null) {
+            try {
+                s3StreamRepository.add(prefix, zfsSend.getBufferedInputStream());
+            } catch (Exception e){
                 zfsSend.kill();
-            }
-            throw e;
-        } finally {
-            if (zfsSend != null) {
-                zfsSend.close();
+                throw e;
             }
         }
     }

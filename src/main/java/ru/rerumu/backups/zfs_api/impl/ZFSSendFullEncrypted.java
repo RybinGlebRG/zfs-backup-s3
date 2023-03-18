@@ -13,32 +13,17 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class ZFSSendFullEncrypted implements ZFSSend {
+public class ZFSSendFullEncrypted extends ZFSAbstractSend {
     protected final Logger logger = LoggerFactory.getLogger(ZFSSendFullEncrypted.class);
 
-    private final ProcessWrapper processWrapper;
+//    private final ProcessWrapper processWrapper;
 
     public ZFSSendFullEncrypted(Snapshot fullSnapshot, ProcessWrapperFactory processWrapperFactory) throws IOException {
-        processWrapper = processWrapperFactory.getProcessWrapper(
+        super(processWrapperFactory.getProcessWrapper(
                 List.of("zfs","send","-vpPw",fullSnapshot.getFullName())
-        );
+        ));
 
         processWrapper.run();
         processWrapper.setStderrProcessor(logger::debug);
-    }
-
-    @Override
-    public BufferedInputStream getBufferedInputStream() {
-        return processWrapper.getBufferedInputStream();
-    }
-
-    @Override
-    public void close() throws InterruptedException, IOException, ExecutionException {
-        processWrapper.close();
-    }
-
-    @Override
-    public void kill() throws InterruptedException, IOException, ExecutionException {
-        processWrapper.kill();
     }
 }
