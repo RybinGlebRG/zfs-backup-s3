@@ -90,7 +90,7 @@ public class S3RepositoryImpl implements S3Repository {
     }
 
     @Override
-    public String getOne(String prefix) {
+    public Path getOne(String prefix) {
         // TODO: write
         return null;
     }

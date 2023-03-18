@@ -5,8 +5,8 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
-public interface ZFSReceive {
+public interface ZFSReceive extends AutoCloseable {
 
     BufferedOutputStream getBufferedOutputStream();
-    void close() throws InterruptedException, IOException, ExecutionException;
+    void close();
 }

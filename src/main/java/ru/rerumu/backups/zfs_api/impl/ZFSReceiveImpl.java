@@ -2,6 +2,7 @@ package ru.rerumu.backups.zfs_api.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.rerumu.backups.exceptions.ThreadCloseError;
 import ru.rerumu.backups.factories.ProcessWrapperFactory;
 import ru.rerumu.backups.zfs_api.ProcessWrapper;
 import ru.rerumu.backups.zfs_api.ZFSReceive;
@@ -32,8 +33,12 @@ public class ZFSReceiveImpl implements ZFSReceive {
     }
 
     @Override
-    public void close() throws InterruptedException, IOException, ExecutionException {
-        processWrapper.close();
+    public void close() {
+        try {
+            processWrapper.close();
+        } catch (Exception e){
+            throw new ThreadCloseError(e);
+        }
     }
 
 }

@@ -24,7 +24,7 @@ public class ZFSProcessFactoryImpl implements ZFSProcessFactory {
 
     @Override
     public ZFSSend getZFSSendReplicate(Snapshot snapshot) throws IOException {
-        return new ZFSSendReplicate(snapshot, processWrapperFactory);
+        return new ZFSSendReplica(snapshot, processWrapperFactory);
     }
 
     @Override

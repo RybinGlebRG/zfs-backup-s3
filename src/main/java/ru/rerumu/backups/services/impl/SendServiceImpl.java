@@ -44,13 +44,7 @@ public class SendServiceImpl implements SendService {
     }
 
     @Override
-    public void send(Snapshot snapshot)
-            throws IOException,
-            CompressorException,
-            EncryptException,
-            S3MissesFileException,
-            NoSuchAlgorithmException,
-            IncorrectHashException {
+    public void send(Snapshot snapshot) {
         try (ZFSSend zfsSend = zfsProcessFactory.getZFSSendReplicate(snapshot)){
             String prefix = String.format(
                     "%s/level-0-%s/",
@@ -63,6 +57,9 @@ public class SendServiceImpl implements SendService {
                 zfsSend.kill();
                 throw e;
             }
+        } catch (Exception e){
+            logger.error(e.getMessage(),e);
+            throw new SendError(e);
         }
     }
 }

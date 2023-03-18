@@ -14,6 +14,6 @@ public interface S3Repository {
 
     List<String> listAll(String prefix);
 
-    String getOne(String prefix);
+    Path getOne(String prefix);
 
 }
