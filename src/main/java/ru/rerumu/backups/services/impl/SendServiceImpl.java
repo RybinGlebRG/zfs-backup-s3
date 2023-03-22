@@ -46,9 +46,9 @@ public class SendServiceImpl implements SendService {
                 );
         try (ZFSSend zfsSend = zfsProcessFactory.getZFSSendReplicate(snapshot)){
             String prefix = String.format(
-                    "%s/%s/%s/",
+                    "%s/%s/level-0/%s",
                     bucket.name(),
-                    escapeSymbols(pool.getRootDataset().orElseThrow().getName()),
+                    escapeSymbols(pool.name()),
                     escapeSymbols(snapshot.getName())
             );
             try {
