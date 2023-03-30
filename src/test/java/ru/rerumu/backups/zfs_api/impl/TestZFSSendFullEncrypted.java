@@ -6,10 +6,9 @@ import org.mockito.Mockito;
 import ru.rerumu.backups.factories.ProcessWrapperFactory;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.zfs_api.ProcessWrapper;
+import ru.rerumu.backups.zfs_api.zfs.impl.ZFSSendFullEncrypted;
 
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class TestZFSSendFullEncrypted {
 

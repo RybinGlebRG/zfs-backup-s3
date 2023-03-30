@@ -8,9 +8,8 @@ import ru.rerumu.backups.models.ZFSDataset;
 import ru.rerumu.backups.models.zfs_dataset_properties.EncryptionProperty;
 import ru.rerumu.backups.repositories.impl.ZFSFileSystemRepositoryImpl;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
-import ru.rerumu.backups.zfs_api.ProcessWrapper;
-import ru.rerumu.backups.zfs_api.ZFSGetDatasetProperty;
-import ru.rerumu.backups.zfs_api.ZFSListFilesystems;
+import ru.rerumu.backups.zfs_api.zfs.ZFSGetDatasetProperty;
+import ru.rerumu.backups.zfs_api.zfs.ZFSListFilesystems;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;

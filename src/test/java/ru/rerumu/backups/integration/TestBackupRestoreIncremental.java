@@ -11,8 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.controllers.BackupController;
 import ru.rerumu.backups.controllers.RestoreController;
-import ru.rerumu.backups.exceptions.IncorrectHashException;
-import ru.rerumu.backups.exceptions.S3MissesFileException;
 import ru.rerumu.backups.factories.SnapshotSenderFactory;
 import ru.rerumu.backups.factories.ZFSFileReaderFactory;
 import ru.rerumu.backups.factories.ZFSFileWriterFactory;
@@ -34,24 +32,17 @@ import ru.rerumu.backups.services.SnapshotReceiver;
 import ru.rerumu.backups.services.ZFSBackupService;
 import ru.rerumu.backups.services.ZFSRestoreService;
 import ru.rerumu.backups.services.impl.SnapshotReceiverImpl;
-import ru.rerumu.backups.zfs_api.*;
+import ru.rerumu.backups.zfs_api.zfs.*;
 import software.amazon.awssdk.regions.Region;
 
 import java.io.*;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 @Disabled
 public class TestBackupRestoreIncremental {

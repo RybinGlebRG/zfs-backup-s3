@@ -4,9 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 import ru.rerumu.backups.factories.ProcessWrapperFactory;
-import ru.rerumu.backups.zfs_api.ProcessWrapper;
-import ru.rerumu.backups.zfs_api.ZFSListFilesystems;
-import ru.rerumu.backups.zfs_api.impl.ZFSReceiveImpl;
+import ru.rerumu.backups.zfs_api.zfs.impl.ZFSReceiveImpl;
 
 import java.util.List;
 

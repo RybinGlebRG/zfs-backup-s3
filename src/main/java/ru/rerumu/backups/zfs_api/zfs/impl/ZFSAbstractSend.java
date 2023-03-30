@@ -1,9 +1,9 @@
-package ru.rerumu.backups.zfs_api.impl;
+package ru.rerumu.backups.zfs_api.zfs.impl;
 
 import ru.rerumu.backups.exceptions.ThreadCloseError;
 import ru.rerumu.backups.exceptions.ThreadKillError;
 import ru.rerumu.backups.zfs_api.ProcessWrapper;
-import ru.rerumu.backups.zfs_api.ZFSSend;
+import ru.rerumu.backups.zfs_api.zfs.ZFSSend;
 
 import java.io.BufferedInputStream;
 

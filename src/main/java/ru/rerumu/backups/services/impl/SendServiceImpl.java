@@ -11,7 +11,7 @@ import ru.rerumu.backups.repositories.impl.S3StreamRepositoryImpl;
 import ru.rerumu.backups.services.SendService;
 import ru.rerumu.backups.services.SnapshotNamingService;
 import ru.rerumu.backups.services.SnapshotService;
-import ru.rerumu.backups.zfs_api.ZFSSend;
+import ru.rerumu.backups.zfs_api.zfs.ZFSSend;
 
 
 // TODO: User resume tokens?

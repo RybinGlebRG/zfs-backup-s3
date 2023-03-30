@@ -16,12 +16,10 @@ import ru.rerumu.backups.models.zfs.Pool;
 import ru.rerumu.backups.models.zfs_dataset_properties.EncryptionProperty;
 import ru.rerumu.backups.repositories.impl.S3StreamRepositoryImpl;
 import ru.rerumu.backups.services.impl.SendServiceImpl;
-import ru.rerumu.backups.zfs_api.ZFSSend;
-import ru.rerumu.backups.zfs_api.impl.ZFSAbstractSend;
+import ru.rerumu.backups.zfs_api.zfs.ZFSSend;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -4,8 +4,8 @@ import ru.rerumu.backups.factories.ProcessWrapperFactory;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSPool;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
-import ru.rerumu.backups.zfs_api.*;
-import ru.rerumu.backups.zfs_api.impl.*;
+import ru.rerumu.backups.zfs_api.zfs.*;
+import ru.rerumu.backups.zfs_api.zfs.impl.*;
 
 import java.io.IOException;
 

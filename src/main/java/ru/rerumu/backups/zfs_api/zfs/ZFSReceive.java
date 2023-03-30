@@ -1,4 +1,4 @@
-package ru.rerumu.backups.zfs_api;
+package ru.rerumu.backups.zfs_api.zfs;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

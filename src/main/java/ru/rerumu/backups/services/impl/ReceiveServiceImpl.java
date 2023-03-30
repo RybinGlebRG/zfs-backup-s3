@@ -2,16 +2,12 @@ package ru.rerumu.backups.services.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.backups.exceptions.CompressorException;
-import ru.rerumu.backups.exceptions.EncryptException;
 import ru.rerumu.backups.exceptions.ReceiveError;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
 import ru.rerumu.backups.models.ZFSPool;
 import ru.rerumu.backups.repositories.impl.S3StreamRepositoryImpl;
 import ru.rerumu.backups.services.ReceiveService;
-import ru.rerumu.backups.zfs_api.ZFSReceive;
-
-import java.io.IOException;
+import ru.rerumu.backups.zfs_api.zfs.ZFSReceive;
 
 public class ReceiveServiceImpl implements ReceiveService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());

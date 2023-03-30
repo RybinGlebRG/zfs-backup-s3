@@ -2,7 +2,7 @@ package ru.rerumu.backups.factories;
 
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSPool;
-import ru.rerumu.backups.zfs_api.*;
+import ru.rerumu.backups.zfs_api.zfs.*;
 
 import java.io.IOException;
 

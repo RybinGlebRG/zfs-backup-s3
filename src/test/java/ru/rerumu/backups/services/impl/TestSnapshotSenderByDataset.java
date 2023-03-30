@@ -9,10 +9,9 @@ import ru.rerumu.backups.factories.ZFSFileWriterFactory;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.repositories.LocalBackupRepository;
-import ru.rerumu.backups.repositories.RemoteBackupRepository;
 import ru.rerumu.backups.services.SnapshotSender;
 import ru.rerumu.backups.services.ZFSFileWriter;
-import ru.rerumu.backups.zfs_api.ZFSSend;
+import ru.rerumu.backups.zfs_api.zfs.ZFSSend;
 
 import java.io.IOException;
 import java.nio.file.Path;

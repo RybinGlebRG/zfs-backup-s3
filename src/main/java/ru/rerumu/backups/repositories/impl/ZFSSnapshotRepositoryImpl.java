@@ -5,8 +5,7 @@ import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.repositories.ZFSSnapshotRepository;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
-import ru.rerumu.backups.zfs_api.ProcessWrapper;
-import ru.rerumu.backups.zfs_api.ZFSListSnapshots;
+import ru.rerumu.backups.zfs_api.zfs.ZFSListSnapshots;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
