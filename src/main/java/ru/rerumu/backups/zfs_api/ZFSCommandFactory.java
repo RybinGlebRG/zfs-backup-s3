@@ -12,5 +12,5 @@ public interface ZFSCommandFactory {
             Boolean isRecursive
     );
 
-    ListSnapshotsCommand getListSnapshotsCommand(ZFSDataset dataset);
+    ListSnapshotsCommand getListSnapshotsCommand(ZFSDataset dataset,Boolean isRecursive);
 }

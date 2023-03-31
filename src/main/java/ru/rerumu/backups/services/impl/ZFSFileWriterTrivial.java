@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.FileHitSizeLimitException;
 import ru.rerumu.backups.exceptions.ZFSStreamEndedException;
-import ru.rerumu.backups.models.ZFSStreamChunk;
 import ru.rerumu.backups.services.ZFSFileWriter;
 
 import java.io.*;
@@ -48,5 +47,10 @@ public class ZFSFileWriterTrivial implements ZFSFileWriter {
             }
             throw new ZFSStreamEndedException();
         }
+    }
+
+    @Override
+    public void close() throws Exception {
+
     }
 }

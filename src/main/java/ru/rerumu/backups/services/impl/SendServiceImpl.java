@@ -14,7 +14,7 @@ import ru.rerumu.backups.services.SnapshotService;
 import ru.rerumu.backups.zfs_api.zfs.ZFSSend;
 
 
-// TODO: User resume tokens?
+// TODO: Use resume tokens?
 public class SendServiceImpl implements SendService {
 
     private final static String SNAPSHOT_PREFIX="zfs-backup-s3";

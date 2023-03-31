@@ -8,7 +8,7 @@ import ru.rerumu.backups.exceptions.ZFSStreamEndedException;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 
-public interface ZFSFileWriter {
+public interface ZFSFileWriter extends AutoCloseable {
 
     void write(BufferedInputStream bufferedInputStream) throws IOException,
             CompressorException,

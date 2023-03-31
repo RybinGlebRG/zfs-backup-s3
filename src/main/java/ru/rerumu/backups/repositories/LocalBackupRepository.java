@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
+@Deprecated
 public interface LocalBackupRepository {
 
     Path getPart(String datasetName, String partName)

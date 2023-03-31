@@ -17,6 +17,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+@Deprecated
 public abstract class AbstractSnapshotSender implements SnapshotSender {
     private final Logger logger = LoggerFactory.getLogger(AbstractSnapshotSender.class);
 

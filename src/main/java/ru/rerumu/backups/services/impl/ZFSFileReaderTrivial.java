@@ -2,7 +2,6 @@ package ru.rerumu.backups.services.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.backups.models.ZFSStreamChunk;
 import ru.rerumu.backups.services.ZFSFileReader;
 
 import java.io.*;

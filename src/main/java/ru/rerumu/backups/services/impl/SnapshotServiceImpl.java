@@ -23,12 +23,11 @@ public class SnapshotServiceImpl implements SnapshotService {
         SnapshotCommand snapshotCommand = zfsCommandFactory.getSnapshotCommand(dataset, name, true);
         snapshotCommand.execute();
 
-        ListSnapshotsCommand listSnapshotsCommand = zfsCommandFactory.getListSnapshotsCommand(dataset);
+        ListSnapshotsCommand listSnapshotsCommand = zfsCommandFactory.getListSnapshotsCommand(dataset, false);
         List<Snapshot> snapshotList = listSnapshotsCommand.execute();
 
         Optional<Snapshot> snapshot = snapshotList.stream()
-                .filter(item -> item.getDataset().equals(dataset.getName())
-                        && item.getName().equals(name))
+                .filter(item -> item.getName().equals(name))
                 .findFirst();
 
         return snapshot.orElseThrow();

@@ -67,6 +67,8 @@ public class S3RepositoryImpl implements S3Repository {
         return true;
     }
 
+    // TODO: Retry?
+    // TODO: Metadata?
     @Override
     public void add(String prefix, Path path)
             throws IOException,

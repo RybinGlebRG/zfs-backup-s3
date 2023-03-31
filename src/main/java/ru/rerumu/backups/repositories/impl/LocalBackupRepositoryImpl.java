@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Deprecated
 public class LocalBackupRepositoryImpl implements LocalBackupRepository {
 
     private final Logger logger = LoggerFactory.getLogger(LocalBackupRepositoryImpl.class);

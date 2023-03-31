@@ -29,7 +29,10 @@ public class ZFSCommandFactoryImpl implements ZFSCommandFactory {
     }
 
     @Override
-    public ListSnapshotsCommand getListSnapshotsCommand(ZFSDataset dataset) {
+    public ListSnapshotsCommand getListSnapshotsCommand(ZFSDataset dataset, Boolean isRecursive) {
+        if (isRecursive){
+            throw new IllegalArgumentException();
+        }
         return new ListSnapshotsCommandImpl(dataset, processWrapperFactory);
     }
 }
