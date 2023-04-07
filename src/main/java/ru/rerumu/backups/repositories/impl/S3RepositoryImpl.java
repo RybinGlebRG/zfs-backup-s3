@@ -8,7 +8,7 @@ import ru.rerumu.backups.factories.S3ClientFactory;
 import ru.rerumu.backups.factories.S3ManagerFactory;
 import ru.rerumu.backups.models.S3Storage;
 import ru.rerumu.backups.repositories.S3Repository;
-import ru.rerumu.backups.services.S3Manager;
+import ru.rerumu.backups.services.s3.S3Manager;
 import ru.rerumu.backups.services.impl.ListManager;
 import software.amazon.awssdk.services.s3.S3Client;
 

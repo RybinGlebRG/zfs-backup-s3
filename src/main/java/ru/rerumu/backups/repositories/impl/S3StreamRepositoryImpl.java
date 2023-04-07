@@ -21,7 +21,6 @@ import java.util.List;
 public class S3StreamRepositoryImpl implements S3Repository {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final Path tempDir;
 
     private final S3Repository s3Repository;
 
@@ -30,8 +29,7 @@ public class S3StreamRepositoryImpl implements S3Repository {
 
     private final TempPathGenerator tempPathGenerator;
 
-    public S3StreamRepositoryImpl(Path tempDir, S3Repository s3Repository, ZFSFileWriterFactory zfsFileWriterFactory, ZFSFileReaderFactory zfsFileReaderFactory, TempPathGenerator tempPathGenerator) {
-        this.tempDir = tempDir;
+    public S3StreamRepositoryImpl(S3Repository s3Repository, ZFSFileWriterFactory zfsFileWriterFactory, ZFSFileReaderFactory zfsFileReaderFactory, TempPathGenerator tempPathGenerator) {
         this.s3Repository = s3Repository;
         this.zfsFileWriterFactory = zfsFileWriterFactory;
         this.zfsFileReaderFactory = zfsFileReaderFactory;
@@ -82,7 +80,7 @@ public class S3StreamRepositoryImpl implements S3Repository {
             throws CompressorException, IOException, ClassNotFoundException, EncryptException {
         List<String> files = s3Repository.listAll(prefix);
         for (String file : files) {
-            Path part = s3Repository.getOne(file);
+            Path part = s3Repository.getOne(prefix+"/"+file);
             ZFSFileReader zfsFileReader = zfsFileReaderFactory.getZFSFileReader(
                     bufferedOutputStream, part
             );

@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import ru.rerumu.backups.factories.S3ManagerFactory;
 import ru.rerumu.backups.models.S3Storage;
-import ru.rerumu.backups.services.S3Manager;
-import ru.rerumu.backups.services.impl.MultipartUploadManager;
-import ru.rerumu.backups.services.impl.OnepartUploadManager;
+import ru.rerumu.backups.services.s3.S3Manager;
+import ru.rerumu.backups.services.s3.impl.MultipartUploadManager;
+import ru.rerumu.backups.services.s3.impl.OnepartUploadManager;
 import software.amazon.awssdk.services.s3.S3Client;
 
 import java.io.BufferedInputStream;

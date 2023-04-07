@@ -1,11 +1,10 @@
-package ru.rerumu.backups.services.impl;
+package ru.rerumu.backups.services.s3.impl;
 
 import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.IncorrectHashException;
-import ru.rerumu.backups.exceptions.S3MissesFileException;
-import ru.rerumu.backups.services.S3Manager;
+import ru.rerumu.backups.services.s3.S3Manager;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;

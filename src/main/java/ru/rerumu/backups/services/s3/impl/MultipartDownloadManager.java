@@ -1,11 +1,12 @@
-package ru.rerumu.backups.services.impl;
+package ru.rerumu.backups.services.s3.impl;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.IncorrectHashException;
 import ru.rerumu.backups.models.S3Storage;
+import ru.rerumu.backups.services.impl.ETAGLoader;
+import ru.rerumu.backups.services.impl.SizeLoader;
 import ru.rerumu.backups.utils.MD5;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
@@ -14,7 +15,6 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;

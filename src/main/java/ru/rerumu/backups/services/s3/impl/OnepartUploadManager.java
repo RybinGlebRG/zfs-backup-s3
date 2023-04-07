@@ -1,4 +1,4 @@
-package ru.rerumu.backups.services.impl;
+package ru.rerumu.backups.services.s3.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
