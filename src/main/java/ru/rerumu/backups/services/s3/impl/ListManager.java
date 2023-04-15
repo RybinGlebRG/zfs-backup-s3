@@ -1,4 +1,4 @@
-package ru.rerumu.backups.services.impl;
+package ru.rerumu.backups.services.s3.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,11 +9,11 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
+@Deprecated
 public class ListManager  {
     private final Logger logger = LoggerFactory.getLogger(ListManager.class);
     private final S3Storage s3Storage;

@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.IncorrectHashException;
 import ru.rerumu.backups.models.S3Storage;
-import ru.rerumu.backups.services.impl.ETAGLoader;
 import ru.rerumu.backups.services.impl.SizeLoader;
 import ru.rerumu.backups.utils.MD5;
 import software.amazon.awssdk.core.ResponseBytes;
@@ -22,6 +21,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class MultipartDownloadManager extends AbstractS3Manager {
 
     private final Logger logger = LoggerFactory.getLogger(MultipartDownloadManager.class);

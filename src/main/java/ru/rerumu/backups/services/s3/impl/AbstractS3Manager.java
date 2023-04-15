@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+@Deprecated
 public abstract class AbstractS3Manager implements S3Manager {
     private final Logger logger = LoggerFactory.getLogger(AbstractS3Manager.class);
 

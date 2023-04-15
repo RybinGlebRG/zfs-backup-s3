@@ -1,4 +1,4 @@
-package ru.rerumu.backups.services.impl;
+package ru.rerumu.backups.services.s3.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +10,7 @@ import software.amazon.awssdk.services.s3.model.S3Object;
 
 import java.util.List;
 
+@Deprecated
 public class ETAGLoader {
     private final Logger logger = LoggerFactory.getLogger(ETAGLoader.class);
 

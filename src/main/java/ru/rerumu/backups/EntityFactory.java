@@ -55,7 +55,7 @@ public class EntityFactory {
                 new S3ManagerFactoryImpl(
                         Integer.parseInt(configuration.getProperty("max_part_size"))
                 ),
-                new S3ClientFactoryImpl()
+                new S3ClientFactoryImpl(s3StorageList)
         );
     }
 

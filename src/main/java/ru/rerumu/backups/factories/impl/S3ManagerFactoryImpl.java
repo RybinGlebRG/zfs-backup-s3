@@ -3,7 +3,7 @@ package ru.rerumu.backups.factories.impl;
 import ru.rerumu.backups.factories.S3ManagerFactory;
 import ru.rerumu.backups.models.S3Storage;
 import ru.rerumu.backups.services.s3.S3Manager;
-import ru.rerumu.backups.services.impl.*;
+import ru.rerumu.backups.services.s3.impl.ListManager;
 import ru.rerumu.backups.services.s3.impl.MultipartDownloadManager;
 import ru.rerumu.backups.services.s3.impl.MultipartUploadManager;
 import ru.rerumu.backups.services.s3.impl.OnepartUploadManager;
@@ -13,6 +13,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 
+@Deprecated
 public class S3ManagerFactoryImpl implements S3ManagerFactory {
     private final int maxPartSize;
 

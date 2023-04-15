@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 
 
+@Deprecated
 public class MultipartUploadManager extends AbstractS3Manager {
     private final Logger logger = LoggerFactory.getLogger(MultipartUploadManager.class);
     private final List<CompletedPart> completedPartList = new ArrayList<>();

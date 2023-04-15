@@ -17,7 +17,7 @@ import ru.rerumu.backups.models.S3Storage;
 import ru.rerumu.backups.models.meta.PartMeta;
 import ru.rerumu.backups.repositories.impl.S3Repository;
 import ru.rerumu.backups.services.s3.S3Manager;
-import ru.rerumu.backups.services.impl.ListManager;
+import ru.rerumu.backups.services.s3.impl.ListManager;
 import software.amazon.awssdk.services.s3.S3Client;
 
 import java.nio.file.Files;

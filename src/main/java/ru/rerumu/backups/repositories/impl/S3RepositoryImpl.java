@@ -8,13 +8,11 @@ import ru.rerumu.backups.factories.S3ClientFactory;
 import ru.rerumu.backups.factories.S3ManagerFactory;
 import ru.rerumu.backups.models.S3Storage;
 import ru.rerumu.backups.repositories.S3Repository;
-import ru.rerumu.backups.services.s3.S3Manager;
-import ru.rerumu.backups.services.impl.ListManager;
+import ru.rerumu.backups.services.s3.impl.ListManager;
+import ru.rerumu.backups.services.s3.S3Service;
 import software.amazon.awssdk.services.s3.S3Client;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -27,34 +25,13 @@ public class S3RepositoryImpl implements S3Repository {
     private final S3ManagerFactory s3ManagerFactory;
     private final S3ClientFactory s3ClientFactory;
 
-    public S3RepositoryImpl(S3Storage s3Storage, S3ManagerFactory s3ManagerFactory, S3ClientFactory s3ClientFactory) {
+    private final S3Service s3Service;
+
+    public S3RepositoryImpl(S3Storage s3Storage, S3ManagerFactory s3ManagerFactory, S3ClientFactory s3ClientFactory, S3Service s3Service) {
         this.s3Storage = s3Storage;
         this.s3ManagerFactory = s3ManagerFactory;
         this.s3ClientFactory = s3ClientFactory;
-    }
-
-    private void upload(Path path, String key)
-            throws
-            IOException,
-            NoSuchAlgorithmException,
-            IncorrectHashException {
-
-        logger.info(String.format("Uploading file %s", path.toString()));
-        logger.info(String.format("Target: %s", key));
-
-        try (S3Client s3Client = s3ClientFactory.getS3Client(s3Storage);
-             BufferedInputStream bufferedInputStream = new BufferedInputStream(Files.newInputStream(path))) {
-
-            S3Manager s3Manager = s3ManagerFactory.getUploadManager(
-                    bufferedInputStream,
-                    Files.size(path),
-                    s3Storage,
-                    key,
-                    s3Client
-            );
-            s3Manager.run();
-
-        }
+        this.s3Service = s3Service;
     }
 
     private boolean isFileExists(String key) throws IOException, NoSuchAlgorithmException, IncorrectHashException {
@@ -67,7 +44,6 @@ public class S3RepositoryImpl implements S3Repository {
         return true;
     }
 
-    // TODO: Retry?
     // TODO: Metadata?
     @Override
     public void add(String prefix, Path path)
@@ -76,7 +52,7 @@ public class S3RepositoryImpl implements S3Repository {
             IncorrectHashException,
             S3MissesFileException {
         String key = s3Storage.getPrefix().toString() + "/" + prefix + path.getFileName().toString();
-        upload(path, key);
+        s3Service.upload(path,key);
         logger.info(String.format("Checking sent file '%s'", path.getFileName().toString()));
         if (!isFileExists(key)) {
             logger.error(String.format("File '%s' not found on S3", path.getFileName().toString()));

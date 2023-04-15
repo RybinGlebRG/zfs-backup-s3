@@ -10,6 +10,7 @@ import software.amazon.awssdk.services.s3.model.S3Object;
 
 import java.util.List;
 
+@Deprecated
 public class SizeLoader {
     private final Logger logger = LoggerFactory.getLogger(SizeLoader.class);
 
