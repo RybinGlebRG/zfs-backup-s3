@@ -13,8 +13,10 @@ import ru.rerumu.backups.services.ZFSFileWriter;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
@@ -51,8 +53,8 @@ public class S3StreamRepositoryImpl implements S3Repository {
     }
 
     @Override
-    public Path getOne(String prefix) {
-        return s3Repository.getOne(prefix);
+    public void getOne(String prefix, Path targetPath) {
+        s3Repository.getOne(prefix,targetPath);
     }
 
     public void add(String prefix, BufferedInputStream bufferedInputStream) throws Exception {
@@ -78,13 +80,15 @@ public class S3StreamRepositoryImpl implements S3Repository {
 
     public void getAll(BufferedOutputStream bufferedOutputStream, String prefix)
             throws CompressorException, IOException, ClassNotFoundException, EncryptException {
-        List<String> files = s3Repository.listAll(prefix);
-        for (String file : files) {
-            Path part = s3Repository.getOne(prefix+"/"+file);
+        List<String> keys = s3Repository.listAll(prefix);
+        for (String key : keys) {
+            Path part = tempPathGenerator.generateConsistent(null,"-"+ Paths.get(key).getFileName());
+            s3Repository.getOne(key,part);
             ZFSFileReader zfsFileReader = zfsFileReaderFactory.getZFSFileReader(
                     bufferedOutputStream, part
             );
             zfsFileReader.read();
+            Files.delete(part);
         }
     }
 }

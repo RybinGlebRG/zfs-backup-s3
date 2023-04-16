@@ -70,7 +70,15 @@ public class TestBackupRestoreIncremental {
                         "STANDARD"
                 )),
                 new S3ManagerFactoryImpl(6_000_000),
-                new S3ClientFactoryImpl());
+                new S3ClientFactoryImpl(List.of(new S3Storage(
+                        Region.of(System.getProperty("region")),
+                        System.getProperty("bucket"),
+                        System.getProperty("keyId"),
+                        System.getProperty("secretKey"),
+                        Paths.get("level-0/" + prefix),
+                        new URI(System.getProperty("endpoint")),
+                        "STANDARD"
+                ))));
         LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(
                 localRepositoryDir,
                 remoteBackupRepository,
@@ -198,7 +206,17 @@ public class TestBackupRestoreIncremental {
                         "STANDARD"
                 )),
                 new S3ManagerFactoryImpl(6_000_000),
-                new S3ClientFactoryImpl());
+                new S3ClientFactoryImpl(List.of(
+                        new S3Storage(
+                                Region.of(System.getProperty("region")),
+                                System.getProperty("bucket"),
+                                System.getProperty("keyId"),
+                                System.getProperty("secretKey"),
+                                Paths.get("level-0/" + prefix),
+                                new URI(System.getProperty("endpoint")),
+                                "STANDARD"
+                        )
+                )));
         LocalBackupRepository localBackupRepository = new LocalBackupRepositoryImpl(
                 localRepositoryDir,
                 remoteBackupRepository,

@@ -47,7 +47,15 @@ public class TestS3 {
                         "STANDARD"
                 )),
                 new S3ManagerFactoryImpl(500_000_000),
-                new S3ClientFactoryImpl()
+                new S3ClientFactoryImpl(List.of(new S3Storage(
+                        Region.of(System.getProperty("region")),
+                        System.getProperty("bucket"),
+                        System.getProperty("keyId"),
+                        System.getProperty("secretKey"),
+                        Paths.get("level-0"),
+                        new URI(System.getProperty("endpoint")),
+                        "STANDARD"
+                )))
         );
 
 
@@ -89,7 +97,15 @@ public class TestS3 {
                         "STANDARD"
                 )),
                 new S3ManagerFactoryImpl(6_291_456),
-                new S3ClientFactoryImpl()
+                new S3ClientFactoryImpl(List.of(new S3Storage(
+                        Region.of(System.getProperty("region")),
+                        System.getProperty("bucket"),
+                        System.getProperty("keyId"),
+                        System.getProperty("secretKey"),
+                        Paths.get("level-0"),
+                        new URI(System.getProperty("endpoint")),
+                        "STANDARD"
+                )))
         );
 
 
@@ -126,7 +142,15 @@ public class TestS3 {
                         "STANDARD"
                 )),
                 new S3ManagerFactoryImpl(500_000_000),
-                new S3ClientFactoryImpl()
+                new S3ClientFactoryImpl(List.of(new S3Storage(
+                        Region.of(System.getProperty("region")),
+                        System.getProperty("bucket"),
+                        System.getProperty("keyId"),
+                        System.getProperty("secretKey"),
+                        Paths.get("level-0"),
+                        new URI(System.getProperty("endpoint")),
+                        "STANDARD"
+                )))
         );
 
 

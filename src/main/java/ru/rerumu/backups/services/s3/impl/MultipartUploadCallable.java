@@ -67,7 +67,7 @@ public class MultipartUploadCallable implements Callable<Void> {
     }
 
     private void uploadPart(
-            BufferedInputStream bufferedInputStream,
+            byte[] data,
             Integer partNumber,
             S3Client s3Client,
             String uploadId,
@@ -75,9 +75,8 @@ public class MultipartUploadCallable implements Callable<Void> {
             List<CompletedPart> completedPartList
     ) throws IOException, EOFException, NoSuchAlgorithmException, IncorrectHashException {
         logger.debug("Getting new part");
-        byte[] nextPart = getNextPart(bufferedInputStream);
         logger.debug(String.format("Starting loading part '%d'",partNumber));
-        String md5 = getMD5Hex(nextPart);
+        String md5 = getMD5Hex(data);
         // TODO: Max part number?
         UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
                 .bucket(s3Storage.getBucketName())
@@ -86,13 +85,13 @@ public class MultipartUploadCallable implements Callable<Void> {
                 .partNumber(partNumber).build();
 
         String eTag = s3Client.uploadPart(
-                uploadPartRequest, RequestBody.fromBytes(nextPart)
+                uploadPartRequest, RequestBody.fromBytes(data)
         ).eTag();
         logger.info(String.format("ETag='%s'", eTag));
         if (!(eTag.equals('"' + md5 + '"'))) {
-            throw new IncorrectHashException();
+            throw new IncorrectHashException(String.format("Got '%s', but expected '%s'",eTag, '"' + md5 + '"'));
         }
-        md5List.add(getMD5Bytes(nextPart));
+        md5List.add(getMD5Bytes(data));
 
         completedPartList.add(
                 CompletedPart.builder().partNumber(partNumber).eTag(eTag).build()
@@ -129,7 +128,7 @@ public class MultipartUploadCallable implements Callable<Void> {
         String md5 = getMD5Hex(concatenatedMd5)+"-"+partNumber;
         String eTag = completeMultipartUploadResponse.eTag();
         if (!eTag.equals('"' + md5 + '"')){
-            throw new IncorrectHashException();
+            throw new IncorrectHashException(String.format("Got '%s', but expected '%s'",eTag, '"' + md5 + '"'));
         }
     }
 
@@ -160,8 +159,9 @@ public class MultipartUploadCallable implements Callable<Void> {
 
                 while (true) {
                     try {
+                        byte[] nextPart = getNextPart(bufferedInputStream);
                         partNumber++;
-                        uploadPart(bufferedInputStream, partNumber, s3Client,uploadId,md5List,completedPartList);
+                        uploadPart(nextPart, partNumber, s3Client,uploadId,md5List,completedPartList);
                     } catch (EOFException e) {
                         break;
                     }

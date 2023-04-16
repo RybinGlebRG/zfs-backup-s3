@@ -53,23 +53,18 @@ public class S3RepositoryImpl implements S3Repository {
             S3MissesFileException {
         String key = s3Storage.getPrefix().toString() + "/" + prefix + path.getFileName().toString();
         s3Service.upload(path,key);
-        logger.info(String.format("Checking sent file '%s'", path.getFileName().toString()));
-        if (!isFileExists(key)) {
-            logger.error(String.format("File '%s' not found on S3", path.getFileName().toString()));
-            throw new S3MissesFileException();
-        }
-        logger.info(String.format("File '%s' found on S3", path.getFileName().toString()));
     }
 
     @Override
     public List<String> listAll(String prefix) {
-        // TODO: write
-        return null;
+        String key = s3Storage.getPrefix().toString() + "/" + prefix;
+        List<String> res = s3Service.list(key);
+        return res;
     }
 
     @Override
-    public Path getOne(String prefix) {
-        // TODO: write
-        return null;
+    public void getOne(String prefix, Path targetPath) {
+        String key = s3Storage.getPrefix().toString() + "/" + prefix;
+        s3Service.download(key,targetPath);
     }
 }

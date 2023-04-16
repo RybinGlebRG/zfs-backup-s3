@@ -91,9 +91,8 @@ public class MultipartDownloadCallable implements Callable<Void> {
         ResponseBytes<GetObjectResponse> response = s3Client.getObject(getObjectRequest, ResponseTransformer.toBytes());
         byte[] responseBytes = response.asByteArray();
 
-        // TODO: ???
-        GetObjectResponse getObjectResponse = response.response();
         md5List.add(MD5.getMD5Bytes(responseBytes));
+        logger.debug(String.format("Downloaded MD5 = '%s'",MD5.getMD5Hex(responseBytes)));
 
         Files.write(
                 path,
@@ -105,14 +104,24 @@ public class MultipartDownloadCallable implements Callable<Void> {
         logger.debug("Finished loading range");
     }
 
-    private void finish(S3Client s3Client) throws NoSuchAlgorithmException, IOException, IncorrectHashException {
-        String md5 = MD5.getMD5Hex(path);
+    private void finish(S3Client s3Client, List<byte[]> md5List, int partNumber) throws NoSuchAlgorithmException, IOException, IncorrectHashException {
+        String md5;
         String storedMd5Hex = StringUtils.strip(getETag(s3Client),"\"");
+
+        if (storedMd5Hex.contains("-")){
+            byte[] concatenatedMd5 = new byte[0];
+            for (byte[] bytes: md5List){
+                concatenatedMd5 = ArrayUtils.addAll(concatenatedMd5,bytes);
+            }
+            md5 = getMD5Hex(concatenatedMd5)+"-"+partNumber;
+        } else {
+            md5 = MD5.getMD5Hex(path);
+        }
 
         logger.info(String.format("Calculated md5='%s'", md5));
         logger.info(String.format("Stored md5='%s'", storedMd5Hex));
         if (!storedMd5Hex.equals(md5)) {
-            throw new IncorrectHashException();
+            throw new IncorrectHashException(String.format("Got '%s', but expected '%s'",storedMd5Hex, md5));
         }
     }
 
@@ -122,7 +131,7 @@ public class MultipartDownloadCallable implements Callable<Void> {
         S3Client s3Client = s3ClientFactory.getS3Client(s3Storage);
         final long MAX_END = getSize(s3Client) - 1;
         long start = 0;
-        long end = Math.min((start + maxPartSize), MAX_END);
+        long end = Math.min(maxPartSize-1, MAX_END);
         List<byte[]> md5List = new ArrayList<>();
 
         while (true) {
@@ -133,10 +142,10 @@ public class MultipartDownloadCallable implements Callable<Void> {
             }
 
             start = end + 1;
-            end = Math.min(start + maxPartSize, MAX_END);
+            end = Math.min(start + (maxPartSize - 1), MAX_END);
         }
 
-        finish(s3Client);
+        finish(s3Client, md5List, md5List.size());
 
         return null;
     }
