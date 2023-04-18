@@ -16,6 +16,8 @@ import ru.rerumu.backups.factories.ZFSFileReaderFactory;
 import ru.rerumu.backups.factories.ZFSFileWriterFactory;
 import ru.rerumu.backups.repositories.S3Repository;
 import ru.rerumu.backups.repositories.impl.S3StreamRepositoryImpl;
+import ru.rerumu.backups.services.impl.TempPathGeneratorImpl;
+import ru.rerumu.backups.services.s3.FileManager;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -24,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -45,6 +48,9 @@ public class TestS3StreamRepositoryImpl {
     TempPathGenerator tempPathGenerator;
 
     @Mock
+    FileManager fileManager;
+
+    @Mock
     ZFSFileWriter zfsFileWriter;
 
     @Mock
@@ -56,7 +62,10 @@ public class TestS3StreamRepositoryImpl {
 
         when(zfsFileWriterFactory.getZFSFileWriter(any()))
                 .thenReturn(zfsFileWriter);
-        when(tempPathGenerator.generateConsistent(eq(null), anyString()))
+//        when(tempPathGenerator.generateConsistent(eq(null), anyString()))
+//                .thenReturn(tmpDir.resolve("test.part0"))
+//                .thenReturn(tmpDir.resolve("test.part1"));
+        when(fileManager.getNew(eq(null), anyString()))
                 .thenReturn(tmpDir.resolve("test.part0"))
                 .thenReturn(tmpDir.resolve("test.part1"));
         doAnswer(invocationOnMock -> {
@@ -69,25 +78,25 @@ public class TestS3StreamRepositoryImpl {
                 })
                 .when(zfsFileWriter).write(any());
 
-        InOrder inOrder = inOrder(s3Repository, zfsFileWriterFactory, tempPathGenerator, zfsFileWriter);
+        InOrder inOrder = inOrder(s3Repository, zfsFileWriterFactory, fileManager, zfsFileWriter);
 
         S3StreamRepositoryImpl s3StreamRepository = new S3StreamRepositoryImpl(
                 s3Repository,
                 zfsFileWriterFactory,
                 zfsFileReaderFactory,
-                tempPathGenerator
+                fileManager
         );
 
         s3StreamRepository.add("bucket/pool/level-0/zfs-backup-s3", bufferedInputStream);
 
         bufferedInputStream.close();
 
-        inOrder.verify(tempPathGenerator).generateConsistent(null, ".part0");
+        inOrder.verify(fileManager).getNew(null, ".part0");
         inOrder.verify(zfsFileWriterFactory).getZFSFileWriter(tmpDir.resolve("test.part0"));
         inOrder.verify(zfsFileWriter).write(any());
         inOrder.verify(s3Repository).add("bucket/pool/level-0/zfs-backup-s3", tmpDir.resolve("test.part0"));
 
-        inOrder.verify(tempPathGenerator).generateConsistent(null, ".part1");
+        inOrder.verify(fileManager).getNew(null, ".part1");
         inOrder.verify(zfsFileWriterFactory).getZFSFileWriter(tmpDir.resolve("test.part1"));
         inOrder.verify(zfsFileWriter).write(any());
         inOrder.verify(s3Repository).add("bucket/pool/level-0/zfs-backup-s3", tmpDir.resolve("test.part1"));
@@ -98,36 +107,53 @@ public class TestS3StreamRepositoryImpl {
     @Test
     void shouldGetAll(@TempDir Path tmpDir) throws Exception {
         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new ByteArrayOutputStream());
+        String unique = UUID.randomUUID().toString();
 
         when(s3Repository.listAll(anyString()))
-                .thenReturn(List.of("test.part0", "test.part1"));
-
-        when(s3Repository.getOne(anyString()))
-                .thenReturn(tmpDir.resolve("test.part0"))
-                .thenReturn(tmpDir.resolve("test.part1"));
-
+                .thenReturn(List.of(
+                        "test-bucket/test-pool/level-0/zfs-backup-s3.part0",
+                        "test-bucket/test-pool/level-0/zfs-backup-s3.part1"
+                ));
         when(zfsFileReaderFactory.getZFSFileReader(any(), any()))
                 .thenReturn(zfsFileReader);
+        when(fileManager.getNew(eq(null),anyString()))
+                .thenReturn(tmpDir.resolve("unique-zfs-backup-s3.part0"))
+                .thenReturn(tmpDir.resolve("unique-zfs-backup-s3.part1"));
+
 
         InOrder inOrder = inOrder(s3Repository, zfsFileReaderFactory);
+
 
         S3StreamRepositoryImpl s3StreamRepository = new S3StreamRepositoryImpl(
                 s3Repository,
                 zfsFileWriterFactory,
                 zfsFileReaderFactory,
-                tempPathGenerator
+                fileManager
         );
 
-        s3StreamRepository.getAll(bufferedOutputStream, "bucket/pool/level-0/zfs-backup-s3");
+
+        s3StreamRepository.getAll(bufferedOutputStream, "test-bucket/test-pool/level-0/zfs-backup-s3");
 
 
-        inOrder.verify(s3Repository).listAll("bucket/pool/level-0/zfs-backup-s3");
+        inOrder.verify(s3Repository).listAll("test-bucket/test-pool/level-0/zfs-backup-s3");
 
-        inOrder.verify(s3Repository).getOne("bucket/pool/level-0/zfs-backup-s3/test.part0");
-        inOrder.verify(zfsFileReaderFactory).getZFSFileReader(bufferedOutputStream, tmpDir.resolve("test.part0"));
+        inOrder.verify(s3Repository).getOne(
+                "test-bucket/test-pool/level-0/zfs-backup-s3.part0",
+                tmpDir.resolve("unique-zfs-backup-s3.part0")
+        );
+        inOrder.verify(zfsFileReaderFactory).getZFSFileReader(
+                bufferedOutputStream,
+                tmpDir.resolve("unique-zfs-backup-s3.part0")
+        );
 
-        inOrder.verify(s3Repository).getOne("bucket/pool/level-0/zfs-backup-s3/test.part1");
-        inOrder.verify(zfsFileReaderFactory).getZFSFileReader(bufferedOutputStream, tmpDir.resolve("test.part1"));
+        inOrder.verify(s3Repository).getOne(
+                "test-bucket/test-pool/level-0/zfs-backup-s3.part1",
+                tmpDir.resolve("unique-zfs-backup-s3.part1")
+        );
+        inOrder.verify(zfsFileReaderFactory).getZFSFileReader(
+                bufferedOutputStream,
+                tmpDir.resolve("unique-zfs-backup-s3.part1")
+        );
 
     }
 }

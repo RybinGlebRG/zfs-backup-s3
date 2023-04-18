@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Random;
 
 @Disabled
+@Deprecated
 public class TestS3 {
 
     @Test

@@ -58,6 +58,7 @@ public class S3RepositoryImpl implements S3Repository {
     @Override
     public List<String> listAll(String prefix) {
         String key = s3Storage.getPrefix().toString() + "/" + prefix;
+        // TODO: Order?
         List<String> res = s3Service.list(key);
         return res;
     }

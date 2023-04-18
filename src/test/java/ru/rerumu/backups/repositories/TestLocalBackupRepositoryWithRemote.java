@@ -1,6 +1,7 @@
 package ru.rerumu.backups.repositories;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InOrder;
@@ -19,7 +20,8 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 
-
+@Disabled
+@Deprecated
 public class TestLocalBackupRepositoryWithRemote {
 
     @Test

@@ -10,9 +10,9 @@ public class TempPathGeneratorImpl implements TempPathGenerator {
     private final Path tempDir;
     private final String consistent;
 
-    public TempPathGeneratorImpl(Path tempDir) {
+    public TempPathGeneratorImpl(Path tempDir, String unique) {
         this.tempDir = tempDir;
-        consistent = UUID.randomUUID().toString();
+        this.consistent = unique;
     }
 
     @Override

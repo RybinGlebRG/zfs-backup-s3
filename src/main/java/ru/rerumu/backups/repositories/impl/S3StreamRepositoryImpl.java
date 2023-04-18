@@ -9,6 +9,7 @@ import ru.rerumu.backups.repositories.S3Repository;
 import ru.rerumu.backups.services.TempPathGenerator;
 import ru.rerumu.backups.services.ZFSFileReader;
 import ru.rerumu.backups.services.ZFSFileWriter;
+import ru.rerumu.backups.services.s3.FileManager;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -29,13 +30,13 @@ public class S3StreamRepositoryImpl implements S3Repository {
     private final ZFSFileWriterFactory zfsFileWriterFactory;
     private final ZFSFileReaderFactory zfsFileReaderFactory;
 
-    private final TempPathGenerator tempPathGenerator;
+    private final FileManager fileManager;
 
-    public S3StreamRepositoryImpl(S3Repository s3Repository, ZFSFileWriterFactory zfsFileWriterFactory, ZFSFileReaderFactory zfsFileReaderFactory, TempPathGenerator tempPathGenerator) {
+    public S3StreamRepositoryImpl(S3Repository s3Repository, ZFSFileWriterFactory zfsFileWriterFactory, ZFSFileReaderFactory zfsFileReaderFactory, FileManager fileManager) {
         this.s3Repository = s3Repository;
         this.zfsFileWriterFactory = zfsFileWriterFactory;
         this.zfsFileReaderFactory = zfsFileReaderFactory;
-        this.tempPathGenerator = tempPathGenerator;
+        this.fileManager = fileManager;
     }
 
     @Override
@@ -60,7 +61,7 @@ public class S3StreamRepositoryImpl implements S3Repository {
     public void add(String prefix, BufferedInputStream bufferedInputStream) throws Exception {
         int n = 0;
         while (true) {
-            Path newFilePath = tempPathGenerator.generateConsistent(null,".part"+ n++);
+            Path newFilePath = fileManager.getNew(null,".part"+ n++);
             try(ZFSFileWriter zfsFileWriter = zfsFileWriterFactory.getZFSFileWriter(newFilePath)) {
                 zfsFileWriter.write(bufferedInputStream);
             } catch (FileHitSizeLimitException e) {
@@ -82,13 +83,13 @@ public class S3StreamRepositoryImpl implements S3Repository {
             throws CompressorException, IOException, ClassNotFoundException, EncryptException {
         List<String> keys = s3Repository.listAll(prefix);
         for (String key : keys) {
-            Path part = tempPathGenerator.generateConsistent(null,"-"+ Paths.get(key).getFileName());
+            Path part = fileManager.getNew(null,"-"+ Paths.get(key).getFileName());
             s3Repository.getOne(key,part);
             ZFSFileReader zfsFileReader = zfsFileReaderFactory.getZFSFileReader(
                     bufferedOutputStream, part
             );
             zfsFileReader.read();
-            Files.delete(part);
+            fileManager.delete(part);
         }
     }
 }

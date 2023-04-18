@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.factories.S3ClientFactory;
 import ru.rerumu.backups.models.S3Storage;
 import ru.rerumu.backups.services.s3.impl.ListCallable;
+import ru.rerumu.backups.services.s3.impl.MultipartDownloadCallable;
 import ru.rerumu.backups.services.s3.impl.MultipartUploadCallable;
 import ru.rerumu.backups.services.s3.impl.OnepartUploadCallable;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -19,7 +20,6 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,23 +27,27 @@ import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class ITS3Upload {
+public class ITS3UploadDownload {
 
     @Mock
     S3ClientFactory s3ClientFactory;
 
+
     @Test
-    void shouldUploadOnepart(@TempDir Path tempDir ) throws Exception {
-        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        logger.setLevel(Level.TRACE);
-        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
-        logger.setLevel(Level.INFO);
+    void shouldUploadDownloadOnepart(@TempDir Path tempDir ) throws Exception {
+//        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+//        logger.setLevel(Level.INFO);
+//        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
+//        logger.setLevel(Level.INFO);
+//        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
+//        logger.setLevel(Level.INFO);
+//        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
+//        logger.setLevel(Level.INFO);
 
         String prefix = UUID.randomUUID().toString();
 
@@ -66,47 +70,60 @@ public class ITS3Upload {
                                 .build()
                 );
 
-        Files.writeString(
+        byte[] data = new byte[3_000];
+
+        new Random().nextBytes(data);
+
+        Files.write(
                 tempDir.resolve("test.txt"),
-                UUID.randomUUID().toString(),
-                StandardCharsets.UTF_8,
+                data,
                 StandardOpenOption.CREATE,
                 StandardOpenOption.TRUNCATE_EXISTING,
                 StandardOpenOption.WRITE
         );
 
-        var onepartUpload = new OnepartUploadCallable(
+        new OnepartUploadCallable(
                 tempDir.resolve("test.txt"),
                 prefix+".part1",
                 s3Storage,
                 s3ClientFactory
-        );
+        ).call();
 
-        onepartUpload.call();
-
-
-        Callable<List<String>> listCallable = new ListCallable(
+        List<String> res = new ListCallable(
                 prefix+".part1",
                 s3Storage,
                 s3ClientFactory
-        );
+        ).call();
 
-        List<String> res = listCallable.call();
 
         Assertions.assertEquals(List.of(prefix+".part1"),res);
 
 
+        new MultipartDownloadCallable(
+                tempDir.resolve("res.txt"),
+                prefix+".part1",
+                s3Storage,
+                s3ClientFactory,
+                12_000_000
+        ).call();
+
+        Assertions.assertTrue(Files.exists(tempDir.resolve("res.txt")));
+
+        byte[] resBytes = Files.readAllBytes(tempDir.resolve("res.txt"));
+
+        Assertions.assertArrayEquals(data, resBytes);
     }
 
-
     @Test
-    void shouldUploadMultipart(@TempDir Path tempDir ) throws Exception {
-        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        logger.setLevel(Level.TRACE);
-        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
-        logger.setLevel(Level.INFO);
-        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
-        logger.setLevel(Level.INFO);
+    void shouldUploadDownloadMultipart(@TempDir Path tempDir ) throws Exception {
+//        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+//        logger.setLevel(Level.TRACE);
+//        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
+//        logger.setLevel(Level.INFO);
+//        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
+//        logger.setLevel(Level.INFO);
+//        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
+//        logger.setLevel(Level.INFO);
 
         String prefix = UUID.randomUUID().toString();
 
@@ -141,28 +158,38 @@ public class ITS3Upload {
                 StandardOpenOption.WRITE
         );
 
-        var callable = new MultipartUploadCallable(
+        new MultipartUploadCallable(
                 tempDir.resolve("test.txt"),
                 prefix+".part1",
                 s3Storage,
                 s3ClientFactory,
                 12_000_000
-        );
-
-        callable.call();
+        ).call();
 
 
-        Callable<List<String>> listCallable = new ListCallable(
+        List<String> res = new ListCallable(
                 prefix+".part1",
                 s3Storage,
                 s3ClientFactory
-        );
+        ).call();
 
-        List<String> res = listCallable.call();
 
         Assertions.assertEquals(List.of(prefix+".part1"),res);
 
 
+        new MultipartDownloadCallable(
+                tempDir.resolve("res.txt"),
+                prefix+".part1",
+                s3Storage,
+                s3ClientFactory,
+                12_000_000
+        ).call();
+
+        Assertions.assertTrue(Files.exists(tempDir.resolve("res.txt")));
+
+        byte[] resBytes = Files.readAllBytes(tempDir.resolve("res.txt"));
+
+        Assertions.assertArrayEquals(data, resBytes);
     }
 
 }
