@@ -3,7 +3,7 @@ package ru.rerumu.backups.utils.processes.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.utils.processes.ProcessWrapper;
-import ru.rerumu.backups.utils.processes.StdProcessor;
+import ru.rerumu.backups.utils.processes.TriConsumer;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -16,21 +16,27 @@ import java.util.function.Consumer;
 
 public class ProcessWrapperImpl implements ProcessWrapper {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
     private final List<String> args;
-    private final ExecutorService executorService = Executors.newCachedThreadPool();
+    private final ExecutorService executorService;
     private final List<Future<Void>> futureList = new ArrayList<>();
     private BufferedInputStream bufferedInputStream;
     private BufferedOutputStream bufferedOutputStream;
-    private Process process;
+    // TODO: why volatile???
+    private volatile Process process;
     private boolean isKilled = false;
     private boolean isClosed = false;
-    private final Consumer<BufferedInputStream> stderrProcessor;
-    private final Consumer<BufferedInputStream> stdoutProcessor;
+//    private final Consumer<BufferedInputStream> stderrProcessor;
+    private final TriConsumer<BufferedInputStream,Runnable,Runnable> stderrProcessor;
+    private final TriConsumer<BufferedInputStream,Runnable,Runnable> stdoutProcessor;
 
-
-    public ProcessWrapperImpl(List<String> args, Consumer<BufferedInputStream> stderrProcessor, Consumer<BufferedInputStream> stdoutProcessor) {
+    public ProcessWrapperImpl(
+            List<String> args,
+            ExecutorService executorService,
+            TriConsumer<BufferedInputStream,Runnable,Runnable> stderrProcessor,
+            TriConsumer<BufferedInputStream,Runnable,Runnable> stdoutProcessor
+    ) {
         this.args = args;
+        this.executorService = executorService;
         this.stderrProcessor = stderrProcessor;
         this.stdoutProcessor = stdoutProcessor;
     }
@@ -46,7 +52,9 @@ public class ProcessWrapperImpl implements ProcessWrapper {
             futureList.add(executorService.submit(
                     ()->{
                         stderrProcessor.accept(
-                                new BufferedInputStream(process.getErrorStream())
+                                new BufferedInputStream(process.getErrorStream()),
+                                this::close,
+                                this::kill
                         );
                         return null;
                     }
@@ -55,8 +63,12 @@ public class ProcessWrapperImpl implements ProcessWrapper {
         if (stdoutProcessor != null) {
             futureList.add(
                     executorService.submit(
-                            () -> {
-                                stdoutProcessor.accept(bufferedInputStream);
+                            ()->{
+                                stdoutProcessor.accept(
+                                        bufferedInputStream,
+                                        this::close,
+                                        this::kill
+                                );
                                 return null;
                             }
                     )
@@ -64,7 +76,6 @@ public class ProcessWrapperImpl implements ProcessWrapper {
         }
 
         int exitCode = process.waitFor();
-        executorService.shutdown();
         for (Future<Void> future : futureList) {
             future.get();
         }
@@ -76,7 +87,7 @@ public class ProcessWrapperImpl implements ProcessWrapper {
         return null;
     }
 
-    public synchronized void close() {
+    private synchronized void close() {
         try {
             if (!isClosed && !isKilled) {
                 logger.info("Closing stdin");
@@ -89,7 +100,7 @@ public class ProcessWrapperImpl implements ProcessWrapper {
         }
     }
 
-    public synchronized void kill() {
+    private synchronized void kill() {
         try {
             if (!isKilled) {
                 logger.info("Killing process");

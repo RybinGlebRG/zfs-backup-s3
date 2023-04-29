@@ -9,7 +9,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 
-public class StdConsumer implements Consumer<BufferedInputStream> {
+public class StdConsumer implements TriConsumer<BufferedInputStream,Runnable,Runnable> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final Consumer<String> consumer;
 
@@ -18,16 +18,17 @@ public class StdConsumer implements Consumer<BufferedInputStream> {
     }
 
     @Override
-    public void accept(BufferedInputStream bufferedInputStream) {
+    public void accept(BufferedInputStream bufferedInputStream, Runnable close, Runnable kill) {
         logger.info("Started reading std");
-        try(InputStreamReader inputStreamReader = new InputStreamReader(bufferedInputStream, StandardCharsets.UTF_8);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader)){
+        try (InputStreamReader inputStreamReader = new InputStreamReader(bufferedInputStream, StandardCharsets.UTF_8);
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
             String s = null;
-            while ((s=bufferedReader.readLine())!=null){
+            while ((s = bufferedReader.readLine()) != null) {
                 consumer.accept(s);
             }
         } catch (Exception e) {
-            logger.error(e.getMessage(),e);
+            logger.error(e.getMessage(), e);
+            kill.run();
             throw new RuntimeException(e);
         }
         logger.info("Finished reading std");

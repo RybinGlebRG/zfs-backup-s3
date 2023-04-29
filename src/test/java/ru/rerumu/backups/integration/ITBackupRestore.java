@@ -15,13 +15,11 @@ import ru.rerumu.backups.factories.S3ClientFactory;
 import ru.rerumu.backups.factories.ZFSFileReaderFactory;
 import ru.rerumu.backups.factories.ZFSFileWriterFactory;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
-import ru.rerumu.backups.factories.impl.ProcessWrapperFactoryImpl;
 import ru.rerumu.backups.factories.impl.S3ClientFactoryImpl;
 import ru.rerumu.backups.factories.impl.ZFSFileReaderFactoryImpl;
 import ru.rerumu.backups.factories.impl.ZFSFileWriterFactoryImpl;
 import ru.rerumu.backups.models.S3Storage;
 import ru.rerumu.backups.models.Snapshot;
-import ru.rerumu.backups.models.ZFSPool;
 import ru.rerumu.backups.models.zfs.Dataset;
 import ru.rerumu.backups.models.zfs.Pool;
 import ru.rerumu.backups.services.ReceiveService;
@@ -31,7 +29,6 @@ import ru.rerumu.backups.services.SnapshotService;
 import ru.rerumu.backups.services.impl.ReceiveServiceImpl;
 import ru.rerumu.backups.services.impl.SendServiceImpl;
 import ru.rerumu.backups.services.impl.SnapshotNamingServiceImpl;
-import ru.rerumu.backups.services.impl.SnapshotServiceImpl;
 import ru.rerumu.backups.services.s3.FileManager;
 import ru.rerumu.backups.services.s3.S3Service;
 import ru.rerumu.backups.services.s3.factories.S3CallableFactory;
@@ -41,11 +38,9 @@ import ru.rerumu.backups.services.s3.impl.S3ServiceImpl;
 import ru.rerumu.backups.services.s3.repositories.impl.S3RepositoryImpl;
 import ru.rerumu.backups.services.s3.repositories.impl.S3StreamRepositoryImpl;
 import ru.rerumu.backups.services.zfs.ZFSService;
-import ru.rerumu.backups.services.zfs.impl.ZFSServiceImpl;
+import ru.rerumu.backups.services.zfs.factories.ZFSCallableFactory;
 import ru.rerumu.backups.utils.processes.ProcessFactory;
 import ru.rerumu.backups.utils.processes.impl.ProcessFactoryImpl;
-import ru.rerumu.backups.zfs_api.ZFSCommandFactory;
-import ru.rerumu.backups.zfs_api.impl.ZFSCommandFactoryImpl;
 import ru.rerumu.backups.zfs_api.zfs.ZFSReceive;
 import ru.rerumu.backups.zfs_api.zfs.ZFSSend;
 import software.amazon.awssdk.regions.Region;
@@ -55,7 +50,6 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -85,6 +79,12 @@ public class ITBackupRestore {
 
     @Mock
     SnapshotService snapshotService;
+
+    @Mock
+    ProcessFactory processFactory;
+
+    @Mock
+    ZFSCallableFactory zfsCallableFactory;
 
 
     private SendService prepareSend(Path tempDir) throws Exception{
@@ -124,7 +124,7 @@ public class ITBackupRestore {
                 zfsFileReaderFactory,
                 fileManager
         );
-        ProcessFactory processFactory = new ProcessFactoryImpl();
+//        ProcessFactory processFactory = new ProcessFactoryImpl();
 //        ZFSCommandFactory zfsCommandFactory = new ZFSCommandFactoryImpl(processWrapperFactory, processFactory);
 //        SnapshotService snapshotService = new SnapshotServiceImpl(zfsCommandFactory);
         SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
@@ -134,7 +134,8 @@ public class ITBackupRestore {
                 s3StreamRepository,
                 snapshotService,
                 snapshotNamingService,
-                zfsService
+                zfsService,
+                zfsCallableFactory
         );
         return sendService;
     }

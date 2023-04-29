@@ -9,6 +9,7 @@ import ru.rerumu.backups.zfs_api.zfs.impl.ZFSAbstractSend;
 import java.io.IOException;
 import java.util.List;
 
+@Deprecated
 public class ZFSSendReplica extends ZFSAbstractSend {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 

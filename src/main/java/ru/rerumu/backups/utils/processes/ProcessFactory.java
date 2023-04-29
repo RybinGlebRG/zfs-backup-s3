@@ -11,7 +11,7 @@ public interface ProcessFactory {
 
     ProcessWrapperImpl getProcessWrapper(
             List<String> args,
-            Consumer<BufferedInputStream> stderrProcessor,
-            Consumer<BufferedInputStream> stdoutProcessor
+            TriConsumer<BufferedInputStream,Runnable,Runnable> stderrProcessor,
+            TriConsumer<BufferedInputStream,Runnable,Runnable> stdoutProcessor
     );
 }

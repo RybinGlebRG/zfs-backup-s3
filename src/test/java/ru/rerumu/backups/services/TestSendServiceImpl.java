@@ -16,6 +16,7 @@ import ru.rerumu.backups.models.zfs.Pool;
 import ru.rerumu.backups.services.s3.repositories.impl.S3StreamRepositoryImpl;
 import ru.rerumu.backups.services.impl.SendServiceImpl;
 import ru.rerumu.backups.services.zfs.ZFSService;
+import ru.rerumu.backups.services.zfs.factories.ZFSCallableFactory;
 import ru.rerumu.backups.zfs_api.zfs.ZFSSend;
 
 import java.io.BufferedInputStream;
@@ -45,6 +46,9 @@ public class TestSendServiceImpl {
     @Mock
     ZFSService zfsService;
 
+    @Mock
+    ZFSCallableFactory zfsCallableFactory;
+
     @Test
     void shouldSend() throws Exception {
         List<Dataset> datasetList = new ArrayList<>();
@@ -67,7 +71,8 @@ public class TestSendServiceImpl {
                 s3StreamRepository,
                 snapshotService,
                 snapshotNamingService,
-                zfsService
+                zfsService,
+                zfsCallableFactory
         );
 
         InOrder inOrder = Mockito.inOrder(
@@ -116,7 +121,8 @@ public class TestSendServiceImpl {
                 s3StreamRepository,
                 snapshotService,
                 snapshotNamingService,
-                zfsService
+                zfsService,
+                zfsCallableFactory
         );
 
         InOrder inOrder = Mockito.inOrder(

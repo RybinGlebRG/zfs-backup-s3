@@ -6,6 +6,6 @@ import java.util.concurrent.Callable;
 
 public interface ProcessWrapper extends Callable<Void> {
 
-    void close();
-    void kill();
+//    void close();
+//    void kill();
 }

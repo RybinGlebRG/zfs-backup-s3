@@ -12,7 +12,14 @@ import ru.rerumu.backups.services.SendService;
 import ru.rerumu.backups.services.SnapshotNamingService;
 import ru.rerumu.backups.services.SnapshotService;
 import ru.rerumu.backups.services.zfs.ZFSService;
+import ru.rerumu.backups.services.zfs.factories.ZFSCallableFactory;
+import ru.rerumu.backups.services.zfs.impl.SendReplica;
+import ru.rerumu.backups.utils.processes.ProcessFactory;
+import ru.rerumu.backups.utils.processes.impl.ProcessWrapperImpl;
+import ru.rerumu.backups.zfs_api.ProcessWrapper;
 import ru.rerumu.backups.zfs_api.zfs.ZFSSend;
+
+import java.util.concurrent.Callable;
 
 
 // TODO: Use resume tokens?
@@ -26,13 +33,16 @@ public class SendServiceImpl implements SendService {
     private final SnapshotNamingService snapshotNamingService;
     private final ZFSService zfsService;
 
+    private final ZFSCallableFactory zfsCallableFactory;
 
-    public SendServiceImpl(ZFSProcessFactory zfsProcessFactory, S3StreamRepositoryImpl s3StreamRepository, SnapshotService snapshotService, SnapshotNamingService snapshotNamingService, ZFSService zfsService) {
+
+    public SendServiceImpl(ZFSProcessFactory zfsProcessFactory, S3StreamRepositoryImpl s3StreamRepository, SnapshotService snapshotService, SnapshotNamingService snapshotNamingService, ZFSService zfsService, ZFSCallableFactory zfsCallableFactory) {
         this.zfsProcessFactory = zfsProcessFactory;
         this.s3StreamRepository = s3StreamRepository;
         this.snapshotService = snapshotService;
         this.snapshotNamingService = snapshotNamingService;
         this.zfsService = zfsService;
+        this.zfsCallableFactory = zfsCallableFactory;
     }
 
     private String escapeSymbols(String srcString) {
@@ -45,23 +55,51 @@ public class SendServiceImpl implements SendService {
                 pool.getRootDataset().orElseThrow(),
                 snapshotNamingService.generateName()
                 );
-        try (ZFSSend zfsSend = zfsProcessFactory.getZFSSendReplicate(snapshot)){
-            String prefix = String.format(
-                    "%s/%s/level-0/%s/",
-                    bucket.name(),
-                    escapeSymbols(pool.name()),
-                    escapeSymbols(snapshot.getName())
-            );
-            try {
-                s3StreamRepository.add(prefix, zfsSend.getBufferedInputStream());
-            } catch (Exception e){
-                zfsSend.kill();
-                throw e;
-            }
-        } catch (Exception e){
+        String prefix = String.format(
+                "%s/%s/level-0/%s/",
+                bucket.name(),
+                escapeSymbols(pool.name()),
+                escapeSymbols(snapshot.getName())
+        );
+
+        Callable<Void> sendReplica = zfsCallableFactory.getSendReplica(
+                snapshot,
+                (item,close,kill) -> {
+                    try {
+                        s3StreamRepository.add(prefix, item);
+                    } catch (Exception e) {
+                        logger.error(e.getMessage(),e);
+                        kill.run();
+                        throw new RuntimeException(e);
+                    }
+                }
+        );
+
+        try {
+            sendReplica.call();
+        } catch (Exception e) {
             logger.error(e.getMessage(),e);
             throw new SendError(e);
         }
+
+
+//        try (ZFSSend zfsSend = zfsProcessFactory.getZFSSendReplicate(snapshot)){
+//            String prefix = String.format(
+//                    "%s/%s/level-0/%s/",
+//                    bucket.name(),
+//                    escapeSymbols(pool.name()),
+//                    escapeSymbols(snapshot.getName())
+//            );
+//            try {
+//                s3StreamRepository.add(prefix, zfsSend.getBufferedInputStream());
+//            } catch (Exception e){
+//                zfsSend.kill();
+//                throw e;
+//            }
+//        } catch (Exception e){
+//            logger.error(e.getMessage(),e);
+//            throw new SendError(e);
+//        }
     }
 
     @Override
