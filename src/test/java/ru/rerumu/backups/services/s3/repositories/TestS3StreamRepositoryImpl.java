@@ -10,10 +10,8 @@ import ru.rerumu.backups.exceptions.FileHitSizeLimitException;
 import ru.rerumu.backups.exceptions.ZFSStreamEndedException;
 import ru.rerumu.backups.factories.ZFSFileReaderFactory;
 import ru.rerumu.backups.factories.ZFSFileWriterFactory;
-import ru.rerumu.backups.services.TempPathGenerator;
 import ru.rerumu.backups.services.ZFSFileReader;
 import ru.rerumu.backups.services.ZFSFileWriter;
-import ru.rerumu.backups.services.s3.repositories.S3Repository;
 import ru.rerumu.backups.services.s3.repositories.impl.S3StreamRepositoryImpl;
 import ru.rerumu.backups.services.s3.FileManager;
 
@@ -41,9 +39,6 @@ public class TestS3StreamRepositoryImpl {
 
     @Mock
     ZFSFileReaderFactory zfsFileReaderFactory;
-
-    @Mock
-    TempPathGenerator tempPathGenerator;
 
     @Mock
     FileManager fileManager;

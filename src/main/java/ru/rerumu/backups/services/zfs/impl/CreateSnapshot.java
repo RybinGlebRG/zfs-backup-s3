@@ -1,11 +1,8 @@
 package ru.rerumu.backups.services.zfs.impl;
 
 import ru.rerumu.backups.factories.ProcessWrapperFactory;
-import ru.rerumu.backups.models.Snapshot;
-import ru.rerumu.backups.models.ZFSDataset;
 import ru.rerumu.backups.models.zfs.Dataset;
 import ru.rerumu.backups.zfs_api.ProcessWrapper;
-import ru.rerumu.backups.zfs_api.zfs.impl.SnapshotCommandImpl;
 
 import java.util.ArrayList;
 import java.util.List;

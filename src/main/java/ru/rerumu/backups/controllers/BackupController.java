@@ -11,36 +11,11 @@ public class BackupController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private ZFSBackupService zfsBackupService;
-    private SendService sendService;
-
-    public BackupController(
-            ZFSBackupService zfsBackupService
-    ){
-        this.zfsBackupService = zfsBackupService;
-    }
+    private final SendService sendService;
 
     public BackupController(SendService sendService) {
         this.sendService = sendService;
     }
-
-//    public int backupFull(
-//            String fullSnapshot){
-//        try {
-//            logger.info("Start 'sendFull'");
-//
-//            Snapshot targetSnapshot = new Snapshot(fullSnapshot);
-//            zfsBackupService.zfsBackupFull(
-//                    targetSnapshot.getName(),
-//                    targetSnapshot.getDataset()
-//            );
-//            return 0;
-//
-//        } catch (Exception e) {
-//            logger.error(e.getMessage(), e);
-//            return 1;
-//        }
-//    }
 
     public void backupFull(String poolName, String bucketName){
         try {
@@ -51,28 +26,6 @@ public class BackupController {
             logger.info("Finished 'sendFull'");
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-        }
-    }
-
-    public int backupIncremental(
-            String baseSnapshotName,
-            String targetSnapshotName
-    ){
-        try {
-            logger.info("Starting incremental backup");
-
-            Snapshot baseSnapshot = new Snapshot(baseSnapshotName);
-            Snapshot targetSnapshot = new Snapshot(targetSnapshotName);
-            zfsBackupService.zfsBackupIncremental(
-                    baseSnapshot.getDataset(),
-                    baseSnapshot.getName(),
-                    targetSnapshot.getName()
-            );
-            return 0;
-
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            return 1;
         }
     }
 }

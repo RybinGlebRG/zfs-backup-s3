@@ -19,11 +19,6 @@ public class ZFSProcessFactoryImpl implements ZFSProcessFactory {
     }
 
     @Override
-    public ZFSSend getZFSSendFull(Snapshot snapshot) throws IOException {
-        return new ZFSSendFullEncrypted(snapshot, processWrapperFactory);
-    }
-
-    @Override
     public ZFSSend getZFSSendReplicate(Snapshot snapshot) throws IOException {
         return new ZFSSendReplica(snapshot, processWrapperFactory);
     }
@@ -32,12 +27,6 @@ public class ZFSProcessFactoryImpl implements ZFSProcessFactory {
     public ZFSGetDatasetProperty getZFSGetDatasetProperty(String datasetName, String propertyName) throws IOException {
         return new ZFSGetDatasetPropertyImpl(propertyName, datasetName,processWrapperFactory);
     }
-
-    @Override
-    public ZFSSend getZFSSendIncremental(Snapshot baseSnapshot, Snapshot incrementalSnapshot) throws IOException {
-        return new ZFSSendMultiIncrementalEncrypted(baseSnapshot,incrementalSnapshot, processWrapperFactory);
-    }
-
     @Override
     public ZFSReceive getZFSReceive(ZFSPool zfsPool) throws IOException {
         return new ZFSReceiveImpl(zfsPool.getName(), processWrapperFactory);

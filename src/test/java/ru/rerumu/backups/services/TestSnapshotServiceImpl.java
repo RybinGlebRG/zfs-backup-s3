@@ -8,15 +8,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.backups.models.Snapshot;
-import ru.rerumu.backups.models.ZFSDataset;
 import ru.rerumu.backups.models.zfs.Dataset;
-import ru.rerumu.backups.models.zfs_dataset_properties.EncryptionProperty;
 import ru.rerumu.backups.services.impl.SnapshotServiceImpl;
 import ru.rerumu.backups.services.zfs.impl.CreateSnapshot;
 import ru.rerumu.backups.services.zfs.impl.ListSnapshots;
 import ru.rerumu.backups.zfs_api.ZFSCommandFactory;
-import ru.rerumu.backups.zfs_api.zfs.ListSnapshotsCommand;
-import ru.rerumu.backups.zfs_api.zfs.SnapshotCommand;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,48 +1,6 @@
 package ru.rerumu.backups.integration;
 
-import ch.qos.logback.classic.Level;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.rerumu.backups.controllers.BackupController;
-import ru.rerumu.backups.controllers.RestoreController;
-import ru.rerumu.backups.factories.SnapshotSenderFactory;
-import ru.rerumu.backups.factories.ZFSFileReaderFactory;
-import ru.rerumu.backups.factories.ZFSFileWriterFactory;
-import ru.rerumu.backups.factories.ZFSProcessFactory;
-import ru.rerumu.backups.factories.impl.*;
-import ru.rerumu.backups.models.S3Storage;
-import ru.rerumu.backups.models.Snapshot;
-import ru.rerumu.backups.models.ZFSPool;
-import ru.rerumu.backups.repositories.LocalBackupRepository;
-import ru.rerumu.backups.repositories.RemoteBackupRepository;
-import ru.rerumu.backups.repositories.ZFSFileSystemRepository;
-import ru.rerumu.backups.repositories.ZFSSnapshotRepository;
-import ru.rerumu.backups.repositories.impl.LocalBackupRepositoryImpl;
-import ru.rerumu.backups.repositories.impl.S3Repository;
-import ru.rerumu.backups.repositories.impl.ZFSFileSystemRepositoryImpl;
-import ru.rerumu.backups.repositories.impl.ZFSSnapshotRepositoryImpl;
-import ru.rerumu.backups.services.DatasetPropertiesChecker;
-import ru.rerumu.backups.services.SnapshotReceiver;
-import ru.rerumu.backups.services.ZFSBackupService;
-import ru.rerumu.backups.services.ZFSRestoreService;
-import ru.rerumu.backups.services.impl.SnapshotReceiverImpl;
-import ru.rerumu.backups.zfs_api.zfs.*;
-import software.amazon.awssdk.regions.Region;
-
-import java.io.*;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 
 
 @Disabled

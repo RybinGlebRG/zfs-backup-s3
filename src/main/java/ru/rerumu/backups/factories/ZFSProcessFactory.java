@@ -13,9 +13,6 @@ public interface ZFSProcessFactory {
     @Deprecated
     ZFSReceive getZFSReceive(ZFSPool zfsPool) throws IOException;
     ZFSReceive getZFSReceive(Pool pool) throws IOException;
-    ZFSSend getZFSSendIncremental(Snapshot baseSnapshot, Snapshot incrementalSnapshot) throws IOException;
-//    ZFSSend getZFSSendMultiIncremental(Snapshot baseSnapshot, Snapshot incrementalSnapshot) throws IOException;
-    ZFSSend getZFSSendFull(Snapshot snapshot) throws IOException;
     ZFSSend getZFSSendReplicate(Snapshot snapshot) throws IOException;
 
     ZFSGetDatasetProperty getZFSGetDatasetProperty(String datasetName, String propertyName) throws IOException;

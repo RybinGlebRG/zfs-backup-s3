@@ -5,17 +5,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.rerumu.backups.factories.S3ClientFactory;
-import ru.rerumu.backups.factories.S3ManagerFactory;
 import ru.rerumu.backups.models.S3Storage;
 import ru.rerumu.backups.services.s3.S3Service;
 import ru.rerumu.backups.services.s3.repositories.impl.S3RepositoryImpl;
 import software.amazon.awssdk.regions.Region;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 

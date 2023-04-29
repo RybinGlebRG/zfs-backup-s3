@@ -1,13 +1,6 @@
 package ru.rerumu.backups.controllers;
 
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import ru.rerumu.backups.services.ZFSBackupService;
-
-import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @Disabled
 class TestBackupController {

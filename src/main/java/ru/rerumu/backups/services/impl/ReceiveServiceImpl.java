@@ -12,8 +12,10 @@ import ru.rerumu.backups.services.ReceiveService;
 import ru.rerumu.backups.services.zfs.ZFSService;
 import ru.rerumu.backups.zfs_api.zfs.ZFSReceive;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 public class ReceiveServiceImpl implements ReceiveService {
@@ -48,17 +50,23 @@ public class ReceiveServiceImpl implements ReceiveService {
                 bucketName
         );
         List<String> keys = s3StreamRepository.listAll(prefix);
-        LocalDateTime maxDate = keys.stream()
-                .map(item -> Paths.get(item).getName(3).toString())
-                .map(snapshotNamingService::extractTime)
-                .max(LocalDateTime::compareTo)
+
+        String maxDateKey = keys.stream()
+                .filter(item -> item.matches(bucketName + "/\\w+/level-0/[a-zA-Z0-9:_-]+/.*"))
+                .max(Comparator.comparing(
+                        item -> snapshotNamingService.extractTime(
+                                Paths.get(item).getName(3).toString()
+                        )
+                ))
                 .orElseThrow();
+        Path keyPath = Paths.get(maxDateKey);
+        String poolName = keyPath.getName(1).toString();
+        LocalDateTime maxDate = snapshotNamingService.extractTime(
+                keyPath.getName(3).toString()
+        );
         String generatedName = snapshotNamingService.generateName(maxDate);
-        String poolName = keys.stream()
-                .filter(item -> item.contains(generatedName))
-                .map(item -> Paths.get(item).getName(1).toString())
-                .findFirst()
-                .orElseThrow();
+
+
         String res = String.format(
                 "%s/%s/level-0/%s/",
                 bucketName,

@@ -6,25 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.controllers.BackupController;
 import ru.rerumu.backups.controllers.RestoreController;
-import ru.rerumu.backups.factories.SnapshotSenderFactory;
-import ru.rerumu.backups.factories.ZFSFileReaderFactory;
-import ru.rerumu.backups.factories.ZFSFileWriterFactory;
-import ru.rerumu.backups.factories.ZFSProcessFactory;
-import ru.rerumu.backups.factories.impl.ZFSFileReaderFactoryImpl;
-import ru.rerumu.backups.models.S3Storage;
-import ru.rerumu.backups.models.ZFSPool;
-import ru.rerumu.backups.repositories.LocalBackupRepository;
-import ru.rerumu.backups.repositories.RemoteBackupRepository;
-import ru.rerumu.backups.repositories.ZFSFileSystemRepository;
-import ru.rerumu.backups.repositories.ZFSSnapshotRepository;
-import ru.rerumu.backups.repositories.impl.S3Repository;
-import ru.rerumu.backups.repositories.impl.ZFSFileSystemRepositoryImpl;
-import ru.rerumu.backups.repositories.impl.ZFSSnapshotRepositoryImpl;
 import ru.rerumu.backups.services.*;
-import ru.rerumu.backups.services.impl.*;
-
-import java.util.Arrays;
-import java.util.List;
 
 @Generated
 public class App {

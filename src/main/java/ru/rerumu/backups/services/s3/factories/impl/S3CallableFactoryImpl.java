@@ -1,7 +1,6 @@
 package ru.rerumu.backups.services.s3.factories.impl;
 
 import ru.rerumu.backups.factories.S3ClientFactory;
-import ru.rerumu.backups.factories.S3ManagerFactory;
 import ru.rerumu.backups.models.S3Storage;
 import ru.rerumu.backups.services.s3.factories.S3CallableFactory;
 import ru.rerumu.backups.services.s3.impl.*;
