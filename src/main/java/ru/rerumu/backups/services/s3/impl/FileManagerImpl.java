@@ -1,10 +1,12 @@
 package ru.rerumu.backups.services.s3.impl;
 
+import ru.rerumu.backups.services.s3.FileManager;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class FileManagerImpl {
+public class FileManagerImpl implements FileManager {
     private final String unique;
     private final Path tempDir;
 

@@ -2,6 +2,10 @@ package ru.rerumu.backups.zfs_api.impl;
 
 import ru.rerumu.backups.factories.ProcessWrapperFactory;
 import ru.rerumu.backups.models.ZFSDataset;
+import ru.rerumu.backups.models.zfs.Dataset;
+import ru.rerumu.backups.services.zfs.impl.CreateSnapshot;
+import ru.rerumu.backups.services.zfs.impl.ListSnapshots;
+import ru.rerumu.backups.utils.processes.ProcessFactory;
 import ru.rerumu.backups.zfs_api.ZFSCommandFactory;
 import ru.rerumu.backups.zfs_api.zfs.ListSnapshotsCommand;
 import ru.rerumu.backups.zfs_api.zfs.SnapshotCommand;
@@ -11,17 +15,35 @@ import ru.rerumu.backups.zfs_api.zfs.impl.SnapshotCommandImpl;
 public class ZFSCommandFactoryImpl implements ZFSCommandFactory {
 
     private final ProcessWrapperFactory processWrapperFactory;
+    private final ProcessFactory processFactory;
 
-    public ZFSCommandFactoryImpl(ProcessWrapperFactory processWrapperFactory) {
+    public ZFSCommandFactoryImpl(ProcessWrapperFactory processWrapperFactory, ProcessFactory processFactory) {
         this.processWrapperFactory = processWrapperFactory;
+        this.processFactory = processFactory;
     }
 
+    //    @Override
+//    public SnapshotCommand getSnapshotCommand(ZFSDataset dataset, String name, Boolean isRecursive) {
+//        SnapshotCommandImpl.Builder builder = new SnapshotCommandImpl.Builder()
+//                .dataset(dataset)
+//                .name(name)
+//                .processWrapperFactory(processWrapperFactory);
+//        if (isRecursive){
+//            builder.recursive();
+//        }
+//        return builder.build();
+//    }
+
     @Override
-    public SnapshotCommand getSnapshotCommand(ZFSDataset dataset, String name, Boolean isRecursive) {
-        SnapshotCommandImpl.Builder builder = new SnapshotCommandImpl.Builder()
+    public CreateSnapshot getSnapshotCommand(Dataset dataset, String name, Boolean isRecursive) {
+        if(isRecursive == null){
+            throw new IllegalArgumentException();
+        }
+        CreateSnapshot.Builder builder= new CreateSnapshot.Builder()
                 .dataset(dataset)
                 .name(name)
-                .processWrapperFactory(processWrapperFactory);
+                .processWrapperFactory(processWrapperFactory)
+                ;
         if (isRecursive){
             builder.recursive();
         }
@@ -29,10 +51,10 @@ public class ZFSCommandFactoryImpl implements ZFSCommandFactory {
     }
 
     @Override
-    public ListSnapshotsCommand getListSnapshotsCommand(ZFSDataset dataset, Boolean isRecursive) {
+    public ListSnapshots getListSnapshotsCommand(Dataset dataset, Boolean isRecursive) {
         if (isRecursive){
             throw new IllegalArgumentException();
         }
-        return new ListSnapshotsCommandImpl(dataset, processWrapperFactory);
+        return new ListSnapshots(processFactory, dataset);
     }
 }

@@ -1,12 +1,11 @@
-package ru.rerumu.backups.repositories.impl;
+package ru.rerumu.backups.services.s3.repositories.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.*;
 import ru.rerumu.backups.factories.ZFSFileReaderFactory;
 import ru.rerumu.backups.factories.ZFSFileWriterFactory;
-import ru.rerumu.backups.repositories.S3Repository;
-import ru.rerumu.backups.services.TempPathGenerator;
+import ru.rerumu.backups.services.s3.repositories.S3Repository;
 import ru.rerumu.backups.services.ZFSFileReader;
 import ru.rerumu.backups.services.ZFSFileWriter;
 import ru.rerumu.backups.services.s3.FileManager;
@@ -14,7 +13,6 @@ import ru.rerumu.backups.services.s3.FileManager;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;

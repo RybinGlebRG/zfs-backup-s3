@@ -1,4 +1,4 @@
-package ru.rerumu.backups.repositories;
+package ru.rerumu.backups.services.s3.repositories;
 
 import ru.rerumu.backups.exceptions.IncorrectHashException;
 import ru.rerumu.backups.exceptions.S3MissesFileException;

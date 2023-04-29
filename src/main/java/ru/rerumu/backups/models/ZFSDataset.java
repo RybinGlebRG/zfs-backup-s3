@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+// TODO: Defensive copy?
 public record ZFSDataset(String name, List<Snapshot> snapshotList,EncryptionProperty encryption) {
 
     public String getName() {

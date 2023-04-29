@@ -8,6 +8,8 @@ import ru.rerumu.backups.models.S3Storage;
 import ru.rerumu.backups.services.s3.S3Service;
 import ru.rerumu.backups.services.s3.factories.S3CallableFactory;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.*;
@@ -24,19 +26,19 @@ public class S3ServiceImpl implements S3Service {
         this.s3CallableFactory = s3CallableFactory;
     }
 
-    private boolean isExists(String key){
+    private boolean isExists(String key) {
         List<String> keys = list(key);
 
         return keys.stream()
                 .anyMatch(item -> item.equals(key));
     }
 
-    private <T> T runWithRetry(Callable<T> callable){
+    private <T> T runWithRetry(Callable<T> callable) {
         Future<T> future = scheduledExecutorService.submit(callable);
-        while (true){
+        while (true) {
             try {
                 return future.get();
-            } catch (Exception e){
+            } catch (Exception e) {
                 logger.warn(e.getMessage(), e);
             }
             future = scheduledExecutorService.schedule(
@@ -51,22 +53,25 @@ public class S3ServiceImpl implements S3Service {
     public void upload(Path path, String key) {
         logger.info(String.format("Trying to upload file '%s' to '%s'", path.toString(), key));
 
-        runWithRetry(s3CallableFactory.getUploadCallable(path,key));
+        runWithRetry(s3CallableFactory.getUploadCallable(path, key));
 
-        while (!isExists(key)){
-            logger.warn(String.format("File '%s' is not found on S3. Trying to upload again",  key));
-            runWithRetry(s3CallableFactory.getUploadCallable(path,key));
+        while (!isExists(key)) {
+            logger.warn(String.format("File '%s' is not found on S3. Trying to upload again", key));
+            runWithRetry(s3CallableFactory.getUploadCallable(path, key));
         }
-
 
 
     }
 
     @Override
     public void download(String key, Path path) {
-        logger.info(String.format("Trying to download file '%s' to '%s'",  key, path.toString()));
-        runWithRetry(s3CallableFactory.getDownloadCallable(key, path));
-        logger.info(String.format("Successfully downloaded file '%s' to  '%s'", key, path.toString()));
+        try {
+            logger.info(String.format("Trying to download file '%s' to '%s'", key, path.toString()));
+            runWithRetry(s3CallableFactory.getDownloadCallable(key, path));
+            logger.debug(String.format("Successfully downloaded file '%s' to  '%s'. Size = %d", key, path.toString(), Files.size(path)));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

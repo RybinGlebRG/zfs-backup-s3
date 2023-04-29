@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
+@Deprecated
 public class S3Repository implements RemoteBackupRepository {
 
     private final Logger logger = LoggerFactory.getLogger(S3Repository.class);

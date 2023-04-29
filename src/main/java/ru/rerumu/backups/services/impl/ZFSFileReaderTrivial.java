@@ -21,15 +21,19 @@ public class ZFSFileReaderTrivial implements ZFSFileReader {
     @Override
     public void read() throws IOException {
         logger.info(String.format("Starting reading from file '%s'", path.toString()));
-
+        logger.debug(String.format("File size = %d",Files.size(path)));
+        long w=0;
         try(InputStream inputStream = Files.newInputStream(path);
             BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream)) {
             int len;
             byte[] buf = new byte[8192];
             while((len=bufferedInputStream.read(buf))!=-1){
                 bufferedOutputStream.write(buf,0,len);
+                w+=len;
+                logger.debug(String.format("Writing size = %d",len));
             }
         }
 
+        logger.debug(String.format("Written size = %d",w));
     }
 }

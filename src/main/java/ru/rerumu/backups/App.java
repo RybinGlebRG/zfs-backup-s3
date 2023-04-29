@@ -1,6 +1,7 @@
 package ru.rerumu.backups;
 
 
+import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.controllers.BackupController;
@@ -32,92 +33,122 @@ public class App {
 
         try {
             Logger logger = LoggerFactory.getLogger(App.class);
+
+            Options options = new Options();
+            options.addOption("p", "pool", true, "pool to backup");
+            options.addOption("b", "bucket", true, "S3 Bucket in which to store backup");
+            options.addOption("h", "help", true, "print this message");
+            options.addOption("m","mode", true,"'full' for full backup");
+            options.addOption("s","snapshot", true,"snapshot to restore");
+
+            CommandLineParser parser = new DefaultParser();
+            CommandLine cmd = parser.parse(options, args);
+            HelpFormatter formatter = new HelpFormatter();
+
+            if (cmd.hasOption("h")) {
+                formatter.printHelp("zfs-s3-backup", options);
+                return;
+            }
+
+            String poolName;
+            String bucketName;
+            String mode = "backupFull";
+            String snapshotName = null;
+
+            if (cmd.hasOption("p") && cmd.hasOption("b")) {
+                poolName = cmd.getOptionValue("p");
+                bucketName = cmd.getOptionValue("b");
+            } else {
+                throw new IllegalArgumentException("Pool and/or s3 bucket are not specified");
+            }
+
+            if(cmd.hasOption("m") ){
+                mode = switch (cmd.getOptionValue("m")){
+                    case "full" ->"backupFull";
+                    case "restore" -> "restore";
+                    default -> throw new IllegalArgumentException("Incorrect mode value");
+                };
+            }
+
+            if (mode.equals("restore")){
+                if (cmd.hasOption("s")) {
+                    snapshotName = cmd.getOptionValue("s");
+                } else {
+                    throw new IllegalArgumentException("Snapshot is not specified");
+                }
+            }
+
             logger.info("Starting");
-            String mode = System.getProperty("mode");
-            logger.info("Mode is '"+mode+"'");
-            Configuration configuration = new Configuration();
+            logger.info("Mode is '" + mode + "'");
+//            Configuration configuration = new Configuration();
             EntityFactory entityFactory = new EntityFactory();
 
             switch (mode) {
-                case "backupFull": {
+                case "backupFull" -> {
 
-                    List<S3Storage> s3StorageList = entityFactory.getS3StorageList();
-                    S3Repository s3Repository = entityFactory.getS3Repository(s3StorageList);
-                    LocalBackupRepository localBackupRepository = entityFactory.getLocalBackupRepository(s3Repository);
-                    ZFSProcessFactory zfsProcessFactory = entityFactory.getZFSProcessFactory();
-                    ZFSSnapshotRepository zfsSnapshotRepository = new ZFSSnapshotRepositoryImpl(zfsProcessFactory);
-                    ZFSFileSystemRepository zfsFileSystemRepository = new ZFSFileSystemRepositoryImpl(zfsProcessFactory,zfsSnapshotRepository);
-                    ZFSFileWriterFactory zfsFileWriterFactory = entityFactory.getZFSFileWriterFactory();
-                    SnapshotSenderFactory snapshotSenderFactory = entityFactory.getSnapshotSenderFactory(
-                            localBackupRepository,
-                            zfsProcessFactory,
-                            zfsFileWriterFactory
-                    );
+                    SendService sendService = entityFactory.getSendService();
 
-                    ZFSBackupService zfsBackupService = new ZFSBackupService(
-                            zfsFileSystemRepository,
-                            snapshotSenderFactory.getSnapshotSender(),
-                            new DatasetPropertiesChecker()
-                    );
+                    BackupController backupController = new BackupController(sendService);
+                    backupController.backupFull(poolName,bucketName);
 
-                    BackupController backupController = new BackupController(zfsBackupService);
-                    backupController.backupFull(configuration.getProperty("full.snapshot"));
-                    break;
                 }
-                case "backupInc":{
-                    List<S3Storage> s3StorageList = entityFactory.getS3StorageList();
-                    S3Repository s3Repository = entityFactory.getS3Repository(s3StorageList);
-                    LocalBackupRepository localBackupRepository = entityFactory.getLocalBackupRepository(s3Repository);
-                    ZFSProcessFactory zfsProcessFactory = entityFactory.getZFSProcessFactory();
-                    ZFSSnapshotRepository zfsSnapshotRepository = new ZFSSnapshotRepositoryImpl(zfsProcessFactory);
-                    ZFSFileSystemRepository zfsFileSystemRepository = new ZFSFileSystemRepositoryImpl(zfsProcessFactory,zfsSnapshotRepository);
-                    ZFSFileWriterFactory zfsFileWriterFactory = entityFactory.getZFSFileWriterFactory();
-                    SnapshotSenderFactory snapshotSenderFactory = entityFactory.getSnapshotSenderFactory(
-                            localBackupRepository,
-                            zfsProcessFactory,
-                            zfsFileWriterFactory
-                    );
+//                case "backupInc" -> {
+//                    List<S3Storage> s3StorageList = entityFactory.getS3StorageList();
+//                    S3Repository s3Repository = entityFactory.getS3Repository(s3StorageList);
+//                    LocalBackupRepository localBackupRepository = entityFactory.getLocalBackupRepository(s3Repository);
+//                    ZFSProcessFactory zfsProcessFactory = entityFactory.getZFSProcessFactory();
+//                    ZFSSnapshotRepository zfsSnapshotRepository = new ZFSSnapshotRepositoryImpl(zfsProcessFactory);
+//                    ZFSFileSystemRepository zfsFileSystemRepository = new ZFSFileSystemRepositoryImpl(zfsProcessFactory, zfsSnapshotRepository);
+//                    ZFSFileWriterFactory zfsFileWriterFactory = entityFactory.getZFSFileWriterFactory();
+//                    SnapshotSenderFactory snapshotSenderFactory = entityFactory.getSnapshotSenderFactory(
+//                            localBackupRepository,
+//                            zfsProcessFactory,
+//                            zfsFileWriterFactory
+//                    );
+//
+//                    ZFSBackupService zfsBackupService = new ZFSBackupService(
+//                            zfsFileSystemRepository,
+//                            snapshotSenderFactory.getSnapshotSender(),
+//                            new DatasetPropertiesChecker()
+//                    );
+//
+//                    BackupController backupController = new BackupController(zfsBackupService);
+//                    backupController.backupIncremental(
+//                            configuration.getProperty("full.snapshot"),
+//                            configuration.getProperty("incremental_snapshot")
+//                    );
+//                }
+                case "restore" -> {
 
-                    ZFSBackupService zfsBackupService = new ZFSBackupService(
-                            zfsFileSystemRepository,
-                            snapshotSenderFactory.getSnapshotSender(),
-                            new DatasetPropertiesChecker()
-                    );
+                    ReceiveService receiveService = entityFactory.getReceiveService();
 
-                    BackupController backupController = new BackupController(zfsBackupService);
-                    backupController.backupIncremental(
-                            configuration.getProperty("full.snapshot"),
-                            configuration.getProperty("incremental_snapshot")
-                    );
-                    break;
+                    RestoreController restoreController = new RestoreController(receiveService);
+                    restoreController.restore(bucketName,poolName);
+
+//                    List<S3Storage> s3StorageList = entityFactory.getS3StorageList();
+//                    RemoteBackupRepository s3Repository = entityFactory.getS3Repository(s3StorageList);
+//                    LocalBackupRepository localBackupRepository = entityFactory.getLocalBackupRepository(s3Repository);
+//
+//                    ZFSProcessFactory zfsProcessFactory = entityFactory.getZFSProcessFactory();
+//                    ZFSFileReaderFactory zfsFileReaderFactory = new ZFSFileReaderFactoryImpl();
+//                    SnapshotReceiver snapshotReceiver = new SnapshotReceiverImpl(
+//                            zfsProcessFactory,
+//                            new ZFSPool(configuration.getProperty("receive.pool")),
+//                            zfsFileReaderFactory
+//                    );
+//
+//                    ZFSRestoreService zfsRestoreService = new ZFSRestoreService(
+//                            localBackupRepository,
+//                            snapshotReceiver,
+//                            Arrays.asList(
+//                                    configuration.getProperty("restore.dataset").split(",")
+//                            )
+//                    );
+//
+//                    RestoreController restoreController = new RestoreController(zfsRestoreService);
+//                    restoreController.restore();
                 }
-                case "restore": {
-                    List<S3Storage> s3StorageList = entityFactory.getS3StorageList();
-                    RemoteBackupRepository s3Repository = entityFactory.getS3Repository(s3StorageList);
-                    LocalBackupRepository localBackupRepository = entityFactory.getLocalBackupRepository(s3Repository);
-
-                    ZFSProcessFactory zfsProcessFactory = entityFactory.getZFSProcessFactory();
-                    ZFSFileReaderFactory zfsFileReaderFactory = new ZFSFileReaderFactoryImpl();
-                    SnapshotReceiver snapshotReceiver = new SnapshotReceiverImpl(
-                            zfsProcessFactory,
-                            new ZFSPool(configuration.getProperty("receive.pool")),
-                            zfsFileReaderFactory
-                    );
-
-                    ZFSRestoreService zfsRestoreService = new ZFSRestoreService(
-                            localBackupRepository,
-                            snapshotReceiver,
-                            Arrays.asList(
-                                    configuration.getProperty("restore.dataset").split(",")
-                            )
-                    );
-
-                    RestoreController restoreController = new RestoreController(zfsRestoreService);
-                    restoreController.restore();
-                    break;
-                }
-                default:
-                    throw new IllegalArgumentException();
+                default -> throw new IllegalArgumentException();
             }
             logger.info("Finished");
         } catch (Exception e) {

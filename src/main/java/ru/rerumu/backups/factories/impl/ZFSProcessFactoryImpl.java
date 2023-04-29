@@ -4,6 +4,7 @@ import ru.rerumu.backups.factories.ProcessWrapperFactory;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSPool;
 import ru.rerumu.backups.factories.ZFSProcessFactory;
+import ru.rerumu.backups.models.zfs.Pool;
 import ru.rerumu.backups.zfs_api.zfs.*;
 import ru.rerumu.backups.zfs_api.zfs.impl.*;
 
@@ -40,6 +41,11 @@ public class ZFSProcessFactoryImpl implements ZFSProcessFactory {
     @Override
     public ZFSReceive getZFSReceive(ZFSPool zfsPool) throws IOException {
         return new ZFSReceiveImpl(zfsPool.getName(), processWrapperFactory);
+    }
+
+    @Override
+    public ZFSReceive getZFSReceive(Pool pool) throws IOException {
+        return new ZFSReceiveImpl(pool.name(), processWrapperFactory);
     }
 
     @Override

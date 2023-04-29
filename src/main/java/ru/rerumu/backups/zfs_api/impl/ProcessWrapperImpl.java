@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.zfs_api.ProcessWrapper;
 import ru.rerumu.backups.zfs_api.StdProcessor;
-import ru.rerumu.backups.zfs_api.zfs.impl.StdProcessorCallable;
+import ru.rerumu.backups.zfs_api.StdProcessorCallable;
 
 import java.io.*;
 import java.util.ArrayList;

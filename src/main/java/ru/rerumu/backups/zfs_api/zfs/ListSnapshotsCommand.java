@@ -4,6 +4,7 @@ import ru.rerumu.backups.models.Snapshot;
 
 import java.util.List;
 
+@Deprecated
 public interface ListSnapshotsCommand {
 
     List<Snapshot> execute();

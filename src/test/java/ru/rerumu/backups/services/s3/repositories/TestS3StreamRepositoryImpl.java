@@ -1,22 +1,20 @@
-package ru.rerumu.backups.services;
+package ru.rerumu.backups.services.s3.repositories;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InOrder;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 import ru.rerumu.backups.exceptions.FileHitSizeLimitException;
 import ru.rerumu.backups.exceptions.ZFSStreamEndedException;
 import ru.rerumu.backups.factories.ZFSFileReaderFactory;
 import ru.rerumu.backups.factories.ZFSFileWriterFactory;
-import ru.rerumu.backups.repositories.S3Repository;
-import ru.rerumu.backups.repositories.impl.S3StreamRepositoryImpl;
-import ru.rerumu.backups.services.impl.TempPathGeneratorImpl;
+import ru.rerumu.backups.services.TempPathGenerator;
+import ru.rerumu.backups.services.ZFSFileReader;
+import ru.rerumu.backups.services.ZFSFileWriter;
+import ru.rerumu.backups.services.s3.repositories.S3Repository;
+import ru.rerumu.backups.services.s3.repositories.impl.S3StreamRepositoryImpl;
 import ru.rerumu.backups.services.s3.FileManager;
 
 import java.io.BufferedInputStream;

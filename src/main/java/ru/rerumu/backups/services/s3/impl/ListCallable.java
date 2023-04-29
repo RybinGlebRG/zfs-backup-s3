@@ -38,6 +38,7 @@ public class ListCallable implements Callable<List<String>> {
                 .prefix(key)
                 .build();
 
+        // TODO: pagination?
         ListObjectsResponse res = s3Client.listObjects(listObjects);
         List<S3Object> s3Objects = res.contents();
 

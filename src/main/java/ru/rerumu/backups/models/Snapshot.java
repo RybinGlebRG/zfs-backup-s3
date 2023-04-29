@@ -4,6 +4,7 @@ import ru.rerumu.backups.Generated;
 
 import java.util.Objects;
 
+// TODO: add immutability
 public class Snapshot {
     private final static String DELIMITER ="@";
     private final String name;

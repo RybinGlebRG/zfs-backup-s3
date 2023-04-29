@@ -9,8 +9,11 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.backups.models.Snapshot;
 import ru.rerumu.backups.models.ZFSDataset;
+import ru.rerumu.backups.models.zfs.Dataset;
 import ru.rerumu.backups.models.zfs_dataset_properties.EncryptionProperty;
 import ru.rerumu.backups.services.impl.SnapshotServiceImpl;
+import ru.rerumu.backups.services.zfs.impl.CreateSnapshot;
+import ru.rerumu.backups.services.zfs.impl.ListSnapshots;
 import ru.rerumu.backups.zfs_api.ZFSCommandFactory;
 import ru.rerumu.backups.zfs_api.zfs.ListSnapshotsCommand;
 import ru.rerumu.backups.zfs_api.zfs.SnapshotCommand;
@@ -29,23 +32,23 @@ public class TestSnapshotServiceImpl {
     @Mock
     ZFSCommandFactory zfsCommandFactory = Mockito.mock(ZFSCommandFactory.class);
     @Mock
-    SnapshotCommand snapshotCommand = mock(SnapshotCommand.class);
+    CreateSnapshot createSnapshot = mock(CreateSnapshot.class);
     @Mock
-    ListSnapshotsCommand listSnapshotsCommand = mock(ListSnapshotsCommand.class);
+    ListSnapshots listSnapshots = mock(ListSnapshots.class);
 
     @Test
     void shouldCreateRecursive() throws Exception{
         String name="zfs-s3-snapshot";
-        ZFSDataset dataset = new ZFSDataset("TestDataset",new ArrayList<>(), EncryptionProperty.OFF);
+        Dataset dataset = new Dataset("TestDataset",new ArrayList<>());
         List<Snapshot> snapshotList = new ArrayList<>();
         snapshotList.add(new Snapshot("TestDataset@tmp-01"));
         snapshotList.add(new Snapshot("TestDataset@tmp-02"));
         snapshotList.add(new Snapshot("TestDataset@tmp-03"));
         snapshotList.add(new Snapshot("TestDataset@zfs-s3-snapshot"));
 
-        when(zfsCommandFactory.getSnapshotCommand(any(),anyString(),any())).thenReturn(snapshotCommand);
-        when(zfsCommandFactory.getListSnapshotsCommand(any(),any())).thenReturn(listSnapshotsCommand);
-        when(listSnapshotsCommand.execute()).thenReturn(snapshotList);
+        when(zfsCommandFactory.getSnapshotCommand(any(),anyString(),any())).thenReturn(createSnapshot);
+        when(zfsCommandFactory.getListSnapshotsCommand(any(),any())).thenReturn(listSnapshots);
+        when(listSnapshots.call()).thenReturn(snapshotList);
 
         SnapshotServiceImpl snapshotService = new SnapshotServiceImpl(zfsCommandFactory);
         Snapshot resultSnapshot = snapshotService.createRecursiveSnapshot(dataset,name);
@@ -54,17 +57,17 @@ public class TestSnapshotServiceImpl {
     }
 
     @Test
-    void shouldNotCreate(){
+    void shouldNotCreate() throws Exception {
         String name="zfs-s3-snapshot";
-        ZFSDataset dataset = new ZFSDataset("TestDataset",new ArrayList<>(), EncryptionProperty.OFF);
+        Dataset dataset = new Dataset("TestDataset",new ArrayList<>());
         List<Snapshot> snapshotList = new ArrayList<>();
         snapshotList.add(new Snapshot("TestDataset@tmp-01"));
         snapshotList.add(new Snapshot("TestDataset@tmp-02"));
         snapshotList.add(new Snapshot("TestDataset@tmp-03"));
 
-        when(zfsCommandFactory.getSnapshotCommand(any(),anyString(),any())).thenReturn(snapshotCommand);
-        when(zfsCommandFactory.getListSnapshotsCommand(any(),any())).thenReturn(listSnapshotsCommand);
-        when(listSnapshotsCommand.execute()).thenReturn(snapshotList);
+        when(zfsCommandFactory.getSnapshotCommand(any(),anyString(),any())).thenReturn(createSnapshot);
+        when(zfsCommandFactory.getListSnapshotsCommand(any(),any())).thenReturn(listSnapshots);
+        when(listSnapshots.call()).thenReturn(snapshotList);
 
         SnapshotServiceImpl snapshotService = new SnapshotServiceImpl(zfsCommandFactory);
 

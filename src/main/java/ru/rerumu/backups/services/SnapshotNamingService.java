@@ -1,6 +1,11 @@
 package ru.rerumu.backups.services;
 
+import java.time.LocalDateTime;
+
 public interface SnapshotNamingService {
 
-    String getNameWithCurrentTime(String prefix);
+    String generateName();
+    String generateName(LocalDateTime dateTime);
+
+    LocalDateTime extractTime(String snapshotName);
 }

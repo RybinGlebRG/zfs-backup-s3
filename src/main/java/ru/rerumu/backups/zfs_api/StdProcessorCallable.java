@@ -1,8 +1,7 @@
-package ru.rerumu.backups.zfs_api.zfs.impl;
+package ru.rerumu.backups.zfs_api;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.backups.zfs_api.StdProcessor;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;

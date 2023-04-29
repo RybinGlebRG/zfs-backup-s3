@@ -17,4 +17,5 @@ import java.util.concurrent.ExecutionException;
 public interface SendService {
 
     void send(Pool pool, Bucket bucket);
+    void send(String poolName, String bucketName);
 }
