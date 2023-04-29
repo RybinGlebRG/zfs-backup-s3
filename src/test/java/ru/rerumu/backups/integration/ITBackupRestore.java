@@ -1,11 +1,14 @@
 package ru.rerumu.backups.integration;
 
+import ch.qos.logback.classic.Level;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.controllers.BackupController;
 import ru.rerumu.backups.controllers.RestoreController;
 import ru.rerumu.backups.factories.S3ClientFactory;
@@ -57,6 +60,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -186,6 +190,9 @@ public class ITBackupRestore {
 
     @Test
     void shouldBackupRestore(@TempDir Path tempDir1, @TempDir Path tempDir2) throws Exception{
+        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        logger.setLevel(Level.INFO);
+
         String bucketName= "test";
         SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
 //        String snapshotName= "zfs-backup-s3_2023-04-29T09:55:00";
@@ -218,6 +225,8 @@ public class ITBackupRestore {
         Snapshot snapshot = new Snapshot("TestPool@"+snapshotNamingService.generateName());
         ZFSSend zfsSend = mock(ZFSSend.class);
         byte[] data = new byte[50_000_000];
+
+        new Random().nextBytes(data);
 
         when(zfsService.getPool(anyString()))
                 .thenReturn(pool);

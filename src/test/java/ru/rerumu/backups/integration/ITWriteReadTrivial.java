@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class TestWriteReadTrivial {
+public class ITWriteReadTrivial {
 
     @Test
     void shouldWriteReadSame(@TempDir Path tempDir) throws IOException, CompressorException, ClassNotFoundException, EncryptException, FileHitSizeLimitException, ZFSStreamEndedException {

@@ -30,10 +30,10 @@ public class ZFSFileReaderTrivial implements ZFSFileReader {
             while((len=bufferedInputStream.read(buf))!=-1){
                 bufferedOutputStream.write(buf,0,len);
                 w+=len;
-                logger.debug(String.format("Writing size = %d",len));
+                logger.trace(String.format("Writing size = %d",len));
             }
         }
-
+        bufferedOutputStream.flush();
         logger.debug(String.format("Written size = %d",w));
     }
 }
