@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.services.zfs.models.Dataset;
 import ru.rerumu.backups.utils.processes.ProcessFactory;
-import ru.rerumu.backups.utils.processes.ProcessWrapper;
 import ru.rerumu.backups.utils.processes.StdConsumer;
 
 import java.util.ArrayList;
@@ -39,12 +38,11 @@ public class CreateSnapshot implements Callable<Void> {
         }
         command.add(dataset.name()+"@"+name);
 
-        ProcessWrapper processWrapper = processFactory.getProcessWrapper(
+        processFactory.getProcessWrapper(
                 command,
                 new StdConsumer(logger::error),
                 new StdConsumer(logger::debug)
-        );
-        executorService.submit(processWrapper).get();
+        ).call();
 
         return null;
     }

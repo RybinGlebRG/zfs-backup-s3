@@ -6,7 +6,6 @@ import ru.rerumu.backups.services.zfs.models.Snapshot;
 import ru.rerumu.backups.services.zfs.models.Dataset;
 import ru.rerumu.backups.services.zfs.impl.helper.SnapshotListStdConsumer;
 import ru.rerumu.backups.utils.processes.ProcessFactory;
-import ru.rerumu.backups.utils.processes.ProcessWrapper;
 import ru.rerumu.backups.utils.processes.StdConsumer;
 
 import java.util.ArrayList;
@@ -26,7 +25,7 @@ public class ListSnapshots implements Callable<List<Snapshot>> {
         this.executorService = executorService;
     }
 
-    private List<Snapshot> getSnapshots() throws ExecutionException, InterruptedException {
+    private List<Snapshot> getSnapshots() throws Exception {
         List<String> command = new ArrayList<>();
         command.add("zfs");
         command.add("list");
@@ -43,13 +42,11 @@ public class ListSnapshots implements Callable<List<Snapshot>> {
 
         List<Snapshot> snapshotList = new ArrayList<>();
 
-        ProcessWrapper processWrapper = processFactory.getProcessWrapper(
+        processFactory.getProcessWrapper(
                 command,
                 new StdConsumer(logger::error),
                 new SnapshotListStdConsumer(snapshotList)
-        );
-        executorService.submit(processWrapper).get();
-
+        ).call();
         return snapshotList;
     }
 
