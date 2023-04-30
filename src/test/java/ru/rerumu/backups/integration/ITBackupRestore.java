@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.controllers.BackupController;
 import ru.rerumu.backups.controllers.RestoreController;
 import ru.rerumu.backups.services.s3.factories.S3ClientFactory;
+import ru.rerumu.backups.services.zfs.factories.StdConsumerFactory;
 import ru.rerumu.backups.services.zfs.factories.ZFSFileReaderFactory;
 import ru.rerumu.backups.services.zfs.factories.ZFSFileWriterFactory;
 import ru.rerumu.backups.services.s3.factories.impl.S3ClientFactoryImpl;
@@ -73,6 +74,9 @@ public class ITBackupRestore {
     @Mock
     ZFSCallableFactory zfsCallableFactory;
 
+    @Mock
+    StdConsumerFactory stdConsumerFactory;
+
 
     private SendService prepareSend(Path tempDir) throws Exception{
         S3Storage s3Storage = new S3Storage(
@@ -121,7 +125,8 @@ public class ITBackupRestore {
                 snapshotService,
                 snapshotNamingService,
                 zfsService,
-                zfsCallableFactory
+                zfsCallableFactory,
+                stdConsumerFactory
         );
         return sendService;
     }

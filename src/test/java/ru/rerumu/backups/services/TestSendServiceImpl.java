@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.backups.exceptions.SendError;
+import ru.rerumu.backups.services.zfs.factories.StdConsumerFactory;
 import ru.rerumu.backups.services.zfs.models.Snapshot;
 import ru.rerumu.backups.services.s3.models.Bucket;
 import ru.rerumu.backups.services.zfs.models.Dataset;
@@ -21,8 +22,10 @@ import ru.rerumu.backups.services.zfs.factories.ZFSCallableFactory;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -46,100 +49,43 @@ public class TestSendServiceImpl {
     @Mock
     ZFSCallableFactory zfsCallableFactory;
 
+    @Mock
+    StdConsumerFactory stdConsumerFactory;
+
     @Test
     void shouldSend() throws Exception {
         List<Dataset> datasetList = new ArrayList<>();
         datasetList.add(new Dataset("TestPool",new ArrayList<>()));
         Pool pool = new Pool("TestPool", datasetList);
-        Bucket bucket = new Bucket("TestBucket");
-//        ZFSSend zfsSend= Mockito.mock(ZFSSend.class);
-        BufferedInputStream bufferedInputStream = Mockito.mock(BufferedInputStream.class);
+        Callable<Void> sendReplica =(Callable<Void>) mock(Callable.class);
 
+        when(zfsService.getPool(anyString())).thenReturn(pool);
         when(snapshotNamingService.generateName())
-                .thenReturn("zfs-backup-s3_2023-03-22T19:40:00");
+                .thenReturn("zfs-backup-s3__2023-03-22T194000");
         when(snapshotService.createRecursiveSnapshot(any(),anyString()))
-                .thenReturn(new Snapshot("TestPool@zfs-backup-s3_2023-03-22T19:40:00"));
-//        when(zfsProcessFactory.getZFSSendReplicate(any()))
-//                .thenReturn(zfsSend);
-//        when(zfsSend.getBufferedInputStream()).thenReturn(bufferedInputStream);
+                .thenReturn(new Snapshot("TestPool@zfs-backup-s3__2023-03-22T194000"));
+        when(zfsCallableFactory.getSendReplica(any(),any())).thenReturn(sendReplica);
+
 
         SendServiceImpl sendService = new SendServiceImpl(
                 s3StreamRepository,
                 snapshotService,
                 snapshotNamingService,
                 zfsService,
-                zfsCallableFactory
+                zfsCallableFactory,
+                stdConsumerFactory
         );
+        sendService.send("TestPool","TestBucket");
 
-        InOrder inOrder = Mockito.inOrder(
-                s3StreamRepository,snapshotService,snapshotNamingService
-        );
-
-        sendService.send(pool,bucket);
 
         Dataset shouldDataset = new Dataset("TestPool", new ArrayList<>());
-        Snapshot shouldSnapshot = new Snapshot("TestPool@zfs-backup-s3_2023-03-22T19:40:00");
+        Snapshot shouldSnapshot = new Snapshot("TestPool@zfs-backup-s3__2023-03-22T194000");
 
-        inOrder.verify(snapshotService).createRecursiveSnapshot(
+        verify(snapshotService).createRecursiveSnapshot(
                 shouldDataset,
-                "zfs-backup-s3_2023-03-22T19:40:00"
+                "zfs-backup-s3__2023-03-22T194000"
         );
-//        inOrder.verify(zfsProcessFactory).getZFSSendReplicate(shouldSnapshot);
-        inOrder.verify(s3StreamRepository).add(
-                "TestBucket/TestPool/level-0/zfs-backup-s3_2023-03-22T19:40:00/",
-                bufferedInputStream
-        );
-//        inOrder.verify(zfsSend).close();
-
-//       verify(zfsSend,never()).kill();
-    }
-
-    @Test
-    void shouldKill() throws Exception {
-        List<Dataset> datasetList = new ArrayList<>();
-        datasetList.add(new Dataset("TestPool",new ArrayList<>()));
-        Pool pool = new Pool("TestPool", datasetList);
-        Bucket bucket = new Bucket("TestBucket");
-//        ZFSSend zfsSend= Mockito.mock(ZFSSend.class);
-        BufferedInputStream bufferedInputStream = Mockito.mock(BufferedInputStream.class);
-
-        when(snapshotNamingService.generateName())
-                .thenReturn("zfs-backup-s3_2023-03-22T19:40:00");
-        when(snapshotService.createRecursiveSnapshot(any(),anyString()))
-                .thenReturn(new Snapshot("TestPool@zfs-backup-s3_2023-03-22T19:40:00"));
-//        when(zfsProcessFactory.getZFSSendReplicate(any()))
-//                .thenReturn(zfsSend);
-//        when(zfsSend.getBufferedInputStream()).thenReturn(bufferedInputStream);
-        doThrow(IOException.class).when(s3StreamRepository).add(anyString(),any(BufferedInputStream.class));
-
-        SendServiceImpl sendService = new SendServiceImpl(
-                s3StreamRepository,
-                snapshotService,
-                snapshotNamingService,
-                zfsService,
-                zfsCallableFactory
-        );
-
-        InOrder inOrder = Mockito.inOrder(
-                s3StreamRepository,snapshotService,snapshotNamingService
-        );
-
-        Assertions.assertThrows(SendError.class,()->sendService.send(pool,bucket));
-
-        Dataset shouldDataset = new Dataset("TestPool", new ArrayList<>());
-        Snapshot shouldSnapshot = new Snapshot("TestPool@zfs-backup-s3_2023-03-22T19:40:00");
-
-        inOrder.verify(snapshotService).createRecursiveSnapshot(
-                shouldDataset,
-                "zfs-backup-s3_2023-03-22T19:40:00"
-        );
-//        inOrder.verify(zfsProcessFactory).getZFSSendReplicate(shouldSnapshot);
-        inOrder.verify(s3StreamRepository).add(
-                "TestBucket/TestPool/level-0/zfs-backup-s3_2023-03-22T19:40:00/",
-                bufferedInputStream
-        );
-//        inOrder.verify(zfsSend).kill();
-//        inOrder.verify(zfsSend).close();
-
+        verify(stdConsumerFactory).getSendStdoutConsumer(any(),eq("TestBucket/TestPool/level-0/zfs-backup-s3__2023-03-22T194000/"));
+        verify(zfsCallableFactory).getSendReplica(eq(shouldSnapshot),any());
     }
 }

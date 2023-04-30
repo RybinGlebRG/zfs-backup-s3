@@ -9,8 +9,10 @@ import ru.rerumu.backups.services.zfs.SnapshotNamingService;
 import ru.rerumu.backups.services.zfs.SnapshotService;
 import ru.rerumu.backups.services.impl.ReceiveServiceImpl;
 import ru.rerumu.backups.services.impl.SendServiceImpl;
+import ru.rerumu.backups.services.zfs.factories.StdConsumerFactory;
 import ru.rerumu.backups.services.zfs.factories.ZFSFileReaderFactory;
 import ru.rerumu.backups.services.zfs.factories.ZFSFileWriterFactory;
+import ru.rerumu.backups.services.zfs.factories.impl.StdConsumerFactoryImpl;
 import ru.rerumu.backups.services.zfs.factories.impl.ZFSFileReaderFactoryImpl;
 import ru.rerumu.backups.services.zfs.factories.impl.ZFSFileWriterFactoryImpl;
 import ru.rerumu.backups.services.zfs.impl.SnapshotNamingServiceImpl;
@@ -91,12 +93,14 @@ public class EntityFactory {
         ZFSCallableFactory zfsCallableFactory = new ZFSCallableFactoryImpl(processFactory,executorService, zfsService);
         SnapshotService snapshotService = new SnapshotServiceImpl(zfsCallableFactory);
         zfsService = new ZFSServiceImpl(zfsCallableFactory);
+        StdConsumerFactory stdConsumerFactory = new StdConsumerFactoryImpl();
         SendService sendService = new SendServiceImpl(
                 s3StreamRepository,
                 snapshotService,
                 snapshotNamingService,
                 zfsService,
-                zfsCallableFactory
+                zfsCallableFactory,
+                stdConsumerFactory
         );
         return sendService;
     }

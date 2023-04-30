@@ -1,4 +1,4 @@
-package ru.rerumu.backups.models;
+package ru.rerumu.backups.services.s3.models;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

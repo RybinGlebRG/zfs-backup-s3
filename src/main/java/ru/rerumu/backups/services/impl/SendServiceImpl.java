@@ -3,6 +3,7 @@ package ru.rerumu.backups.services.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.*;
+import ru.rerumu.backups.services.zfs.factories.StdConsumerFactory;
 import ru.rerumu.backups.services.zfs.models.Snapshot;
 import ru.rerumu.backups.services.s3.models.Bucket;
 import ru.rerumu.backups.services.zfs.models.Pool;
@@ -28,14 +29,16 @@ public class SendServiceImpl implements SendService {
     private final ZFSService zfsService;
 
     private final ZFSCallableFactory zfsCallableFactory;
+    private final StdConsumerFactory stdConsumerFactory;
 
 
-    public SendServiceImpl(S3StreamRepositoryImpl s3StreamRepository, SnapshotService snapshotService, SnapshotNamingService snapshotNamingService, ZFSService zfsService, ZFSCallableFactory zfsCallableFactory) {
+    public SendServiceImpl(S3StreamRepositoryImpl s3StreamRepository, SnapshotService snapshotService, SnapshotNamingService snapshotNamingService, ZFSService zfsService, ZFSCallableFactory zfsCallableFactory, StdConsumerFactory stdConsumerFactory) {
         this.s3StreamRepository = s3StreamRepository;
         this.snapshotService = snapshotService;
         this.snapshotNamingService = snapshotNamingService;
         this.zfsService = zfsService;
         this.zfsCallableFactory = zfsCallableFactory;
+        this.stdConsumerFactory = stdConsumerFactory;
     }
 
     private String escapeSymbols(String srcString) {
@@ -55,36 +58,17 @@ public class SendServiceImpl implements SendService {
                 escapeSymbols(snapshot.getName())
         );
 
-        Callable<Void> sendReplica = zfsCallableFactory.getSendReplica(
-                snapshot,
-                new SendStdoutConsumer(s3StreamRepository,prefix)
-        );
-
         try {
-            sendReplica.call();
+            zfsCallableFactory.getSendReplica(
+                    snapshot,
+                    stdConsumerFactory.getSendStdoutConsumer(s3StreamRepository, prefix)
+            ).call();
         } catch (Exception e) {
             logger.error(e.getMessage(),e);
             throw new SendError(e);
         }
 
 
-//        try (ZFSSend zfsSend = zfsProcessFactory.getZFSSendReplicate(snapshot)){
-//            String prefix = String.format(
-//                    "%s/%s/level-0/%s/",
-//                    bucket.name(),
-//                    escapeSymbols(pool.name()),
-//                    escapeSymbols(snapshot.getName())
-//            );
-//            try {
-//                s3StreamRepository.add(prefix, zfsSend.getBufferedInputStream());
-//            } catch (Exception e){
-//                zfsSend.kill();
-//                throw e;
-//            }
-//        } catch (Exception e){
-//            logger.error(e.getMessage(),e);
-//            throw new SendError(e);
-//        }
     }
 
     @Override
