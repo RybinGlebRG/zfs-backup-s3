@@ -2,37 +2,31 @@ package ru.rerumu.backups.services.zfs.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.backups.models.zfs.Dataset;
-import ru.rerumu.backups.models.zfs.Pool;
-import ru.rerumu.backups.services.zfs.factories.ZFSCallableFactory;
+import ru.rerumu.backups.services.zfs.models.Dataset;
+import ru.rerumu.backups.services.zfs.models.Pool;
+import ru.rerumu.backups.services.zfs.ZFSService;
 import ru.rerumu.backups.services.zfs.impl.helper.GetDatasetStringStdConsumer;
 import ru.rerumu.backups.utils.processes.ProcessFactory;
-import ru.rerumu.backups.utils.processes.ProcessWrapper;
 import ru.rerumu.backups.utils.processes.StdConsumer;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 public class GetPool implements Callable<Pool> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final String poolName;
-
     private final ProcessFactory processFactory;
-
-    private final ExecutorService executorService;
-    private final ZFSCallableFactory zfsCallableFactory;
+    private final ZFSService zfsService;
 
 
-    public GetPool(String poolName, ProcessFactory processFactory, ExecutorService executorService, ZFSCallableFactory zfsCallableFactory) {
+    public GetPool(String poolName, ProcessFactory processFactory, ZFSService zfsService) {
         this.poolName = poolName;
         this.processFactory = processFactory;
-        this.executorService = executorService;
-        this.zfsCallableFactory = zfsCallableFactory;
+        this.zfsService = zfsService;
     }
 
-    private List<String> getDatasetNames() throws ExecutionException, InterruptedException {
+    private List<String> getDatasetNames() throws Exception {
         List<String> command = new ArrayList<>();
         command.add("zfs");
         command.add("list");
@@ -46,12 +40,11 @@ public class GetPool implements Callable<Pool> {
 
         List<String> datasetStrings = new ArrayList<>();
 
-        ProcessWrapper processWrapper = processFactory.getProcessWrapper(
+        processFactory.getProcessWrapper(
                 command,
                 new StdConsumer(logger::error),
                 new GetDatasetStringStdConsumer(datasetStrings)
-        );
-        executorService.submit(processWrapper).get();
+        ).call();
 
         return datasetStrings;
     }
@@ -60,13 +53,10 @@ public class GetPool implements Callable<Pool> {
     public Pool call() throws Exception {
         List<String> datasetNames = getDatasetNames();
 
-        List<Future<Dataset>> futureList = datasetNames.stream()
-                .map(item -> executorService.submit(zfsCallableFactory.getDatasetCallable(item)))
-                .collect(Collectors.toCollection(ArrayList::new));
-
         List<Dataset> datasets = new ArrayList<>();
-        for(Future<Dataset> item: futureList){
-            datasets.add(item.get());
+        for (String name: datasetNames){
+            Dataset dataset = zfsService.getDataset(name);
+            datasets.add(dataset);
         }
 
         Pool pool = new Pool(poolName, datasets);

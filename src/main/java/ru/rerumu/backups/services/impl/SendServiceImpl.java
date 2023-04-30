@@ -3,21 +3,16 @@ package ru.rerumu.backups.services.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.*;
-import ru.rerumu.backups.factories.ZFSProcessFactory;
-import ru.rerumu.backups.models.Snapshot;
-import ru.rerumu.backups.models.s3.Bucket;
-import ru.rerumu.backups.models.zfs.Pool;
+import ru.rerumu.backups.services.zfs.models.Snapshot;
+import ru.rerumu.backups.services.s3.models.Bucket;
+import ru.rerumu.backups.services.zfs.models.Pool;
+import ru.rerumu.backups.services.zfs.impl.consumer.SendStdoutConsumer;
 import ru.rerumu.backups.services.s3.repositories.impl.S3StreamRepositoryImpl;
 import ru.rerumu.backups.services.SendService;
-import ru.rerumu.backups.services.SnapshotNamingService;
-import ru.rerumu.backups.services.SnapshotService;
+import ru.rerumu.backups.services.zfs.SnapshotNamingService;
+import ru.rerumu.backups.services.zfs.SnapshotService;
 import ru.rerumu.backups.services.zfs.ZFSService;
 import ru.rerumu.backups.services.zfs.factories.ZFSCallableFactory;
-import ru.rerumu.backups.services.zfs.impl.SendReplica;
-import ru.rerumu.backups.utils.processes.ProcessFactory;
-import ru.rerumu.backups.utils.processes.impl.ProcessWrapperImpl;
-import ru.rerumu.backups.zfs_api.ProcessWrapper;
-import ru.rerumu.backups.zfs_api.zfs.ZFSSend;
 
 import java.util.concurrent.Callable;
 
@@ -26,7 +21,6 @@ import java.util.concurrent.Callable;
 public class SendServiceImpl implements SendService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final ZFSProcessFactory zfsProcessFactory;
     private final S3StreamRepositoryImpl s3StreamRepository;
     private final SnapshotService snapshotService;
 
@@ -36,8 +30,7 @@ public class SendServiceImpl implements SendService {
     private final ZFSCallableFactory zfsCallableFactory;
 
 
-    public SendServiceImpl(ZFSProcessFactory zfsProcessFactory, S3StreamRepositoryImpl s3StreamRepository, SnapshotService snapshotService, SnapshotNamingService snapshotNamingService, ZFSService zfsService, ZFSCallableFactory zfsCallableFactory) {
-        this.zfsProcessFactory = zfsProcessFactory;
+    public SendServiceImpl(S3StreamRepositoryImpl s3StreamRepository, SnapshotService snapshotService, SnapshotNamingService snapshotNamingService, ZFSService zfsService, ZFSCallableFactory zfsCallableFactory) {
         this.s3StreamRepository = s3StreamRepository;
         this.snapshotService = snapshotService;
         this.snapshotNamingService = snapshotNamingService;
@@ -64,15 +57,7 @@ public class SendServiceImpl implements SendService {
 
         Callable<Void> sendReplica = zfsCallableFactory.getSendReplica(
                 snapshot,
-                (item,close,kill) -> {
-                    try {
-                        s3StreamRepository.add(prefix, item);
-                    } catch (Exception e) {
-                        logger.error(e.getMessage(),e);
-                        kill.run();
-                        throw new RuntimeException(e);
-                    }
-                }
+                new SendStdoutConsumer(s3StreamRepository,prefix)
         );
 
         try {

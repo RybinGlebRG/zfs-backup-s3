@@ -1,16 +1,20 @@
 package ru.rerumu.backups;
 
-import ru.rerumu.backups.factories.*;
-import ru.rerumu.backups.factories.impl.*;
-import ru.rerumu.backups.models.S3Storage;
+import ru.rerumu.backups.services.s3.factories.S3ClientFactory;
+import ru.rerumu.backups.services.s3.factories.impl.S3ClientFactoryImpl;
+import ru.rerumu.backups.services.s3.models.S3Storage;
 import ru.rerumu.backups.services.ReceiveService;
 import ru.rerumu.backups.services.SendService;
-import ru.rerumu.backups.services.SnapshotNamingService;
-import ru.rerumu.backups.services.SnapshotService;
+import ru.rerumu.backups.services.zfs.SnapshotNamingService;
+import ru.rerumu.backups.services.zfs.SnapshotService;
 import ru.rerumu.backups.services.impl.ReceiveServiceImpl;
 import ru.rerumu.backups.services.impl.SendServiceImpl;
-import ru.rerumu.backups.services.impl.SnapshotNamingServiceImpl;
-import ru.rerumu.backups.services.impl.SnapshotServiceImpl;
+import ru.rerumu.backups.services.zfs.factories.ZFSFileReaderFactory;
+import ru.rerumu.backups.services.zfs.factories.ZFSFileWriterFactory;
+import ru.rerumu.backups.services.zfs.factories.impl.ZFSFileReaderFactoryImpl;
+import ru.rerumu.backups.services.zfs.factories.impl.ZFSFileWriterFactoryImpl;
+import ru.rerumu.backups.services.zfs.impl.SnapshotNamingServiceImpl;
+import ru.rerumu.backups.services.zfs.impl.SnapshotServiceImpl;
 import ru.rerumu.backups.services.s3.FileManager;
 import ru.rerumu.backups.services.s3.S3Service;
 import ru.rerumu.backups.services.s3.factories.S3CallableFactory;
@@ -31,7 +35,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -43,35 +46,7 @@ public class EntityFactory {
     public EntityFactory() throws IOException {
     }
 
-    public List<S3Storage> getS3StorageList() throws URISyntaxException {
-        List<S3Storage> s3StorageList = new ArrayList<>();
-        s3StorageList.add(new S3Storage(
-                Region.of(configuration.getProperty("s3.region_name")),
-                configuration.getProperty("s3.full.s3_bucket"),
-                configuration.getProperty("s3.access_key_id"),
-                configuration.getProperty("s3.secret_access_key"),
-                Paths.get(configuration.getProperty("s3.full.prefix")),
-                new URI(configuration.getProperty("s3.endpoint_url")),
-                configuration.getProperty("s3.full.storage_class")
-        ));
-        return s3StorageList;
-    }
-
-    public ZFSProcessFactory getZFSProcessFactory() {
-        return new ZFSProcessFactoryImpl(
-                new ProcessWrapperFactoryImpl()
-        );
-    }
-
-    public ZFSFileWriterFactory getZFSFileWriterFactory() {
-        return new ZFSFileWriterFactoryImpl(
-                Long.parseLong(configuration.getProperty("max_file_size")));
-    }
-
     public SendService getSendService() throws URISyntaxException {
-        ProcessWrapperFactoryImpl processWrapperFactory = new ProcessWrapperFactoryImpl();
-        ZFSProcessFactory zfsProcessFactory = new ZFSProcessFactoryImpl(processWrapperFactory);
-
         S3Storage s3Storage = new S3Storage(
                 Region.of(configuration.getProperty("s3.region_name")),
                 configuration.getProperty("s3.full.s3_bucket"),
@@ -112,11 +87,11 @@ public class EntityFactory {
         ProcessFactory processFactory = new ProcessFactoryImpl(executorService);
 
         SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
-        ZFSCallableFactory zfsCallableFactory = new ZFSCallableFactoryImpl(processFactory,executorService);
+        ZFSService zfsService = null;
+        ZFSCallableFactory zfsCallableFactory = new ZFSCallableFactoryImpl(processFactory,executorService, zfsService);
         SnapshotService snapshotService = new SnapshotServiceImpl(zfsCallableFactory);
-        ZFSService zfsService = new ZFSServiceImpl(zfsCallableFactory);
+        zfsService = new ZFSServiceImpl(zfsCallableFactory);
         SendService sendService = new SendServiceImpl(
-                zfsProcessFactory,
                 s3StreamRepository,
                 snapshotService,
                 snapshotNamingService,
@@ -127,9 +102,6 @@ public class EntityFactory {
     }
 
     public ReceiveService getReceiveService() throws URISyntaxException {
-        ProcessWrapperFactoryImpl processWrapperFactory = new ProcessWrapperFactoryImpl();
-        ZFSProcessFactory zfsProcessFactory = new ZFSProcessFactoryImpl(processWrapperFactory);
-
         S3Storage s3Storage = new S3Storage(
                 Region.of(configuration.getProperty("s3.region_name")),
                 configuration.getProperty("s3.full.s3_bucket"),
@@ -168,14 +140,15 @@ public class EntityFactory {
         );
         ExecutorService executorService = Executors.newCachedThreadPool();
         ProcessFactory processFactory = new ProcessFactoryImpl(executorService);
-        ZFSCallableFactory zfsCallableFactory = new ZFSCallableFactoryImpl(processFactory,executorService);
-        ZFSService zfsService = new ZFSServiceImpl(zfsCallableFactory);
+        ZFSService zfsService = null;
+        ZFSCallableFactory zfsCallableFactory = new ZFSCallableFactoryImpl(processFactory,executorService,zfsService);
+        zfsService = new ZFSServiceImpl(zfsCallableFactory);
         SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
         ReceiveService receiveService = new ReceiveServiceImpl(
                 s3StreamRepository,
-                zfsProcessFactory,
                 zfsService,
-                snapshotNamingService
+                snapshotNamingService,
+                zfsCallableFactory
         );
         return receiveService;
     }

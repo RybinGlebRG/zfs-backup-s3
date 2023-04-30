@@ -21,24 +21,27 @@ public class ProcessWrapperImpl implements ProcessWrapper {
     private final List<Future<Void>> futureList = new ArrayList<>();
     private BufferedInputStream bufferedInputStream;
     private BufferedOutputStream bufferedOutputStream;
-    // TODO: why volatile???
+    // TODO: volatile?
     private volatile Process process;
-    private boolean isKilled = false;
-    private boolean isClosed = false;
-//    private final Consumer<BufferedInputStream> stderrProcessor;
-    private final TriConsumer<BufferedInputStream,Runnable,Runnable> stderrProcessor;
-    private final TriConsumer<BufferedInputStream,Runnable,Runnable> stdoutProcessor;
+    private volatile boolean isKilled = false;
+    private volatile boolean isClosed = false;
+    //    private final Consumer<BufferedInputStream> stderrProcessor;
+    private final TriConsumer<BufferedInputStream, Runnable, Runnable> stderrProcessor;
+    private final TriConsumer<BufferedInputStream, Runnable, Runnable> stdoutProcessor;
+    private final TriConsumer<BufferedOutputStream, Runnable, Runnable> stdinProcessor;
 
     public ProcessWrapperImpl(
             List<String> args,
             ExecutorService executorService,
-            TriConsumer<BufferedInputStream,Runnable,Runnable> stderrProcessor,
-            TriConsumer<BufferedInputStream,Runnable,Runnable> stdoutProcessor
+            TriConsumer<BufferedInputStream, Runnable, Runnable> stderrProcessor,
+            TriConsumer<BufferedInputStream, Runnable, Runnable> stdoutProcessor,
+            TriConsumer<BufferedOutputStream, Runnable, Runnable> stdinProcessor
     ) {
         this.args = args;
         this.executorService = executorService;
         this.stderrProcessor = stderrProcessor;
         this.stdoutProcessor = stdoutProcessor;
+        this.stdinProcessor = stdinProcessor;
     }
 
     @Override
@@ -48,9 +51,24 @@ public class ProcessWrapperImpl implements ProcessWrapper {
         bufferedInputStream = new BufferedInputStream(process.getInputStream());
         bufferedOutputStream = new BufferedOutputStream(process.getOutputStream());
 
+        if (stdinProcessor != null) {
+            futureList.add(
+                    executorService.submit(
+                            () -> {
+                                stdinProcessor.accept(
+                                        bufferedOutputStream,
+                                        this::close,
+                                        this::kill
+                                );
+                                return null;
+                            }
+                    )
+            );
+        }
+
         if (stderrProcessor != null) {
             futureList.add(executorService.submit(
-                    ()->{
+                    () -> {
                         stderrProcessor.accept(
                                 new BufferedInputStream(process.getErrorStream()),
                                 this::close,
@@ -63,7 +81,7 @@ public class ProcessWrapperImpl implements ProcessWrapper {
         if (stdoutProcessor != null) {
             futureList.add(
                     executorService.submit(
-                            ()->{
+                            () -> {
                                 stdoutProcessor.accept(
                                         bufferedInputStream,
                                         this::close,
@@ -80,7 +98,7 @@ public class ProcessWrapperImpl implements ProcessWrapper {
             future.get();
         }
         if (exitCode != 0) {
-            logger.error("Process or thread closed with error");
+            logger.error("Process closed with an error");
             throw new IOException();
         }
         logger.info("Process closed");
@@ -95,7 +113,7 @@ public class ProcessWrapperImpl implements ProcessWrapper {
                 logger.info("stdin closed");
                 isClosed = true;
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -109,7 +127,7 @@ public class ProcessWrapperImpl implements ProcessWrapper {
                 logger.info("Process killed");
                 isKilled = true;
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

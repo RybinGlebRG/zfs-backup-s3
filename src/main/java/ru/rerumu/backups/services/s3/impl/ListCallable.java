@@ -2,8 +2,8 @@ package ru.rerumu.backups.services.s3.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.backups.factories.S3ClientFactory;
-import ru.rerumu.backups.models.S3Storage;
+import ru.rerumu.backups.services.s3.factories.S3ClientFactory;
+import ru.rerumu.backups.services.s3.models.S3Storage;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsResponse;

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.rerumu.backups.models.S3Storage;
+import ru.rerumu.backups.services.s3.models.S3Storage;
 import ru.rerumu.backups.services.s3.S3Service;
 import ru.rerumu.backups.services.s3.repositories.impl.S3RepositoryImpl;
 import software.amazon.awssdk.regions.Region;

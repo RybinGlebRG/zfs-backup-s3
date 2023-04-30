@@ -2,7 +2,7 @@ package ru.rerumu.backups.services.zfs.impl.helper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.backups.models.Snapshot;
+import ru.rerumu.backups.services.zfs.models.Snapshot;
 import ru.rerumu.backups.utils.processes.TriConsumer;
 
 import java.io.BufferedInputStream;
@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class SnapshotListStdConsumer implements TriConsumer<BufferedInputStream,Runnable,Runnable> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());

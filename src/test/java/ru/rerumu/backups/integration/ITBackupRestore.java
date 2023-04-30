@@ -11,24 +11,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.controllers.BackupController;
 import ru.rerumu.backups.controllers.RestoreController;
-import ru.rerumu.backups.factories.S3ClientFactory;
-import ru.rerumu.backups.factories.ZFSFileReaderFactory;
-import ru.rerumu.backups.factories.ZFSFileWriterFactory;
-import ru.rerumu.backups.factories.ZFSProcessFactory;
-import ru.rerumu.backups.factories.impl.S3ClientFactoryImpl;
-import ru.rerumu.backups.factories.impl.ZFSFileReaderFactoryImpl;
-import ru.rerumu.backups.factories.impl.ZFSFileWriterFactoryImpl;
-import ru.rerumu.backups.models.S3Storage;
-import ru.rerumu.backups.models.Snapshot;
-import ru.rerumu.backups.models.zfs.Dataset;
-import ru.rerumu.backups.models.zfs.Pool;
+import ru.rerumu.backups.services.s3.factories.S3ClientFactory;
+import ru.rerumu.backups.services.zfs.factories.ZFSFileReaderFactory;
+import ru.rerumu.backups.services.zfs.factories.ZFSFileWriterFactory;
+import ru.rerumu.backups.services.s3.factories.impl.S3ClientFactoryImpl;
+import ru.rerumu.backups.services.zfs.factories.impl.ZFSFileReaderFactoryImpl;
+import ru.rerumu.backups.services.zfs.factories.impl.ZFSFileWriterFactoryImpl;
+import ru.rerumu.backups.services.s3.models.S3Storage;
+import ru.rerumu.backups.services.zfs.models.Snapshot;
+import ru.rerumu.backups.services.zfs.models.Dataset;
+import ru.rerumu.backups.services.zfs.models.Pool;
 import ru.rerumu.backups.services.ReceiveService;
 import ru.rerumu.backups.services.SendService;
-import ru.rerumu.backups.services.SnapshotNamingService;
-import ru.rerumu.backups.services.SnapshotService;
+import ru.rerumu.backups.services.zfs.SnapshotNamingService;
+import ru.rerumu.backups.services.zfs.SnapshotService;
 import ru.rerumu.backups.services.impl.ReceiveServiceImpl;
 import ru.rerumu.backups.services.impl.SendServiceImpl;
-import ru.rerumu.backups.services.impl.SnapshotNamingServiceImpl;
+import ru.rerumu.backups.services.zfs.impl.SnapshotNamingServiceImpl;
 import ru.rerumu.backups.services.s3.FileManager;
 import ru.rerumu.backups.services.s3.S3Service;
 import ru.rerumu.backups.services.s3.factories.S3CallableFactory;
@@ -40,14 +39,8 @@ import ru.rerumu.backups.services.s3.repositories.impl.S3StreamRepositoryImpl;
 import ru.rerumu.backups.services.zfs.ZFSService;
 import ru.rerumu.backups.services.zfs.factories.ZFSCallableFactory;
 import ru.rerumu.backups.utils.processes.ProcessFactory;
-import ru.rerumu.backups.utils.processes.impl.ProcessFactoryImpl;
-import ru.rerumu.backups.zfs_api.zfs.ZFSReceive;
-import ru.rerumu.backups.zfs_api.zfs.ZFSSend;
 import software.amazon.awssdk.regions.Region;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.nio.file.Path;
@@ -64,12 +57,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class ITBackupRestore {
-
-    @Mock
-    ZFSProcessFactory zfsProcessFactory;
-
-    @Mock
-    ZFSProcessFactory zfsProcessFactoryRestore;
 
     @Mock
     ZFSService zfsService;
@@ -130,7 +117,6 @@ public class ITBackupRestore {
         SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
 //        ZFSService zfsService = new ZFSServiceImpl(processWrapperFactory);
         SendService sendService = new SendServiceImpl(
-                zfsProcessFactory,
                 s3StreamRepository,
                 snapshotService,
                 snapshotNamingService,
@@ -182,9 +168,9 @@ public class ITBackupRestore {
         SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
         ReceiveService receiveService = new ReceiveServiceImpl(
                 s3StreamRepository,
-                zfsProcessFactoryRestore,
                 zfsServiceRestore,
-                snapshotNamingService
+                snapshotNamingService,
+                zfsCallableFactory
         );
         return receiveService;
     }
@@ -224,7 +210,7 @@ public class ITBackupRestore {
         ));
         Pool pool = new Pool("TestPool",datasets);
         Snapshot snapshot = new Snapshot("TestPool@"+snapshotNamingService.generateName());
-        ZFSSend zfsSend = mock(ZFSSend.class);
+//        ZFSSend zfsSend = mock(ZFSSend.class);
         byte[] data = new byte[50_000_000];
 
         new Random().nextBytes(data);
@@ -233,25 +219,25 @@ public class ITBackupRestore {
                 .thenReturn(pool);
         when(snapshotService.createRecursiveSnapshot(any(),anyString()))
                 .thenReturn(snapshot);
-        when(zfsProcessFactory.getZFSSendReplicate(any()))
-                .thenReturn(zfsSend);
-        when(zfsSend.getBufferedInputStream())
-                .thenReturn(new BufferedInputStream(new ByteArrayInputStream(data)));
+//        when(zfsProcessFactory.getZFSSendReplicate(any()))
+//                .thenReturn(zfsSend);
+//        when(zfsSend.getBufferedInputStream())
+//                .thenReturn(new BufferedInputStream(new ByteArrayInputStream(data)));
 
         BackupController backupController = new BackupController(prepareSend(tempDir1));
         backupController.backupFull("TestPool",bucketName);
 
 
         Pool restorePool = new Pool("RestorePool",new ArrayList<>());
-        ZFSReceive zfsReceive = mock(ZFSReceive.class);
+//        ZFSReceive zfsReceive = mock(ZFSReceive.class);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
         when(zfsServiceRestore.getPool(anyString()))
                 .thenReturn(restorePool);
-        when(zfsProcessFactoryRestore.getZFSReceive((Pool) any()))
-                .thenReturn(zfsReceive);
-        when(zfsReceive.getBufferedOutputStream())
-                .thenReturn(new BufferedOutputStream(byteArrayOutputStream));
+//        when(zfsProcessFactoryRestore.getZFSReceive((Pool) any()))
+//                .thenReturn(zfsReceive);
+//        when(zfsReceive.getBufferedOutputStream())
+//                .thenReturn(new BufferedOutputStream(byteArrayOutputStream));
 
         RestoreController restoreController = new RestoreController(prepareReceive(tempDir2));
         restoreController.restore(bucketName,"RestorePool");

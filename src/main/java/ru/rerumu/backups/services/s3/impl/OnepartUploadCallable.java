@@ -3,8 +3,8 @@ package ru.rerumu.backups.services.s3.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.IncorrectHashException;
-import ru.rerumu.backups.factories.S3ClientFactory;
-import ru.rerumu.backups.models.S3Storage;
+import ru.rerumu.backups.services.s3.factories.S3ClientFactory;
+import ru.rerumu.backups.services.s3.models.S3Storage;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -27,7 +27,7 @@ public class OnepartUploadCallable implements Callable<Void> {
     private final S3Storage s3Storage;
     private final S3ClientFactory s3ClientFactory;
 
-    public OnepartUploadCallable( Path path, String key, S3Storage s3Storage, S3ClientFactory s3ClientFactory) {
+    public OnepartUploadCallable(Path path, String key, S3Storage s3Storage, S3ClientFactory s3ClientFactory) {
         this.path = path;
         this.key = key;
         this.s3Storage = s3Storage;

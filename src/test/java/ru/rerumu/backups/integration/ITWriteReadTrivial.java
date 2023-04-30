@@ -3,14 +3,12 @@ package ru.rerumu.backups.integration;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import ru.rerumu.backups.exceptions.CompressorException;
-import ru.rerumu.backups.exceptions.EncryptException;
 import ru.rerumu.backups.exceptions.FileHitSizeLimitException;
 import ru.rerumu.backups.exceptions.ZFSStreamEndedException;
-import ru.rerumu.backups.services.ZFSFileReader;
-import ru.rerumu.backups.services.ZFSFileWriter;
-import ru.rerumu.backups.services.impl.ZFSFileReaderTrivial;
-import ru.rerumu.backups.services.impl.ZFSFileWriterTrivial;
+import ru.rerumu.backups.services.zfs.ZFSFileReader;
+import ru.rerumu.backups.services.zfs.ZFSFileWriter;
+import ru.rerumu.backups.services.zfs.impl.ZFSFileReaderTrivial;
+import ru.rerumu.backups.services.zfs.impl.ZFSFileWriterTrivial;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -21,7 +19,7 @@ import java.util.Random;
 public class ITWriteReadTrivial {
 
     @Test
-    void shouldWriteReadSame(@TempDir Path tempDir) throws IOException, CompressorException, ClassNotFoundException, EncryptException, FileHitSizeLimitException, ZFSStreamEndedException {
+    void shouldWriteReadSame(@TempDir Path tempDir) throws Exception {
         long filePartSize = 1000;
         Path path = tempDir.resolve("test");
         ZFSFileWriter zfsFileWriter = new ZFSFileWriterTrivial(filePartSize,path);
@@ -51,7 +49,7 @@ public class ITWriteReadTrivial {
 
 
     @Test
-    void shouldWriteReadSameTwoFiles(@TempDir Path tempDir) throws IOException, CompressorException, ClassNotFoundException, EncryptException, FileHitSizeLimitException, ZFSStreamEndedException {
+    void shouldWriteReadSameTwoFiles(@TempDir Path tempDir) throws Exception {
         long filePartSize = 1000;
 //        ZFSFileWriter zfsFileWriter = new ZFSFileWriterTrivial(chunkSize,filePartSize);
         byte[] srcBuf = new byte[1100];

@@ -2,8 +2,8 @@ package ru.rerumu.backups.services.zfs.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.backups.models.Snapshot;
-import ru.rerumu.backups.models.zfs.Dataset;
+import ru.rerumu.backups.services.zfs.models.Snapshot;
+import ru.rerumu.backups.services.zfs.models.Dataset;
 import ru.rerumu.backups.services.zfs.impl.helper.SnapshotListStdConsumer;
 import ru.rerumu.backups.utils.processes.ProcessFactory;
 import ru.rerumu.backups.utils.processes.ProcessWrapper;

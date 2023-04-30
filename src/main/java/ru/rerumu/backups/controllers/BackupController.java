@@ -2,9 +2,6 @@ package ru.rerumu.backups.controllers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.backups.models.Snapshot;
-import ru.rerumu.backups.models.s3.Bucket;
-import ru.rerumu.backups.models.zfs.Pool;
 import ru.rerumu.backups.services.*;
 
 public class BackupController {

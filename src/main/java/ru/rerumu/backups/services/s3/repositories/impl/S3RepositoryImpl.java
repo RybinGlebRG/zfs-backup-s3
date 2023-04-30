@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.IncorrectHashException;
 import ru.rerumu.backups.exceptions.S3MissesFileException;
-import ru.rerumu.backups.models.S3Storage;
+import ru.rerumu.backups.services.s3.models.S3Storage;
 import ru.rerumu.backups.services.s3.repositories.S3Repository;
 import ru.rerumu.backups.services.s3.S3Service;
 

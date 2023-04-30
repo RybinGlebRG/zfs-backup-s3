@@ -2,7 +2,7 @@ package ru.rerumu.backups.models;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.rerumu.backups.models.Snapshot;
+import ru.rerumu.backups.services.zfs.models.Snapshot;
 
 import java.util.Objects;
 

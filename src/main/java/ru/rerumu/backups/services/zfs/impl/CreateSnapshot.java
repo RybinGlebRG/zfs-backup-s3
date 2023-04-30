@@ -2,8 +2,7 @@ package ru.rerumu.backups.services.zfs.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.backups.factories.ProcessWrapperFactory;
-import ru.rerumu.backups.models.zfs.Dataset;
+import ru.rerumu.backups.services.zfs.models.Dataset;
 import ru.rerumu.backups.utils.processes.ProcessFactory;
 import ru.rerumu.backups.utils.processes.ProcessWrapper;
 import ru.rerumu.backups.utils.processes.StdConsumer;
@@ -12,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class CreateSnapshot implements Callable<Void> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());

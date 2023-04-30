@@ -8,10 +8,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.backups.exceptions.FileHitSizeLimitException;
 import ru.rerumu.backups.exceptions.ZFSStreamEndedException;
-import ru.rerumu.backups.factories.ZFSFileReaderFactory;
-import ru.rerumu.backups.factories.ZFSFileWriterFactory;
-import ru.rerumu.backups.services.ZFSFileReader;
-import ru.rerumu.backups.services.ZFSFileWriter;
+import ru.rerumu.backups.services.zfs.factories.ZFSFileReaderFactory;
+import ru.rerumu.backups.services.zfs.factories.ZFSFileWriterFactory;
+import ru.rerumu.backups.services.zfs.ZFSFileReader;
+import ru.rerumu.backups.services.zfs.ZFSFileWriter;
 import ru.rerumu.backups.services.s3.repositories.impl.S3StreamRepositoryImpl;
 import ru.rerumu.backups.services.s3.FileManager;
 

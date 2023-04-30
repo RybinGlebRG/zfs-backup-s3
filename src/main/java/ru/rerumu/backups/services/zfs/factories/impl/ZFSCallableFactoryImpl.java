@@ -1,31 +1,35 @@
 package ru.rerumu.backups.services.zfs.factories.impl;
 
-import ru.rerumu.backups.models.Snapshot;
-import ru.rerumu.backups.models.zfs.Dataset;
-import ru.rerumu.backups.models.zfs.Pool;
+import ru.rerumu.backups.services.zfs.models.Snapshot;
+import ru.rerumu.backups.services.zfs.models.Dataset;
+import ru.rerumu.backups.services.zfs.models.Pool;
+import ru.rerumu.backups.services.zfs.ZFSService;
 import ru.rerumu.backups.services.zfs.factories.ZFSCallableFactory;
 import ru.rerumu.backups.services.zfs.impl.*;
 import ru.rerumu.backups.utils.processes.ProcessFactory;
 import ru.rerumu.backups.utils.processes.TriConsumer;
 
 import java.io.BufferedInputStream;
-import java.util.List;
+import java.io.BufferedOutputStream;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class ZFSCallableFactoryImpl implements ZFSCallableFactory {
     private final ProcessFactory processFactory;
     private final ExecutorService executorService;
 
-    public ZFSCallableFactoryImpl(ProcessFactory processFactory, ExecutorService executorService) {
+    // TODO: Circular dependency?
+    private final ZFSService zfsService;
+
+    public ZFSCallableFactoryImpl(ProcessFactory processFactory, ExecutorService executorService, ZFSService zfsService) {
         this.processFactory = processFactory;
         this.executorService = executorService;
+        this.zfsService = zfsService;
     }
 
     @Override
     public GetPool getPoolCallable(String poolName) {
-        return new GetPool(poolName, processFactory,executorService,this);
+        return new GetPool(poolName, processFactory,zfsService);
     }
 
     @Override
@@ -49,5 +53,10 @@ public class ZFSCallableFactoryImpl implements ZFSCallableFactory {
             TriConsumer<BufferedInputStream,Runnable,Runnable> consumer
     ) {
         return new SendReplica(snapshot,processFactory,consumer,executorService);
+    }
+
+    @Override
+    public Callable<Void> getReceive(Pool pool, TriConsumer<BufferedOutputStream, Runnable, Runnable> stdinConsumer) {
+        return new Receive(pool,processFactory,stdinConsumer);
     }
 }

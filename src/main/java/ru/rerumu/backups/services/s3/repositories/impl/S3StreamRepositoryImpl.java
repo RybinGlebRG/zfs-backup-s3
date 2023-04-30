@@ -3,11 +3,11 @@ package ru.rerumu.backups.services.s3.repositories.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.*;
-import ru.rerumu.backups.factories.ZFSFileReaderFactory;
-import ru.rerumu.backups.factories.ZFSFileWriterFactory;
+import ru.rerumu.backups.services.zfs.factories.ZFSFileReaderFactory;
+import ru.rerumu.backups.services.zfs.factories.ZFSFileWriterFactory;
 import ru.rerumu.backups.services.s3.repositories.S3Repository;
-import ru.rerumu.backups.services.ZFSFileReader;
-import ru.rerumu.backups.services.ZFSFileWriter;
+import ru.rerumu.backups.services.zfs.ZFSFileReader;
+import ru.rerumu.backups.services.zfs.ZFSFileWriter;
 import ru.rerumu.backups.services.s3.FileManager;
 
 import java.io.BufferedInputStream;
@@ -78,7 +78,7 @@ public class S3StreamRepositoryImpl implements S3Repository {
     }
 
     public void getAll(BufferedOutputStream bufferedOutputStream, String prefix)
-            throws CompressorException, IOException, ClassNotFoundException, EncryptException {
+            throws IOException  {
         List<String> keys = s3Repository.listAll(prefix);
         for (String key : keys) {
             Path part = fileManager.getNew(null,"-"+ Paths.get(key).getFileName());
