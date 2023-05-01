@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.exceptions.ReceiveError;
 import ru.rerumu.backups.services.zfs.models.Pool;
 import ru.rerumu.backups.services.zfs.SnapshotNamingService;
-import ru.rerumu.backups.services.zfs.impl.consumer.ReceiveStdinConsumer;
+import ru.rerumu.backups.services.zfs.consumers.ReceiveStdinConsumer;
 import ru.rerumu.backups.services.s3.repositories.impl.S3StreamRepositoryImpl;
 import ru.rerumu.backups.services.ReceiveService;
 import ru.rerumu.backups.services.zfs.ZFSService;

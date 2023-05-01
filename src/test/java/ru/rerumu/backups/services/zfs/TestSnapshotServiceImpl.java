@@ -10,8 +10,6 @@ import ru.rerumu.backups.services.zfs.models.Snapshot;
 import ru.rerumu.backups.services.zfs.models.Dataset;
 import ru.rerumu.backups.services.zfs.impl.SnapshotServiceImpl;
 import ru.rerumu.backups.services.zfs.factories.ZFSCallableFactory;
-import ru.rerumu.backups.services.zfs.impl.CreateSnapshot;
-import ru.rerumu.backups.services.zfs.impl.ListSnapshots;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,6 +66,23 @@ public class TestSnapshotServiceImpl {
         SnapshotServiceImpl snapshotService = new SnapshotServiceImpl(zfsCallableFactory);
 
         Assertions.assertThrows(NoSuchElementException.class,()->snapshotService.createRecursiveSnapshot(
+                dataset,
+                name
+        ));
+    }
+
+    @Test
+    void shouldThrowException() throws Exception {
+        String name="zfs-s3-snapshot";
+        Dataset dataset = new Dataset("TestDataset",new ArrayList<>());
+
+        when(zfsCallableFactory.getCreateSnapshotCallable(any(),anyString(),any())).thenReturn(createSnapshot);
+        when(zfsCallableFactory.getListSnapshotsCallable(any())).thenReturn(listSnapshots);
+        when(createSnapshot.call()).thenThrow(Exception.class);
+
+        SnapshotServiceImpl snapshotService = new SnapshotServiceImpl(zfsCallableFactory);
+
+        Assertions.assertThrows(RuntimeException.class,()->snapshotService.createRecursiveSnapshot(
                 dataset,
                 name
         ));

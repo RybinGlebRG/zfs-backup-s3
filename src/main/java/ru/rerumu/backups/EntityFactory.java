@@ -90,10 +90,11 @@ public class EntityFactory {
 
         SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
         ZFSService zfsService = null;
-        ZFSCallableFactory zfsCallableFactory = new ZFSCallableFactoryImpl(processFactory,executorService, zfsService);
+        StdConsumerFactory stdConsumerFactory = new StdConsumerFactoryImpl();
+        ZFSCallableFactory zfsCallableFactory = new ZFSCallableFactoryImpl(processFactory,executorService, zfsService,stdConsumerFactory);
         SnapshotService snapshotService = new SnapshotServiceImpl(zfsCallableFactory);
         zfsService = new ZFSServiceImpl(zfsCallableFactory);
-        StdConsumerFactory stdConsumerFactory = new StdConsumerFactoryImpl();
+
         SendService sendService = new SendServiceImpl(
                 s3StreamRepository,
                 snapshotService,
@@ -145,7 +146,8 @@ public class EntityFactory {
         ExecutorService executorService = Executors.newCachedThreadPool();
         ProcessFactory processFactory = new ProcessFactoryImpl(executorService);
         ZFSService zfsService = null;
-        ZFSCallableFactory zfsCallableFactory = new ZFSCallableFactoryImpl(processFactory,executorService,zfsService);
+        StdConsumerFactory stdConsumerFactory = new StdConsumerFactoryImpl();
+        ZFSCallableFactory zfsCallableFactory = new ZFSCallableFactoryImpl(processFactory,executorService,zfsService,stdConsumerFactory);
         zfsService = new ZFSServiceImpl(zfsCallableFactory);
         SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
         ReceiveService receiveService = new ReceiveServiceImpl(

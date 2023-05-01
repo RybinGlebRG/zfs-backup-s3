@@ -7,15 +7,12 @@ import ru.rerumu.backups.services.zfs.factories.StdConsumerFactory;
 import ru.rerumu.backups.services.zfs.models.Snapshot;
 import ru.rerumu.backups.services.s3.models.Bucket;
 import ru.rerumu.backups.services.zfs.models.Pool;
-import ru.rerumu.backups.services.zfs.impl.consumer.SendStdoutConsumer;
 import ru.rerumu.backups.services.s3.repositories.impl.S3StreamRepositoryImpl;
 import ru.rerumu.backups.services.SendService;
 import ru.rerumu.backups.services.zfs.SnapshotNamingService;
 import ru.rerumu.backups.services.zfs.SnapshotService;
 import ru.rerumu.backups.services.zfs.ZFSService;
 import ru.rerumu.backups.services.zfs.factories.ZFSCallableFactory;
-
-import java.util.concurrent.Callable;
 
 
 // TODO: Use resume tokens?

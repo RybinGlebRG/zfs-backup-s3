@@ -1,10 +1,10 @@
-package ru.rerumu.backups.services.zfs.impl;
+package ru.rerumu.backups.services.zfs;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.services.zfs.models.Snapshot;
 import ru.rerumu.backups.utils.processes.ProcessFactory;
-import ru.rerumu.backups.utils.processes.StdConsumer;
+import ru.rerumu.backups.utils.processes.StdLineConsumer;
 import ru.rerumu.backups.utils.processes.TriConsumer;
 
 import java.io.BufferedInputStream;
@@ -39,7 +39,7 @@ public class SendReplica implements Callable<Void> {
 
         processFactory.getProcessWrapper(
                 command,
-                new StdConsumer(logger::debug),
+                new StdLineConsumer(logger::debug),
                 consumer
         ).call();
 

@@ -1,4 +1,4 @@
-package ru.rerumu.backups.services.zfs.impl.consumer;
+package ru.rerumu.backups.services.zfs.consumers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

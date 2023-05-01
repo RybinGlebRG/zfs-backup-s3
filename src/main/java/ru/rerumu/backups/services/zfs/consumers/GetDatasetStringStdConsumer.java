@@ -1,8 +1,7 @@
-package ru.rerumu.backups.services.zfs.impl.helper;
+package ru.rerumu.backups.services.zfs.consumers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.backups.services.zfs.models.Snapshot;
 import ru.rerumu.backups.utils.processes.TriConsumer;
 
 import java.io.BufferedInputStream;
@@ -11,12 +10,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
-public class SnapshotListStdConsumer implements TriConsumer<BufferedInputStream,Runnable,Runnable> {
+public class GetDatasetStringStdConsumer implements TriConsumer<BufferedInputStream,Runnable,Runnable> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private final List<Snapshot> snapshotList;
+    private final List<String> res;
 
-    public SnapshotListStdConsumer(List<Snapshot> snapshotList) {
-        this.snapshotList = snapshotList;
+    public GetDatasetStringStdConsumer(List<String> res) {
+        this.res = res;
     }
 
     @Override
@@ -27,11 +26,10 @@ public class SnapshotListStdConsumer implements TriConsumer<BufferedInputStream,
             logger.debug(String.format("Got from process: \n%s",str));
             String[] lines = str.split("\\n");
 
-             Arrays.stream(lines)
+            Arrays.stream(lines)
                     .map(String::strip)
-                    .map(Snapshot::new)
-                    .peek(item -> logger.debug(String.format("Got snapshot: %s",item.getFullName())))
-                     .forEach(snapshotList::add);
+                    .peek(item -> logger.debug(String.format("Got dataset name: %s",item)))
+                    .forEach(res::add);
         } catch (IOException e) {
             logger.error(e.getMessage(),e);
             kill.run();

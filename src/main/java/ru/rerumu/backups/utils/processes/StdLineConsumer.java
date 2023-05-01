@@ -9,11 +9,11 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 
-public class StdConsumer implements TriConsumer<BufferedInputStream,Runnable,Runnable> {
+public class StdLineConsumer implements TriConsumer<BufferedInputStream,Runnable,Runnable> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final Consumer<String> consumer;
 
-    public StdConsumer(Consumer<String> consumer ) {
+    public StdLineConsumer(Consumer<String> consumer ) {
         this.consumer = consumer;
     }
 

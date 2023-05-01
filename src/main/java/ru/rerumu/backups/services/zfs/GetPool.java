@@ -1,13 +1,12 @@
-package ru.rerumu.backups.services.zfs.impl;
+package ru.rerumu.backups.services.zfs;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.rerumu.backups.services.zfs.factories.StdConsumerFactory;
 import ru.rerumu.backups.services.zfs.models.Dataset;
 import ru.rerumu.backups.services.zfs.models.Pool;
-import ru.rerumu.backups.services.zfs.ZFSService;
-import ru.rerumu.backups.services.zfs.impl.helper.GetDatasetStringStdConsumer;
 import ru.rerumu.backups.utils.processes.ProcessFactory;
-import ru.rerumu.backups.utils.processes.StdConsumer;
+import ru.rerumu.backups.utils.processes.StdLineConsumer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,11 +18,14 @@ public class GetPool implements Callable<Pool> {
     private final ProcessFactory processFactory;
     private final ZFSService zfsService;
 
+    private final StdConsumerFactory stdConsumerFactory;
 
-    public GetPool(String poolName, ProcessFactory processFactory, ZFSService zfsService) {
+
+    public GetPool(String poolName, ProcessFactory processFactory, ZFSService zfsService, StdConsumerFactory stdConsumerFactory) {
         this.poolName = poolName;
         this.processFactory = processFactory;
         this.zfsService = zfsService;
+        this.stdConsumerFactory = stdConsumerFactory;
     }
 
     private List<String> getDatasetNames() throws Exception {
@@ -42,8 +44,8 @@ public class GetPool implements Callable<Pool> {
 
         processFactory.getProcessWrapper(
                 command,
-                new StdConsumer(logger::error),
-                new GetDatasetStringStdConsumer(datasetStrings)
+                new StdLineConsumer(logger::error),
+                stdConsumerFactory.getDatasetStringStdConsumer(datasetStrings)
         ).call();
 
         return datasetStrings;

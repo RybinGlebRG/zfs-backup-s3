@@ -1,11 +1,11 @@
 package ru.rerumu.backups.services.zfs.factories.impl;
 
+import ru.rerumu.backups.services.zfs.*;
+import ru.rerumu.backups.services.zfs.factories.StdConsumerFactory;
 import ru.rerumu.backups.services.zfs.models.Snapshot;
 import ru.rerumu.backups.services.zfs.models.Dataset;
 import ru.rerumu.backups.services.zfs.models.Pool;
-import ru.rerumu.backups.services.zfs.ZFSService;
 import ru.rerumu.backups.services.zfs.factories.ZFSCallableFactory;
-import ru.rerumu.backups.services.zfs.impl.*;
 import ru.rerumu.backups.utils.processes.ProcessFactory;
 import ru.rerumu.backups.utils.processes.TriConsumer;
 
@@ -21,15 +21,18 @@ public class ZFSCallableFactoryImpl implements ZFSCallableFactory {
     // TODO: Circular dependency?
     private final ZFSService zfsService;
 
-    public ZFSCallableFactoryImpl(ProcessFactory processFactory, ExecutorService executorService, ZFSService zfsService) {
+    private final StdConsumerFactory stdConsumerFactory;
+
+    public ZFSCallableFactoryImpl(ProcessFactory processFactory, ExecutorService executorService, ZFSService zfsService, StdConsumerFactory stdConsumerFactory) {
         this.processFactory = processFactory;
         this.executorService = executorService;
         this.zfsService = zfsService;
+        this.stdConsumerFactory = stdConsumerFactory;
     }
 
     @Override
     public GetPool getPoolCallable(String poolName) {
-        return new GetPool(poolName, processFactory,zfsService);
+        return new GetPool(poolName, processFactory,zfsService,stdConsumerFactory);
     }
 
     @Override

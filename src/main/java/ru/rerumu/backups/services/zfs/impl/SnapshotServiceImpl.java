@@ -1,5 +1,7 @@
 package ru.rerumu.backups.services.zfs.impl;
 
+import ru.rerumu.backups.services.zfs.CreateSnapshot;
+import ru.rerumu.backups.services.zfs.ListSnapshots;
 import ru.rerumu.backups.services.zfs.models.Snapshot;
 import ru.rerumu.backups.services.zfs.models.Dataset;
 import ru.rerumu.backups.services.zfs.SnapshotService;
@@ -8,6 +10,7 @@ import ru.rerumu.backups.services.zfs.factories.ZFSCallableFactory;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 
 public class SnapshotServiceImpl implements SnapshotService {
 
@@ -19,8 +22,8 @@ public class SnapshotServiceImpl implements SnapshotService {
 
     @Override
     public Snapshot createRecursiveSnapshot(Dataset dataset, String name) {
-        CreateSnapshot createSnapshot = zfsCallableFactory.getCreateSnapshotCallable(dataset,name,true);
-        ListSnapshots listSnapshots = zfsCallableFactory.getListSnapshotsCallable(dataset);
+        Callable<Void> createSnapshot = zfsCallableFactory.getCreateSnapshotCallable(dataset,name,true);
+        Callable<List<Snapshot>> listSnapshots = zfsCallableFactory.getListSnapshotsCallable(dataset);
 
         try {
             createSnapshot.call();
