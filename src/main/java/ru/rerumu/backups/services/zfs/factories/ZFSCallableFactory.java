@@ -16,8 +16,8 @@ import java.util.concurrent.Callable;
 
 public interface ZFSCallableFactory {
 
-    GetPool getPoolCallable(String poolName);
-    GetDataset getDatasetCallable(String datasetName);
+    Callable<Pool> getPoolCallable(String poolName);
+    Callable<Dataset> getDatasetCallable(String datasetName);
     Callable<Void> getCreateSnapshotCallable(Dataset dataset, String name, Boolean isRecursive);
     Callable<List<Snapshot>> getListSnapshotsCallable(Dataset dataset);
 

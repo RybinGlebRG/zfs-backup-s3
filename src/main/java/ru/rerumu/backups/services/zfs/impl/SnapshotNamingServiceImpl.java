@@ -12,25 +12,23 @@ public class SnapshotNamingServiceImpl implements SnapshotNamingService {
 
     private final static String SNAPSHOT_PREFIX="zfs-backup-s3";
 
-    private void validate(String name){
-        if (!name.matches("^[a-zA-Z0-9:_-]*$")){
-            throw new IllegalArgumentException(String.format("Illegal characters in name '%s'",name));
-        }
+    private String formatDate(LocalDateTime localDateTime){
+        return localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"));
     }
+
     @Override
     public String generateName() {
-        String tmp = SNAPSHOT_PREFIX+"__" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"));
-        validate(tmp);
+        String tmp = SNAPSHOT_PREFIX+"__" + formatDate(LocalDateTime.now());
         return tmp;
     }
 
     @Override
     public String generateName(LocalDateTime dateTime) {
-        String tmp = SNAPSHOT_PREFIX+"__" +dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"));
-        validate(tmp);
+        String tmp = SNAPSHOT_PREFIX+"__" +formatDate(dateTime);
         return tmp;
     }
 
+    // TODO: Pass Snapshot?
     @Override
     public LocalDateTime extractTime(String snapshotName) {
         logger.debug(String.format("Extracting from string '%s'",snapshotName));

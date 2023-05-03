@@ -5,7 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.backups.services.zfs.models.Dataset;
-import ru.rerumu.backups.utils.processes.ProcessFactory;
+import ru.rerumu.backups.utils.processes.factories.ProcessWrapperFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +18,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class TestCreateSnapshot {
     @Mock
-    ProcessFactory processFactory;
+    ProcessWrapperFactory processWrapperFactory;
 
     @Mock
     ExecutorService executorService;
@@ -30,14 +30,14 @@ public class TestCreateSnapshot {
     void shouldCall() throws Exception{
         Dataset dataset = new Dataset("TestDataset",new ArrayList<>());
 
-        when(processFactory.getProcessWrapper(any(),any(),any())).thenReturn(processWrapper);
+        when(processWrapperFactory.getProcessWrapper(any(),any(),any())).thenReturn(processWrapper);
 
 
         Callable<Void> createSnapshot = new CreateSnapshot(
                 dataset,
                 "zfs-backup-s3__2023-03-22T194000",
                 false,
-                processFactory,
+                processWrapperFactory,
                 executorService
         );
 
@@ -45,7 +45,7 @@ public class TestCreateSnapshot {
 
 
 
-        verify(processFactory).getProcessWrapper(eq(List.of(
+        verify(processWrapperFactory).getProcessWrapper(eq(List.of(
                 "zfs","snapshot","TestDataset@zfs-backup-s3__2023-03-22T194000"
         )),any(),any());
     }
@@ -54,14 +54,14 @@ public class TestCreateSnapshot {
     void shouldCallRecursive() throws Exception{
         Dataset dataset = new Dataset("TestDataset",new ArrayList<>());
 
-        when(processFactory.getProcessWrapper(any(),any(),any())).thenReturn(processWrapper);
+        when(processWrapperFactory.getProcessWrapper(any(),any(),any())).thenReturn(processWrapper);
 
 
         Callable<Void> createSnapshot = new CreateSnapshot(
                 dataset,
                 "zfs-backup-s3__2023-03-22T194000",
                 true,
-                processFactory,
+                processWrapperFactory,
                 executorService
         );
 
@@ -69,7 +69,7 @@ public class TestCreateSnapshot {
 
 
 
-        verify(processFactory).getProcessWrapper(eq(List.of(
+        verify(processWrapperFactory).getProcessWrapper(eq(List.of(
                 "zfs","snapshot","-r","TestDataset@zfs-backup-s3__2023-03-22T194000"
         )),any(),any());
     }

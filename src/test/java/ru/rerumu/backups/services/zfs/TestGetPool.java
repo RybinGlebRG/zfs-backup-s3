@@ -5,15 +5,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.rerumu.backups.services.zfs.consumers.GetDatasetStringStdConsumer;
 import ru.rerumu.backups.services.zfs.factories.StdConsumerFactory;
 import ru.rerumu.backups.services.zfs.models.Dataset;
 import ru.rerumu.backups.services.zfs.models.Pool;
-import ru.rerumu.backups.utils.processes.ProcessFactory;
-import ru.rerumu.backups.utils.processes.TriConsumer;
+import ru.rerumu.backups.utils.processes.factories.ProcessWrapperFactory;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -25,7 +21,7 @@ import static org.mockito.Mockito.*;
 public class TestGetPool {
 
     @Mock
-    ProcessFactory processFactory;
+    ProcessWrapperFactory processWrapperFactory;
 
     @Mock
     Callable<Void> processWrapper;
@@ -43,7 +39,7 @@ public class TestGetPool {
         Dataset dataset2 = new Dataset("TestDataset2",new ArrayList<>());
         Dataset dataset3 = new Dataset("TestDataset3",new ArrayList<>());
 
-        when(processFactory.getProcessWrapper(any(),any(),any())).thenReturn(processWrapper);
+        when(processWrapperFactory.getProcessWrapper(any(),any(),any())).thenReturn(processWrapper);
         when(stdConsumerFactory.getDatasetStringStdConsumer(any())).thenAnswer(invocationOnMock -> {
             List<String> datasetStrings = invocationOnMock.getArgument(0);
             datasetStrings.add("TestDataset1");
@@ -58,13 +54,13 @@ public class TestGetPool {
         ;
 
 
-        Callable<Pool> getPool = new GetPool("TestPool",processFactory,zfsService,stdConsumerFactory);
+        Callable<Pool> getPool = new GetPool("TestPool", processWrapperFactory,zfsService,stdConsumerFactory);
 
         Pool res = getPool.call();
 
 
 
-        verify(processFactory).getProcessWrapper(eq(List.of(
+        verify(processWrapperFactory).getProcessWrapper(eq(List.of(
                 "zfs","list","-rH","-o","name","-s","name","TestPool"
         )),any(),any());
 

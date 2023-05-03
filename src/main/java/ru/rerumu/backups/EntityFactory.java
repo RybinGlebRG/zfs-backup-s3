@@ -29,8 +29,10 @@ import ru.rerumu.backups.services.zfs.ZFSService;
 import ru.rerumu.backups.services.zfs.factories.ZFSCallableFactory;
 import ru.rerumu.backups.services.zfs.factories.impl.ZFSCallableFactoryImpl;
 import ru.rerumu.backups.services.zfs.impl.ZFSServiceImpl;
-import ru.rerumu.backups.utils.processes.ProcessFactory;
-import ru.rerumu.backups.utils.processes.impl.ProcessFactoryImpl;
+import ru.rerumu.backups.utils.processes.factories.ProcessFactory;
+import ru.rerumu.backups.utils.processes.factories.ProcessWrapperFactory;
+import ru.rerumu.backups.utils.processes.factories.impl.ProcessFactoryImpl;
+import ru.rerumu.backups.utils.processes.factories.impl.ProcessWrapperFactoryImpl;
 import software.amazon.awssdk.regions.Region;
 
 import java.io.IOException;
@@ -85,13 +87,15 @@ public class EntityFactory {
                 zfsFileReaderFactory,
                 fileManager
         );
+        // TODO: Did not found any guarantee that submit() is thread safe. Need to separate executors;
         ExecutorService executorService = Executors.newCachedThreadPool();
-        ProcessFactory processFactory = new ProcessFactoryImpl(executorService);
+        ProcessFactory processFactory = new ProcessFactoryImpl();
+        ProcessWrapperFactory processWrapperFactory = new ProcessWrapperFactoryImpl(executorService,processFactory);
 
         SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
         ZFSService zfsService = null;
         StdConsumerFactory stdConsumerFactory = new StdConsumerFactoryImpl();
-        ZFSCallableFactory zfsCallableFactory = new ZFSCallableFactoryImpl(processFactory,executorService, zfsService,stdConsumerFactory);
+        ZFSCallableFactory zfsCallableFactory = new ZFSCallableFactoryImpl(processWrapperFactory,executorService, zfsService,stdConsumerFactory);
         SnapshotService snapshotService = new SnapshotServiceImpl(zfsCallableFactory);
         zfsService = new ZFSServiceImpl(zfsCallableFactory);
 
@@ -144,10 +148,11 @@ public class EntityFactory {
                 fileManager
         );
         ExecutorService executorService = Executors.newCachedThreadPool();
-        ProcessFactory processFactory = new ProcessFactoryImpl(executorService);
+        ProcessFactory processFactory = new ProcessFactoryImpl();
+        ProcessWrapperFactory processWrapperFactory = new ProcessWrapperFactoryImpl(executorService,processFactory);
         ZFSService zfsService = null;
         StdConsumerFactory stdConsumerFactory = new StdConsumerFactoryImpl();
-        ZFSCallableFactory zfsCallableFactory = new ZFSCallableFactoryImpl(processFactory,executorService,zfsService,stdConsumerFactory);
+        ZFSCallableFactory zfsCallableFactory = new ZFSCallableFactoryImpl(processWrapperFactory,executorService,zfsService,stdConsumerFactory);
         zfsService = new ZFSServiceImpl(zfsCallableFactory);
         SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
         ReceiveService receiveService = new ReceiveServiceImpl(

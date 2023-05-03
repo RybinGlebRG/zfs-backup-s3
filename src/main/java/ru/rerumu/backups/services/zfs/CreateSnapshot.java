@@ -3,7 +3,7 @@ package ru.rerumu.backups.services.zfs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.services.zfs.models.Dataset;
-import ru.rerumu.backups.utils.processes.ProcessFactory;
+import ru.rerumu.backups.utils.processes.factories.ProcessWrapperFactory;
 import ru.rerumu.backups.utils.processes.StdLineConsumer;
 
 import java.util.ArrayList;
@@ -16,15 +16,15 @@ public class CreateSnapshot implements Callable<Void> {
     private final Dataset dataset;
     private final String name;
     private final Boolean isRecursive;
-    private final ProcessFactory processFactory;
+    private final ProcessWrapperFactory processWrapperFactory;
     private final ExecutorService executorService;
 
 
-    public CreateSnapshot(Dataset dataset, String name, Boolean isRecursive, ProcessFactory processFactory, ExecutorService executorService) {
+    public CreateSnapshot(Dataset dataset, String name, Boolean isRecursive, ProcessWrapperFactory processWrapperFactory, ExecutorService executorService) {
         this.dataset = dataset;
         this.name = name;
         this.isRecursive = isRecursive;
-        this.processFactory = processFactory;
+        this.processWrapperFactory = processWrapperFactory;
         this.executorService = executorService;
     }
 
@@ -38,7 +38,7 @@ public class CreateSnapshot implements Callable<Void> {
         }
         command.add(dataset.name()+"@"+name);
 
-        processFactory.getProcessWrapper(
+        processWrapperFactory.getProcessWrapper(
                 command,
                 new StdLineConsumer(logger::error),
                 new StdLineConsumer(logger::debug)

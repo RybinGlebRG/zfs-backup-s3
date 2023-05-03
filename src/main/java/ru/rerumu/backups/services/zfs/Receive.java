@@ -3,7 +3,7 @@ package ru.rerumu.backups.services.zfs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.services.zfs.models.Pool;
-import ru.rerumu.backups.utils.processes.ProcessFactory;
+import ru.rerumu.backups.utils.processes.factories.ProcessWrapperFactory;
 import ru.rerumu.backups.utils.processes.StdLineConsumer;
 import ru.rerumu.backups.utils.processes.TriConsumer;
 
@@ -16,12 +16,12 @@ public class Receive implements Callable<Void> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final Pool pool;
-    private final ProcessFactory processFactory;
+    private final ProcessWrapperFactory processWrapperFactory;
     private final TriConsumer<BufferedOutputStream,Runnable,Runnable> stdinConsumer;
 
-    public Receive(Pool pool, ProcessFactory processFactory, TriConsumer<BufferedOutputStream, Runnable, Runnable> stdinConsumer) {
+    public Receive(Pool pool, ProcessWrapperFactory processWrapperFactory, TriConsumer<BufferedOutputStream, Runnable, Runnable> stdinConsumer) {
         this.pool = pool;
-        this.processFactory = processFactory;
+        this.processWrapperFactory = processWrapperFactory;
         this.stdinConsumer = stdinConsumer;
     }
 
@@ -33,7 +33,7 @@ public class Receive implements Callable<Void> {
         command.add("-duvF");
         command.add(pool.name());
 
-        processFactory.getProcessWrapper(
+        processWrapperFactory.getProcessWrapper(
                 command,
                 new StdLineConsumer(logger::error),
                 new StdLineConsumer(logger::debug),

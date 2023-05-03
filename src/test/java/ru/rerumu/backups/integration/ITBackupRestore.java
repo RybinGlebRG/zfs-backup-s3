@@ -39,7 +39,7 @@ import ru.rerumu.backups.services.s3.repositories.impl.S3RepositoryImpl;
 import ru.rerumu.backups.services.s3.repositories.impl.S3StreamRepositoryImpl;
 import ru.rerumu.backups.services.zfs.ZFSService;
 import ru.rerumu.backups.services.zfs.factories.ZFSCallableFactory;
-import ru.rerumu.backups.utils.processes.ProcessFactory;
+import ru.rerumu.backups.utils.processes.factories.ProcessWrapperFactory;
 import software.amazon.awssdk.regions.Region;
 
 import java.io.ByteArrayOutputStream;
@@ -69,7 +69,7 @@ public class ITBackupRestore {
     SnapshotService snapshotService;
 
     @Mock
-    ProcessFactory processFactory;
+    ProcessWrapperFactory processWrapperFactory;
 
     @Mock
     ZFSCallableFactory zfsCallableFactory;

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.backups.services.zfs.models.Snapshot;
-import ru.rerumu.backups.utils.processes.ProcessFactory;
+import ru.rerumu.backups.utils.processes.factories.ProcessWrapperFactory;
 import ru.rerumu.backups.utils.processes.TriConsumer;
 
 import java.io.BufferedInputStream;
@@ -18,7 +18,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class TestSendReplica {
     @Mock
-    ProcessFactory processFactory;
+    ProcessWrapperFactory processWrapperFactory;
 
     @Mock
     ExecutorService executorService;
@@ -34,18 +34,18 @@ public class TestSendReplica {
     void shouldSend() throws Exception{
         Snapshot snapshot = new Snapshot("TestPool@zfs-backup-s3__2023-03-22T194000");
 
-        when(processFactory.getProcessWrapper(any(),any(),any())).thenReturn(processWrapper);
+        when(processWrapperFactory.getProcessWrapper(any(),any(),any())).thenReturn(processWrapper);
 
         Callable<Void> sendReplica = new SendReplica(
                 snapshot,
-                processFactory,
+                processWrapperFactory,
                 consumer,
                 executorService
         );
 
         sendReplica.call();
 
-        verify(processFactory).getProcessWrapper(eq(List.of(
+        verify(processWrapperFactory).getProcessWrapper(eq(List.of(
                 "zfs","send","-vpRPw","TestPool@zfs-backup-s3__2023-03-22T194000"
         )),any(),any());
     }

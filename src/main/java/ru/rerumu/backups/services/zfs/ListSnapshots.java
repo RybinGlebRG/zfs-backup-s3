@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.services.zfs.models.Snapshot;
 import ru.rerumu.backups.services.zfs.models.Dataset;
 import ru.rerumu.backups.services.zfs.consumers.SnapshotListStdConsumer;
-import ru.rerumu.backups.utils.processes.ProcessFactory;
+import ru.rerumu.backups.utils.processes.factories.ProcessWrapperFactory;
 import ru.rerumu.backups.utils.processes.StdLineConsumer;
 
 import java.util.ArrayList;
@@ -14,13 +14,13 @@ import java.util.concurrent.*;
 
 public class ListSnapshots implements Callable<List<Snapshot>> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private final ProcessFactory processFactory;
+    private final ProcessWrapperFactory processWrapperFactory;
     private final Dataset dataset;
     private final ExecutorService executorService;
 
 
-    public ListSnapshots(ProcessFactory processFactory, Dataset dataset, ExecutorService executorService) {
-        this.processFactory = processFactory;
+    public ListSnapshots(ProcessWrapperFactory processWrapperFactory, Dataset dataset, ExecutorService executorService) {
+        this.processWrapperFactory = processWrapperFactory;
         this.dataset = dataset;
         this.executorService = executorService;
     }
@@ -42,7 +42,7 @@ public class ListSnapshots implements Callable<List<Snapshot>> {
 
         List<Snapshot> snapshotList = new ArrayList<>();
 
-        processFactory.getProcessWrapper(
+        processWrapperFactory.getProcessWrapper(
                 command,
                 new StdLineConsumer(logger::error),
                 // TODO: Use factory. Will be possible to test

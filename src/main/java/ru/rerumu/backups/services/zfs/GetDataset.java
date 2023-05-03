@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.services.zfs.models.Snapshot;
 import ru.rerumu.backups.services.zfs.models.Dataset;
 import ru.rerumu.backups.services.zfs.consumers.SnapshotListStdConsumer;
-import ru.rerumu.backups.utils.processes.ProcessFactory;
+import ru.rerumu.backups.utils.processes.factories.ProcessWrapperFactory;
 import ru.rerumu.backups.utils.processes.StdLineConsumer;
 
 import java.util.ArrayList;
@@ -16,12 +16,12 @@ public class GetDataset implements Callable<Dataset> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final String datasetName;
 
-    private final ProcessFactory processFactory;
+    private final ProcessWrapperFactory processWrapperFactory;
 
 
-    public GetDataset(String datasetName, ProcessFactory processFactory) {
+    public GetDataset(String datasetName, ProcessWrapperFactory processWrapperFactory) {
         this.datasetName = datasetName;
-        this.processFactory = processFactory;
+        this.processWrapperFactory = processWrapperFactory;
     }
 
     private List<Snapshot> getSnapshots() throws Exception {
@@ -41,7 +41,7 @@ public class GetDataset implements Callable<Dataset> {
 
         List<Snapshot> snapshotList = new ArrayList<>();
 
-        processFactory.getProcessWrapper(
+        processWrapperFactory.getProcessWrapper(
                 command,
                 new StdLineConsumer(logger::error),
                 // TODO: Use factory. Will be possible to test

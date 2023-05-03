@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.services.zfs.factories.StdConsumerFactory;
 import ru.rerumu.backups.services.zfs.models.Dataset;
 import ru.rerumu.backups.services.zfs.models.Pool;
-import ru.rerumu.backups.utils.processes.ProcessFactory;
+import ru.rerumu.backups.utils.processes.factories.ProcessWrapperFactory;
 import ru.rerumu.backups.utils.processes.StdLineConsumer;
 
 import java.util.ArrayList;
@@ -15,15 +15,15 @@ import java.util.concurrent.*;
 public class GetPool implements Callable<Pool> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final String poolName;
-    private final ProcessFactory processFactory;
+    private final ProcessWrapperFactory processWrapperFactory;
     private final ZFSService zfsService;
 
     private final StdConsumerFactory stdConsumerFactory;
 
 
-    public GetPool(String poolName, ProcessFactory processFactory, ZFSService zfsService, StdConsumerFactory stdConsumerFactory) {
+    public GetPool(String poolName, ProcessWrapperFactory processWrapperFactory, ZFSService zfsService, StdConsumerFactory stdConsumerFactory) {
         this.poolName = poolName;
-        this.processFactory = processFactory;
+        this.processWrapperFactory = processWrapperFactory;
         this.zfsService = zfsService;
         this.stdConsumerFactory = stdConsumerFactory;
     }
@@ -42,7 +42,7 @@ public class GetPool implements Callable<Pool> {
 
         List<String> datasetStrings = new ArrayList<>();
 
-        processFactory.getProcessWrapper(
+        processWrapperFactory.getProcessWrapper(
                 command,
                 new StdLineConsumer(logger::error),
                 stdConsumerFactory.getDatasetStringStdConsumer(datasetStrings)
