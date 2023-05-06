@@ -1,4 +1,4 @@
-package ru.rerumu.zfs;
+package ru.rerumu.zfs.callable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,21 +11,21 @@ import ru.rerumu.zfs.models.Dataset;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
 
-public class ListSnapshots implements Callable<List<Snapshot>> {
+public class GetDataset implements Callable<Dataset> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final String datasetName;
+
     private final ProcessWrapperFactory processWrapperFactory;
-    private final Dataset dataset;
 
     private final StdProcessorFactory stdProcessorFactory;
-
     private final StdConsumerFactory stdConsumerFactory;
 
     // TODO: Check not null
-    public ListSnapshots(ProcessWrapperFactory processWrapperFactory, Dataset dataset, StdProcessorFactory stdProcessorFactory, StdConsumerFactory stdConsumerFactory) {
+    public GetDataset(String datasetName, ProcessWrapperFactory processWrapperFactory, StdProcessorFactory stdProcessorFactory, StdConsumerFactory stdConsumerFactory) {
+        this.datasetName = datasetName;
         this.processWrapperFactory = processWrapperFactory;
-        this.dataset = dataset;
         this.stdProcessorFactory = stdProcessorFactory;
         this.stdConsumerFactory = stdConsumerFactory;
     }
@@ -43,7 +43,7 @@ public class ListSnapshots implements Callable<List<Snapshot>> {
         command.add("creation");
         command.add("-d");
         command.add("1");
-        command.add(dataset.name());
+        command.add(datasetName);
 
         List<Snapshot> snapshotList = new ArrayList<>();
 
@@ -58,9 +58,12 @@ public class ListSnapshots implements Callable<List<Snapshot>> {
         return snapshotList;
     }
 
+
     @Override
-    public List<Snapshot> call() throws Exception {
-        List<Snapshot> res = getSnapshots();
-        return res;
+    public Dataset call() throws Exception {
+        List<Snapshot> snapshots = getSnapshots();
+        Dataset dataset = new Dataset(datasetName,snapshots);
+
+        return dataset;
     }
 }

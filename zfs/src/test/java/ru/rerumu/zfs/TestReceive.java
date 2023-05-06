@@ -6,6 +6,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.utils.processes.factories.ProcessWrapperFactory;
 import ru.rerumu.utils.processes.factories.StdProcessorFactory;
+import ru.rerumu.zfs.callable.Receive;
 import ru.rerumu.zfs.models.Pool;
 
 import java.io.BufferedOutputStream;

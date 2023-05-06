@@ -1,11 +1,11 @@
-package ru.rerumu.zfs;
+package ru.rerumu.backups.services;
 
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.rerumu.zfs.impl.SnapshotNamingServiceImpl;
+import ru.rerumu.backups.services.impl.SnapshotNamingServiceImpl;
 
 import java.time.LocalDateTime;
 

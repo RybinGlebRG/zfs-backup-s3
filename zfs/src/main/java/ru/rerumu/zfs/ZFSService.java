@@ -1,5 +1,6 @@
 package ru.rerumu.zfs;
 
+import ru.rerumu.zfs.models.Dataset;
 import ru.rerumu.zfs.models.Pool;
 import ru.rerumu.zfs.models.Snapshot;
 
@@ -13,4 +14,6 @@ public interface ZFSService {
     void send(Snapshot snapshot, Consumer<BufferedInputStream> consumer) throws Exception;
 
     void receive(Pool pool, Consumer<BufferedOutputStream> consumer) throws Exception;
+
+    Snapshot createRecursiveSnapshot(Dataset dataset, String name);
 }

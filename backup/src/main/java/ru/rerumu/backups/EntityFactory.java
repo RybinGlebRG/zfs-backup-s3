@@ -15,26 +15,15 @@ import ru.rerumu.s3.impl.S3ServiceImpl;
 import ru.rerumu.s3.models.S3Storage;
 import ru.rerumu.s3.repositories.impl.S3RepositoryImpl;
 import ru.rerumu.s3.repositories.impl.S3StreamRepositoryImpl;
-import ru.rerumu.utils.processes.factories.ProcessFactory;
-import ru.rerumu.utils.processes.factories.ProcessWrapperFactory;
-import ru.rerumu.utils.processes.factories.StdProcessorFactory;
-import ru.rerumu.utils.processes.factories.impl.ProcessFactoryImpl;
-import ru.rerumu.utils.processes.factories.impl.ProcessWrapperFactoryImpl;
-import ru.rerumu.utils.processes.factories.impl.StdProcessorFactoryImpl;
-import ru.rerumu.zfs.SnapshotNamingService;
-import ru.rerumu.zfs.SnapshotService;
+import ru.rerumu.backups.services.SnapshotNamingService;
 import ru.rerumu.zfs.ZFSService;
-import ru.rerumu.zfs.factories.StdConsumerFactory;
-import ru.rerumu.zfs.factories.ZFSCallableFactory;
 import ru.rerumu.s3.factories.ZFSFileReaderFactory;
 import ru.rerumu.s3.factories.ZFSFileWriterFactory;
-import ru.rerumu.zfs.factories.impl.StdConsumerFactoryImpl;
-import ru.rerumu.zfs.factories.impl.ZFSCallableFactoryImpl;
+import ru.rerumu.zfs.ZFSServiceFactory;
 import ru.rerumu.s3.factories.impl.ZFSFileReaderFactoryImpl;
 import ru.rerumu.s3.factories.impl.ZFSFileWriterFactoryImpl;
-import ru.rerumu.zfs.impl.SnapshotNamingServiceImpl;
-import ru.rerumu.zfs.impl.SnapshotServiceImpl;
-import ru.rerumu.zfs.impl.ZFSServiceImpl;
+import ru.rerumu.backups.services.impl.SnapshotNamingServiceImpl;
+import ru.rerumu.zfs.ZFSServiceFactoryImpl;
 import software.amazon.awssdk.regions.Region;
 
 import java.io.IOException;
@@ -43,8 +32,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class EntityFactory {
     private final Configuration configuration = new Configuration();
@@ -89,26 +76,14 @@ public class EntityFactory {
                 zfsFileReaderFactory,
                 fileManager
         );
-        // TODO: Did not found any guarantee that submit() is thread safe. Need to separate executors;
-        ExecutorService executorService = Executors.newCachedThreadPool();
-        ProcessFactory processFactory = new ProcessFactoryImpl();
-        ProcessWrapperFactory processWrapperFactory = new ProcessWrapperFactoryImpl(processFactory);
-
         SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
-        // TODO: will not work
-        ZFSService zfsService = null;
-        StdConsumerFactory stdConsumerFactory = new StdConsumerFactoryImpl();
-        StdProcessorFactory stdProcessorFactory = new StdProcessorFactoryImpl();
-        ZFSCallableFactory zfsCallableFactory = new ZFSCallableFactoryImpl(processWrapperFactory,stdConsumerFactory,stdProcessorFactory);
-        SnapshotService snapshotService = new SnapshotServiceImpl(zfsCallableFactory);
-        zfsService = new ZFSServiceImpl(zfsCallableFactory);
+        ZFSServiceFactory zfsServiceFactory = new ZFSServiceFactoryImpl();
+        ZFSService zfsService = zfsServiceFactory.getZFSService();
 
         SendService sendService = new SendServiceImpl(
                 s3StreamRepository,
-                snapshotService,
                 snapshotNamingService,
-                zfsService,
-                stdConsumerFactory
+                zfsService
         );
         return sendService;
     }
@@ -150,22 +125,18 @@ public class EntityFactory {
                 zfsFileReaderFactory,
                 fileManager
         );
-        ExecutorService executorService = Executors.newCachedThreadPool();
-        ProcessFactory processFactory = new ProcessFactoryImpl();
-        ProcessWrapperFactory processWrapperFactory = new ProcessWrapperFactoryImpl(processFactory);
-        // TODO: will not work
-        ZFSService zfsService = null;
-        StdConsumerFactory stdConsumerFactory = new StdConsumerFactoryImpl();
-        StdProcessorFactory stdProcessorFactory = new StdProcessorFactoryImpl();
-        ZFSCallableFactory zfsCallableFactory = new ZFSCallableFactoryImpl(processWrapperFactory,stdConsumerFactory,stdProcessorFactory);
-        zfsService = new ZFSServiceImpl(zfsCallableFactory);
+
+        ZFSServiceFactory zfsServiceFactory = new ZFSServiceFactoryImpl();
+        ZFSService zfsService = zfsServiceFactory.getZFSService();
         SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
         ReceiveService receiveService = new ReceiveServiceImpl(
                 s3StreamRepository,
                 zfsService,
-                snapshotNamingService,
-                zfsCallableFactory
+                snapshotNamingService
         );
+
+
+
         return receiveService;
     }
 }

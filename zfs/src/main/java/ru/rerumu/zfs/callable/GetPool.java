@@ -1,4 +1,4 @@
-package ru.rerumu.zfs;
+package ru.rerumu.zfs.callable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

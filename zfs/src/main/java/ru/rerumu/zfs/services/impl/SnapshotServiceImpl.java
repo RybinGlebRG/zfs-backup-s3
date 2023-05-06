@@ -1,8 +1,8 @@
-package ru.rerumu.zfs.impl;
+package ru.rerumu.zfs.services.impl;
 
 import ru.rerumu.zfs.models.Snapshot;
 import ru.rerumu.zfs.models.Dataset;
-import ru.rerumu.zfs.SnapshotService;
+import ru.rerumu.zfs.services.SnapshotService;
 import ru.rerumu.zfs.factories.ZFSCallableFactory;
 
 import java.util.List;

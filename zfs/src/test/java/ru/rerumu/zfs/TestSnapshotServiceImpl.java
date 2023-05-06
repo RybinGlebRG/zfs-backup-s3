@@ -6,8 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import ru.rerumu.zfs.callable.CreateSnapshot;
+import ru.rerumu.zfs.callable.ListSnapshots;
 import ru.rerumu.zfs.factories.ZFSCallableFactory;
-import ru.rerumu.zfs.impl.SnapshotServiceImpl;
+import ru.rerumu.zfs.services.impl.SnapshotServiceImpl;
 import ru.rerumu.zfs.models.Dataset;
 import ru.rerumu.zfs.models.Snapshot;
 

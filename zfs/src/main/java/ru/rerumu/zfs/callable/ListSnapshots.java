@@ -1,4 +1,4 @@
-package ru.rerumu.zfs;
+package ru.rerumu.zfs.callable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,21 +11,21 @@ import ru.rerumu.zfs.models.Dataset;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
+import java.util.concurrent.*;
 
-public class GetDataset implements Callable<Dataset> {
+public class ListSnapshots implements Callable<List<Snapshot>> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private final String datasetName;
-
     private final ProcessWrapperFactory processWrapperFactory;
+    private final Dataset dataset;
 
     private final StdProcessorFactory stdProcessorFactory;
+
     private final StdConsumerFactory stdConsumerFactory;
 
     // TODO: Check not null
-    public GetDataset(String datasetName, ProcessWrapperFactory processWrapperFactory, StdProcessorFactory stdProcessorFactory, StdConsumerFactory stdConsumerFactory) {
-        this.datasetName = datasetName;
+    public ListSnapshots(ProcessWrapperFactory processWrapperFactory, Dataset dataset, StdProcessorFactory stdProcessorFactory, StdConsumerFactory stdConsumerFactory) {
         this.processWrapperFactory = processWrapperFactory;
+        this.dataset = dataset;
         this.stdProcessorFactory = stdProcessorFactory;
         this.stdConsumerFactory = stdConsumerFactory;
     }
@@ -43,7 +43,7 @@ public class GetDataset implements Callable<Dataset> {
         command.add("creation");
         command.add("-d");
         command.add("1");
-        command.add(datasetName);
+        command.add(dataset.name());
 
         List<Snapshot> snapshotList = new ArrayList<>();
 
@@ -58,12 +58,9 @@ public class GetDataset implements Callable<Dataset> {
         return snapshotList;
     }
 
-
     @Override
-    public Dataset call() throws Exception {
-        List<Snapshot> snapshots = getSnapshots();
-        Dataset dataset = new Dataset(datasetName,snapshots);
-
-        return dataset;
+    public List<Snapshot> call() throws Exception {
+        List<Snapshot> res = getSnapshots();
+        return res;
     }
 }

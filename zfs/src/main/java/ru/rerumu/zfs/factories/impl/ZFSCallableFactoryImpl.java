@@ -1,6 +1,6 @@
 package ru.rerumu.zfs.factories.impl;
 
-import ru.rerumu.zfs.*;
+import ru.rerumu.zfs.callable.*;
 import ru.rerumu.zfs.factories.StdConsumerFactory;
 import ru.rerumu.zfs.models.Snapshot;
 import ru.rerumu.zfs.models.Dataset;

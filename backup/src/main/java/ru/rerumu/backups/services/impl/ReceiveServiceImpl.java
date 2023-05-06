@@ -3,12 +3,13 @@ package ru.rerumu.backups.services.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.services.ReceiveService;
+import ru.rerumu.backups.services.SnapshotNamingService;
+import ru.rerumu.backups.consumers.ReceiveStdinConsumer;
+
 import ru.rerumu.s3.repositories.impl.S3StreamRepositoryImpl;
-import ru.rerumu.zfs.SnapshotNamingService;
-import ru.rerumu.zfs.ZFSService;
-import ru.rerumu.zfs.consumers.ReceiveStdinConsumer;
-import ru.rerumu.zfs.factories.ZFSCallableFactory;
+
 import ru.rerumu.zfs.models.Pool;
+import ru.rerumu.zfs.ZFSService;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -21,15 +22,12 @@ public class ReceiveServiceImpl implements ReceiveService {
 
     private final S3StreamRepositoryImpl s3StreamRepository;
     private final ZFSService zfsService;
-    private final SnapshotNamingService snapshotNamingService;
-    private final ZFSCallableFactory zfsCallableFactory;
-    ;
+    private final SnapshotNamingService snapshotNamingService;    ;
 
-    public ReceiveServiceImpl(S3StreamRepositoryImpl s3StreamRepository, ZFSService zfsService, SnapshotNamingService snapshotNamingService, ZFSCallableFactory zfsCallableFactory) {
+    public ReceiveServiceImpl(S3StreamRepositoryImpl s3StreamRepository, ZFSService zfsService, SnapshotNamingService snapshotNamingService) {
         this.s3StreamRepository = s3StreamRepository;
         this.zfsService = zfsService;
         this.snapshotNamingService = snapshotNamingService;
-        this.zfsCallableFactory = zfsCallableFactory;
     }
 
     private String getNewestPrefix(String bucketName) {

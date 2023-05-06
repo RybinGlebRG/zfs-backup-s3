@@ -1,6 +1,4 @@
-package ru.rerumu.zfs.factories;
-
-import ru.rerumu.zfs.ZFSService;
+package ru.rerumu.zfs;
 
 public interface ZFSServiceFactory {
 

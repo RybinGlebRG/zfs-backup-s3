@@ -1,4 +1,4 @@
-package ru.rerumu.zfs;
+package ru.rerumu.zfs.services;
 
 import ru.rerumu.zfs.models.Snapshot;
 import ru.rerumu.zfs.models.Dataset;

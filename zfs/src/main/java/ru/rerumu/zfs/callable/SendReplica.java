@@ -1,31 +1,34 @@
-package ru.rerumu.zfs;
+package ru.rerumu.zfs.callable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.utils.processes.StdLineConsumer;
 import ru.rerumu.utils.processes.factories.ProcessWrapperFactory;
 import ru.rerumu.utils.processes.factories.StdProcessorFactory;
-import ru.rerumu.zfs.models.Pool;
+import ru.rerumu.zfs.models.Snapshot;
 
-import java.io.BufferedOutputStream;
+
+import java.io.BufferedInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
-public class Receive implements Callable<Void> {
+public class SendReplica implements Callable<Void> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private final Pool pool;
+    private final Snapshot snapshot;
     private final ProcessWrapperFactory processWrapperFactory;
-    private final Consumer<BufferedOutputStream> stdinConsumer;
+
+    private final Consumer<BufferedInputStream> stdoutConsumer;
+
 
     private final StdProcessorFactory stdProcessorFactory;
 
-    public Receive(Pool pool, ProcessWrapperFactory processWrapperFactory, Consumer<BufferedOutputStream> stdinConsumer, StdProcessorFactory stdProcessorFactory) {
-        this.pool = pool;
+    // TODO: Check not null
+    public SendReplica(Snapshot snapshot, ProcessWrapperFactory processWrapperFactory, Consumer<BufferedInputStream> stdoutConsumer, StdProcessorFactory stdProcessorFactory) {
+        this.snapshot = snapshot;
         this.processWrapperFactory = processWrapperFactory;
-        this.stdinConsumer = stdinConsumer;
+        this.stdoutConsumer = stdoutConsumer;
         this.stdProcessorFactory = stdProcessorFactory;
     }
 
@@ -33,16 +36,15 @@ public class Receive implements Callable<Void> {
     public Void call() throws Exception {
         List<String> command = new ArrayList<>();
         command.add("zfs");
-        command.add("receive");
-        command.add("-duvF");
-        command.add(pool.name());
+        command.add("send");
+        command.add("-vpRPw");
+        command.add(snapshot.getFullName());
 
         processWrapperFactory.getProcessWrapper(
                 command,
                 stdProcessorFactory.getStdProcessor(
-                        new StdLineConsumer(logger::error),
                         new StdLineConsumer(logger::debug),
-                        stdinConsumer
+                        stdoutConsumer
                 )
         ).call();
 

@@ -2,15 +2,15 @@ package ru.rerumu.backups.services.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.rerumu.backups.consumers.SendStdoutConsumer;
 import ru.rerumu.backups.exceptions.*;
 import ru.rerumu.backups.services.SendService;
+import ru.rerumu.backups.services.SnapshotNamingService;
 
 import ru.rerumu.s3.models.Bucket;
 import ru.rerumu.s3.repositories.impl.S3StreamRepositoryImpl;
-import ru.rerumu.zfs.SnapshotNamingService;
+
 import ru.rerumu.zfs.ZFSService;
-import ru.rerumu.zfs.SnapshotService;
-import ru.rerumu.zfs.factories.StdConsumerFactory;
 import ru.rerumu.zfs.models.Pool;
 import ru.rerumu.zfs.models.Snapshot;
 
@@ -20,19 +20,14 @@ public class SendServiceImpl implements SendService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final S3StreamRepositoryImpl s3StreamRepository;
-    private final SnapshotService snapshotService;
-
     private final SnapshotNamingService snapshotNamingService;
     private final ZFSService zfsService;
-    private final StdConsumerFactory stdConsumerFactory;
 
 
-    public SendServiceImpl(S3StreamRepositoryImpl s3StreamRepository, SnapshotService snapshotService, SnapshotNamingService snapshotNamingService, ZFSService zfsService, StdConsumerFactory stdConsumerFactory) {
+    public SendServiceImpl(S3StreamRepositoryImpl s3StreamRepository, SnapshotNamingService snapshotNamingService, ZFSService zfsService) {
         this.s3StreamRepository = s3StreamRepository;
-        this.snapshotService = snapshotService;
         this.snapshotNamingService = snapshotNamingService;
         this.zfsService = zfsService;
-        this.stdConsumerFactory = stdConsumerFactory;
     }
 
     private String escapeSymbols(String srcString) {
@@ -41,7 +36,7 @@ public class SendServiceImpl implements SendService {
 
     @Override
     public void send(Pool pool, Bucket bucket) {
-        Snapshot snapshot = snapshotService.createRecursiveSnapshot(
+        Snapshot snapshot = zfsService.createRecursiveSnapshot(
                 pool.getRootDataset().orElseThrow(),
                 snapshotNamingService.generateName()
                 );
@@ -55,7 +50,8 @@ public class SendServiceImpl implements SendService {
         try {
             zfsService.send(
                     snapshot,
-                    stdConsumerFactory.getSendStdoutConsumer(s3StreamRepository, prefix)
+                    // TODO: Add factory to add ability to test?
+                    new SendStdoutConsumer(s3StreamRepository,prefix)
             );
         } catch (Exception e) {
             logger.error(e.getMessage(),e);

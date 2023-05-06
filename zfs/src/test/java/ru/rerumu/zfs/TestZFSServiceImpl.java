@@ -8,11 +8,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.zfs.factories.ZFSCallableFactory;
 import ru.rerumu.zfs.impl.ZFSServiceImpl;
-import ru.rerumu.zfs.models.Dataset;
 import ru.rerumu.zfs.models.Pool;
-import ru.rerumu.zfs.factories.ZFSCallableFactory;
-import ru.rerumu.zfs.impl.ZFSServiceImpl;
-import ru.rerumu.zfs.models.Pool;
+import ru.rerumu.zfs.services.SnapshotService;
 
 import java.util.concurrent.Callable;
 
@@ -27,13 +24,16 @@ public class TestZFSServiceImpl {
     @Mock
     Callable<Pool> poolCallable;
 
+    @Mock
+    SnapshotService snapshotService;
+
 
     @Test
     void shouldGetPool() throws Exception{
 
         when(zfsCallableFactory.getPoolCallable(anyString())).thenReturn(poolCallable);
 
-        ZFSServiceImpl zfsService = new ZFSServiceImpl(zfsCallableFactory);
+        ZFSServiceImpl zfsService = new ZFSServiceImpl(zfsCallableFactory,snapshotService);
         zfsService.getPool("TestPool");
     }
 
@@ -42,7 +42,7 @@ public class TestZFSServiceImpl {
         when(zfsCallableFactory.getPoolCallable(anyString())).thenReturn(poolCallable);
         when(poolCallable.call()).thenThrow(RuntimeException.class);
 
-        ZFSServiceImpl zfsService = new ZFSServiceImpl(zfsCallableFactory);
+        ZFSServiceImpl zfsService = new ZFSServiceImpl(zfsCallableFactory,snapshotService);
 
         Assertions.assertThrows(RuntimeException.class,()->zfsService.getPool("TestPool"));
     }

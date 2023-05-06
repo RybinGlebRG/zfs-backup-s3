@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.controllers.BackupController;
 import ru.rerumu.backups.controllers.RestoreController;
 import ru.rerumu.s3.factories.S3ClientFactory;
-import ru.rerumu.zfs.factories.StdConsumerFactory;
 import ru.rerumu.s3.factories.ZFSFileReaderFactory;
 import ru.rerumu.s3.factories.ZFSFileWriterFactory;
 import ru.rerumu.s3.factories.impl.S3ClientFactoryImpl;
@@ -24,11 +23,10 @@ import ru.rerumu.zfs.models.Dataset;
 import ru.rerumu.zfs.models.Pool;
 import ru.rerumu.backups.services.ReceiveService;
 import ru.rerumu.backups.services.SendService;
-import ru.rerumu.zfs.SnapshotNamingService;
-import ru.rerumu.zfs.SnapshotService;
+import ru.rerumu.backups.services.SnapshotNamingService;
 import ru.rerumu.backups.services.impl.ReceiveServiceImpl;
 import ru.rerumu.backups.services.impl.SendServiceImpl;
-import ru.rerumu.zfs.impl.SnapshotNamingServiceImpl;
+import ru.rerumu.backups.services.impl.SnapshotNamingServiceImpl;
 import ru.rerumu.s3.FileManager;
 import ru.rerumu.s3.S3Service;
 import ru.rerumu.s3.factories.S3CallableFactory;
@@ -38,8 +36,6 @@ import ru.rerumu.s3.impl.S3ServiceImpl;
 import ru.rerumu.s3.repositories.impl.S3RepositoryImpl;
 import ru.rerumu.s3.repositories.impl.S3StreamRepositoryImpl;
 import ru.rerumu.zfs.ZFSService;
-import ru.rerumu.zfs.factories.ZFSCallableFactory;
-import ru.rerumu.utils.processes.factories.ProcessWrapperFactory;
 import software.amazon.awssdk.regions.Region;
 
 import java.io.ByteArrayOutputStream;
@@ -64,18 +60,6 @@ public class ITBackupRestore {
 
     @Mock
     ZFSService zfsServiceRestore;
-
-    @Mock
-    SnapshotService snapshotService;
-
-    @Mock
-    ProcessWrapperFactory processWrapperFactory;
-
-    @Mock
-    ZFSCallableFactory zfsCallableFactory;
-
-    @Mock
-    StdConsumerFactory stdConsumerFactory;
 
 
     private SendService prepareSend(Path tempDir) throws Exception{
@@ -122,10 +106,8 @@ public class ITBackupRestore {
 //        ZFSService zfsService = new ZFSServiceImpl(processWrapperFactory);
         SendService sendService = new SendServiceImpl(
                 s3StreamRepository,
-                snapshotService,
                 snapshotNamingService,
-                zfsService,
-                stdConsumerFactory
+                zfsService
         );
         return sendService;
     }
@@ -173,8 +155,7 @@ public class ITBackupRestore {
         ReceiveService receiveService = new ReceiveServiceImpl(
                 s3StreamRepository,
                 zfsServiceRestore,
-                snapshotNamingService,
-                zfsCallableFactory
+                snapshotNamingService
         );
         return receiveService;
     }
@@ -221,7 +202,7 @@ public class ITBackupRestore {
 
         when(zfsService.getPool(anyString()))
                 .thenReturn(pool);
-        when(snapshotService.createRecursiveSnapshot(any(),anyString()))
+        when(zfsService.createRecursiveSnapshot(any(),anyString()))
                 .thenReturn(snapshot);
 //        when(zfsProcessFactory.getZFSSendReplicate(any()))
 //                .thenReturn(zfsSend);

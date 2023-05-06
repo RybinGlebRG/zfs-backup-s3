@@ -1,8 +1,8 @@
-package ru.rerumu.zfs.impl;
+package ru.rerumu.backups.services.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.zfs.SnapshotNamingService;
+import ru.rerumu.backups.services.SnapshotNamingService;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
