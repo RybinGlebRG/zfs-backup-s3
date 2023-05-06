@@ -13,6 +13,7 @@
         <module>backup</module>
         <module>s3module</module>
         <module>utils</module>
+        <module>jacoco</module>
     </modules>
 
     <properties>
