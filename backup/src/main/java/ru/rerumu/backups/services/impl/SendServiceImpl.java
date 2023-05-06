@@ -59,6 +59,7 @@ public class SendServiceImpl implements SendService {
 
     }
 
+    // TODO: Why exception is thrown?
     @Override
     public void send(String poolName, String bucketName) throws Exception {
         try {

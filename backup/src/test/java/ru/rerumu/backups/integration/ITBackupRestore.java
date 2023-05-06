@@ -15,15 +15,9 @@ import ru.rerumu.backups.factories.StdConsumerFactory;
 import ru.rerumu.backups.factories.impl.StdConsumerFactoryImpl;
 import ru.rerumu.s3.S3ServiceFactory;
 import ru.rerumu.s3.S3ServiceFactoryImpl;
-import ru.rerumu.s3.factories.S3ClientFactory;
-import ru.rerumu.s3.factories.ZFSFileReaderFactory;
-import ru.rerumu.s3.factories.ZFSFileWriterFactory;
-import ru.rerumu.s3.factories.impl.S3ClientFactoryImpl;
-import ru.rerumu.s3.factories.impl.ZFSFileReaderFactoryImpl;
-import ru.rerumu.s3.factories.impl.ZFSFileWriterFactoryImpl;
 import ru.rerumu.s3.models.S3Storage;
-import ru.rerumu.zfs.factories.ZFSCallableFactory;
-import ru.rerumu.zfs.impl.ZFSServiceImpl;
+import ru.rerumu.zfs.ZFSServiceFactory;
+import ru.rerumu.zfs.ZFSServiceFactoryImpl;
 import ru.rerumu.zfs.models.Snapshot;
 import ru.rerumu.zfs.models.Dataset;
 import ru.rerumu.zfs.models.Pool;
@@ -33,17 +27,13 @@ import ru.rerumu.backups.services.SnapshotNamingService;
 import ru.rerumu.backups.services.impl.ReceiveServiceImpl;
 import ru.rerumu.backups.services.impl.SendServiceImpl;
 import ru.rerumu.backups.services.impl.SnapshotNamingServiceImpl;
-import ru.rerumu.s3.utils.FileManager;
 import ru.rerumu.s3.S3Service;
-import ru.rerumu.s3.factories.S3CallableFactory;
-import ru.rerumu.s3.factories.impl.S3CallableFactoryImpl;
-import ru.rerumu.s3.utils.impl.FileManagerImpl;
-import ru.rerumu.s3.impl.S3ServiceImpl;
-import ru.rerumu.s3.repositories.impl.S3RepositoryImpl;
-import ru.rerumu.s3.repositories.impl.S3StreamRepository;
 import ru.rerumu.zfs.ZFSService;
 import software.amazon.awssdk.regions.Region;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.nio.file.Path;
@@ -51,12 +41,11 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.UUID;
+import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 
 // TODO: Check
@@ -64,16 +53,49 @@ import static org.mockito.Mockito.when;
 public class ITBackupRestore {
 
     @Mock
-    ZFSService zfsService;
+    ZFSService zfsServiceSend;
+    @Mock
+    S3Service s3ServiceSend;
 
     @Mock
     ZFSService zfsServiceRestore;
+    @Mock
+    S3Service s3ServiceRestore;
 
 //    @Mock
 //    StdConsumerFactory stdConsumerFactory;
 
 
     private SendService prepareSend(Path tempDir) throws Exception{
+//        S3Storage s3Storage = new S3Storage(
+//                Region.AWS_GLOBAL,
+//                "test",
+//                "1111",
+//                "1111",
+//                Paths.get("level-0"),
+//                new URI("http://localhost:9090/"),
+//                "STANDARD"
+//        );
+//        S3ServiceFactory s3ServiceFactory =  new S3ServiceFactoryImpl();
+//        S3Service s3Service = s3ServiceFactory.getS3Service(
+//                s3Storage,
+//                12_000_000,
+//                30_000_000L,
+//                tempDir
+//        );
+//        StdConsumerFactory stdConsumerFactory = new StdConsumerFactoryImpl(s3Service);
+//        SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
+//        SendService sendService = new SendServiceImpl(
+//                snapshotNamingService,
+//                zfsServiceSend,
+//                stdConsumerFactory
+//        );
+//        return sendService;
+
+
+
+
+
         S3Storage s3Storage = new S3Storage(
                 Region.AWS_GLOBAL,
                 "test",
@@ -90,25 +112,50 @@ public class ITBackupRestore {
                 30_000_000L,
                 tempDir
         );
-        StdConsumerFactory stdConsumerFactory = new StdConsumerFactoryImpl(s3Service);
         SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
+        ZFSServiceFactory zfsServiceFactory = new ZFSServiceFactoryImpl();
+//        ZFSService zfsService = zfsServiceFactory.getZFSService();
+        StdConsumerFactory stdConsumerFactory = new StdConsumerFactoryImpl(s3Service);
         SendService sendService = new SendServiceImpl(
                 snapshotNamingService,
-                zfsService,
+                zfsServiceSend,
                 stdConsumerFactory
         );
         return sendService;
-    }
 
-
-    private ZFSService prepareZFSService(){
-        ZFSCallableFactory zfsCallableFactory =  new
-        ZFSService zfsService = new ZFSServiceImpl(
-
-        );
     }
 
     private ReceiveService prepareReceive(Path tempDir) throws Exception{
+//        S3Storage s3Storage = new S3Storage(
+//                Region.AWS_GLOBAL,
+//                "test",
+//                "1111",
+//                "1111",
+//                Path.of(""),
+//                new URI("http://localhost:9090/"),
+//                "STANDARD"
+//        );
+//        S3ServiceFactory s3ServiceFactory =  new S3ServiceFactoryImpl();
+//        S3Service s3Service = s3ServiceFactory.getS3Service(
+//                s3Storage,
+//                12_000_000,
+//                30_000_000L,
+//                tempDir
+//        );
+//        StdConsumerFactory stdConsumerFactory = new StdConsumerFactoryImpl(s3Service);
+//        SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
+//        ReceiveService receiveService = new ReceiveServiceImpl(
+//                zfsServiceRestore,
+//                snapshotNamingService,
+//                s3Service,
+//                stdConsumerFactory
+//        );
+//        return receiveService;
+
+
+
+
+
         S3Storage s3Storage = new S3Storage(
                 Region.AWS_GLOBAL,
                 "test",
@@ -125,14 +172,19 @@ public class ITBackupRestore {
                 30_000_000L,
                 tempDir
         );
-        StdConsumerFactory stdConsumerFactory = new StdConsumerFactoryImpl(s3Service);
+        ZFSServiceFactory zfsServiceFactory = new ZFSServiceFactoryImpl();
+//        ZFSService zfsService = zfsServiceFactory.getZFSService();
         SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
+        StdConsumerFactory stdConsumerFactory = new StdConsumerFactoryImpl(s3Service);
         ReceiveService receiveService = new ReceiveServiceImpl(
                 zfsServiceRestore,
                 snapshotNamingService,
                 s3Service,
                 stdConsumerFactory
         );
+
+
+
         return receiveService;
     }
 
@@ -174,29 +226,34 @@ public class ITBackupRestore {
 
         new Random().nextBytes(data);
 
-        when(zfsService.getPool(anyString()))
+        when(zfsServiceSend.getPool(anyString()))
                 .thenReturn(pool);
-        when(zfsService.createRecursiveSnapshot(any(),anyString()))
+        when(zfsServiceSend.createRecursiveSnapshot(any(),anyString()))
                 .thenReturn(snapshot);
-//        when(zfsProcessFactory.getZFSSendReplicate(any()))
-//                .thenReturn(zfsSend);
-//        when(zfsSend.getBufferedInputStream())
-//                .thenReturn(new BufferedInputStream(new ByteArrayInputStream(data)));
+        doAnswer(invocationOnMock -> {
+            Consumer<BufferedInputStream> tmpConsumer = invocationOnMock.getArgument(1);
+            tmpConsumer.accept(new BufferedInputStream(new ByteArrayInputStream(data)));
+            return null;
+        })
+                .when(zfsServiceSend).send(any(),any());
+
 
         BackupController backupController = new BackupController(prepareSend(tempDir1));
         backupController.backupFull("TestPool",bucketName);
 
 
         Pool restorePool = new Pool("RestorePool",new ArrayList<>());
-//        ZFSReceive zfsReceive = mock(ZFSReceive.class);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
         when(zfsServiceRestore.getPool(anyString()))
                 .thenReturn(restorePool);
-//        when(zfsProcessFactoryRestore.getZFSReceive((Pool) any()))
-//                .thenReturn(zfsReceive);
-//        when(zfsReceive.getBufferedOutputStream())
-//                .thenReturn(new BufferedOutputStream(byteArrayOutputStream));
+        doAnswer(invocationOnMock -> {
+            Consumer<BufferedOutputStream> tmpConsumer = invocationOnMock.getArgument(1);
+            tmpConsumer.accept(new BufferedOutputStream(byteArrayOutputStream));
+            return null;
+        })
+                .when(zfsServiceRestore).receive(any(),any());
+
 
         RestoreController restoreController = new RestoreController(prepareReceive(tempDir2));
         restoreController.restore(bucketName,"RestorePool");
