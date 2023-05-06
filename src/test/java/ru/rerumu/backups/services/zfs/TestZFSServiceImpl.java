@@ -24,8 +24,6 @@ public class TestZFSServiceImpl {
     @Mock
     Callable<Pool> poolCallable;
 
-    @Mock
-    Callable<Dataset> datasetCallable;
 
     @Test
     void shouldGetPool() throws Exception{
@@ -44,24 +42,5 @@ public class TestZFSServiceImpl {
         ZFSServiceImpl zfsService = new ZFSServiceImpl(zfsCallableFactory);
 
         Assertions.assertThrows(RuntimeException.class,()->zfsService.getPool("TestPool"));
-    }
-
-    @Test
-    void shouldGetDataset() throws Exception{
-
-        when(zfsCallableFactory.getDatasetCallable(anyString())).thenReturn(datasetCallable);
-
-        ZFSServiceImpl zfsService = new ZFSServiceImpl(zfsCallableFactory);
-        zfsService.getDataset("TestDataset");
-    }
-
-    @Test
-    void shouldThrowExceptionWhileGetDataset() throws Exception{
-        when(zfsCallableFactory.getDatasetCallable(anyString())).thenReturn(datasetCallable);
-        when(datasetCallable.call()).thenThrow(RuntimeException.class);
-
-        ZFSServiceImpl zfsService = new ZFSServiceImpl(zfsCallableFactory);
-
-        Assertions.assertThrows(RuntimeException.class,()->zfsService.getDataset("TestDataset"));
     }
 }

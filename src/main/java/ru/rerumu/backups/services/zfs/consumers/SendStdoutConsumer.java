@@ -3,11 +3,11 @@ package ru.rerumu.backups.services.zfs.consumers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.services.s3.repositories.impl.S3StreamRepositoryImpl;
-import ru.rerumu.backups.utils.processes.TriConsumer;
 
 import java.io.BufferedInputStream;
+import java.util.function.Consumer;
 
-public class SendStdoutConsumer implements TriConsumer<BufferedInputStream,Runnable,Runnable> {
+public class SendStdoutConsumer implements Consumer<BufferedInputStream> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final S3StreamRepositoryImpl s3StreamRepository;
     private final String prefix;
@@ -18,12 +18,11 @@ public class SendStdoutConsumer implements TriConsumer<BufferedInputStream,Runna
     }
 
     @Override
-    public void accept(BufferedInputStream bufferedInputStream, Runnable close, Runnable kill) {
+    public void accept(BufferedInputStream bufferedInputStream) {
         try {
             s3StreamRepository.add(prefix, bufferedInputStream);
         } catch (Exception e) {
             logger.error(e.getMessage(),e);
-            kill.run();
             throw new RuntimeException(e);
         }
     }

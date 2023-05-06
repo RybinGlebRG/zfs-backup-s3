@@ -6,12 +6,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.backups.services.zfs.models.Snapshot;
 import ru.rerumu.backups.utils.processes.factories.ProcessWrapperFactory;
-import ru.rerumu.backups.utils.processes.TriConsumer;
+import ru.rerumu.backups.utils.processes.factories.StdProcessorFactory;
 
 import java.io.BufferedInputStream;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 
 import static org.mockito.Mockito.*;
 
@@ -24,29 +25,32 @@ public class TestSendReplica {
     ExecutorService executorService;
 
     @Mock
-    TriConsumer<BufferedInputStream,Runnable,Runnable> consumer;
+    Consumer<BufferedInputStream> consumer;
 
     @Mock
     Callable<Void> processWrapper;
+
+    @Mock
+    StdProcessorFactory stdProcessorFactory;
 
 
     @Test
     void shouldSend() throws Exception{
         Snapshot snapshot = new Snapshot("TestPool@zfs-backup-s3__2023-03-22T194000");
 
-        when(processWrapperFactory.getProcessWrapper(any(),any(),any())).thenReturn(processWrapper);
+        when(processWrapperFactory.getProcessWrapper(any(),any())).thenReturn(processWrapper);
 
         Callable<Void> sendReplica = new SendReplica(
                 snapshot,
                 processWrapperFactory,
                 consumer,
-                executorService
+                stdProcessorFactory
         );
 
         sendReplica.call();
 
         verify(processWrapperFactory).getProcessWrapper(eq(List.of(
                 "zfs","send","-vpRPw","TestPool@zfs-backup-s3__2023-03-22T194000"
-        )),any(),any());
+        )),any());
     }
 }

@@ -26,23 +26,12 @@ public class ReceiveServiceImpl implements ReceiveService {
     private final ZFSCallableFactory zfsCallableFactory;
     ;
 
-    public ReceiveServiceImpl(S3StreamRepositoryImpl s3StreamRepository,  ZFSService zfsService, SnapshotNamingService snapshotNamingService, ZFSCallableFactory zfsCallableFactory) {
+    public ReceiveServiceImpl(S3StreamRepositoryImpl s3StreamRepository, ZFSService zfsService, SnapshotNamingService snapshotNamingService, ZFSCallableFactory zfsCallableFactory) {
         this.s3StreamRepository = s3StreamRepository;
         this.zfsService = zfsService;
         this.snapshotNamingService = snapshotNamingService;
         this.zfsCallableFactory = zfsCallableFactory;
     }
-
-//    @Deprecated
-//    @Override
-//    public void receive(String prefix, ZFSPool zfsPool) {
-//        try (ZFSReceive zfsReceive = zfsProcessFactory.getZFSReceive(zfsPool)) {
-//            s3StreamRepository.getAll(zfsReceive.getBufferedOutputStream(), prefix);
-//        } catch (Exception e) {
-//            logger.error(e.getMessage(), e);
-//            throw new ReceiveError(e);
-//        }
-//    }
 
     private String getNewestPrefix(String bucketName) {
         String prefix = String.format(
@@ -77,18 +66,17 @@ public class ReceiveServiceImpl implements ReceiveService {
     }
 
     @Override
-    public void receive(String bucketName, String poolName) {
-        String prefix = getNewestPrefix(bucketName);
-        Pool pool = zfsService.getPool(poolName);
-
+    public void receive(String bucketName, String poolName) throws Exception {
         try {
-            zfsCallableFactory.getReceive(
+            String prefix = getNewestPrefix(bucketName);
+            Pool pool = zfsService.getPool(poolName);
+            zfsService.receive(
                     pool,
                     new ReceiveStdinConsumer(s3StreamRepository, prefix)
-            ).call();
+            );
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            throw new ReceiveError(e);
+            throw e;
         }
 
     }

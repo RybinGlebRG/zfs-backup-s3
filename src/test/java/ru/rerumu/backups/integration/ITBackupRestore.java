@@ -125,7 +125,6 @@ public class ITBackupRestore {
                 snapshotService,
                 snapshotNamingService,
                 zfsService,
-                zfsCallableFactory,
                 stdConsumerFactory
         );
         return sendService;

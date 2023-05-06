@@ -6,12 +6,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.backups.services.zfs.models.Pool;
 import ru.rerumu.backups.utils.processes.factories.ProcessWrapperFactory;
-import ru.rerumu.backups.utils.processes.TriConsumer;
+import ru.rerumu.backups.utils.processes.factories.StdProcessorFactory;
 
 import java.io.BufferedOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -29,16 +30,19 @@ public class TestReceive {
     Callable<Void> processWrapper;
 
     @Mock
-    TriConsumer<BufferedOutputStream,Runnable,Runnable> consumer;
+    Consumer<BufferedOutputStream> consumer;
+
+    @Mock
+    StdProcessorFactory stdProcessorFactory;
 
     @Test
     void shouldCall() throws Exception{
         Pool pool =new Pool("ReceivePool",new ArrayList<>());
 
-        when(processWrapperFactory.getProcessWrapper(any(),any(),any(),any())).thenReturn(processWrapper);
+        when(processWrapperFactory.getProcessWrapper(any(),any())).thenReturn(processWrapper);
 
 
-        Callable<Void> receive = new Receive(pool, processWrapperFactory,consumer);
+        Callable<Void> receive = new Receive(pool, processWrapperFactory,consumer,stdProcessorFactory);
 
         receive.call();
 
@@ -46,6 +50,6 @@ public class TestReceive {
 
         verify(processWrapperFactory).getProcessWrapper(eq(List.of(
                 "zfs","receive","-duvF","ReceivePool"
-        )),any(),any(),any());
+        )),any());
     }
 }

@@ -1,3 +1,4 @@
+
 package ru.rerumu.backups.utils.processes;
 
 import org.slf4j.Logger;
@@ -9,7 +10,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 
-public class StdLineConsumer implements TriConsumer<BufferedInputStream,Runnable,Runnable> {
+public class StdLineConsumer implements Consumer<BufferedInputStream> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final Consumer<String> consumer;
 
@@ -18,7 +19,7 @@ public class StdLineConsumer implements TriConsumer<BufferedInputStream,Runnable
     }
 
     @Override
-    public void accept(BufferedInputStream bufferedInputStream, Runnable close, Runnable kill) {
+    public void accept(BufferedInputStream bufferedInputStream) {
         logger.info("Started reading std");
         try (InputStreamReader inputStreamReader = new InputStreamReader(bufferedInputStream, StandardCharsets.UTF_8);
              BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
@@ -28,7 +29,6 @@ public class StdLineConsumer implements TriConsumer<BufferedInputStream,Runnable
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            kill.run();
             throw new RuntimeException(e);
         }
         logger.info("Finished reading std");

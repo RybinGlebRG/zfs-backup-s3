@@ -2,11 +2,12 @@ package ru.rerumu.backups.services.zfs;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.rerumu.backups.services.zfs.factories.StdConsumerFactory;
 import ru.rerumu.backups.services.zfs.models.Snapshot;
 import ru.rerumu.backups.services.zfs.models.Dataset;
-import ru.rerumu.backups.services.zfs.consumers.SnapshotListStdConsumer;
-import ru.rerumu.backups.utils.processes.factories.ProcessWrapperFactory;
 import ru.rerumu.backups.utils.processes.StdLineConsumer;
+import ru.rerumu.backups.utils.processes.factories.ProcessWrapperFactory;
+import ru.rerumu.backups.utils.processes.factories.StdProcessorFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,13 +17,17 @@ public class ListSnapshots implements Callable<List<Snapshot>> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final ProcessWrapperFactory processWrapperFactory;
     private final Dataset dataset;
-    private final ExecutorService executorService;
 
+    private final StdProcessorFactory stdProcessorFactory;
 
-    public ListSnapshots(ProcessWrapperFactory processWrapperFactory, Dataset dataset, ExecutorService executorService) {
+    private final StdConsumerFactory stdConsumerFactory;
+
+    // TODO: Check not null
+    public ListSnapshots(ProcessWrapperFactory processWrapperFactory, Dataset dataset, StdProcessorFactory stdProcessorFactory, StdConsumerFactory stdConsumerFactory) {
         this.processWrapperFactory = processWrapperFactory;
         this.dataset = dataset;
-        this.executorService = executorService;
+        this.stdProcessorFactory = stdProcessorFactory;
+        this.stdConsumerFactory = stdConsumerFactory;
     }
 
     private List<Snapshot> getSnapshots() throws Exception {
@@ -44,10 +49,12 @@ public class ListSnapshots implements Callable<List<Snapshot>> {
 
         processWrapperFactory.getProcessWrapper(
                 command,
-                new StdLineConsumer(logger::error),
-                // TODO: Use factory. Will be possible to test
-                new SnapshotListStdConsumer(snapshotList)
+                stdProcessorFactory.getStdProcessor(
+                        new StdLineConsumer(logger::error),
+                        stdConsumerFactory.getSnapshotListStdConsumer(snapshotList)
+                )
         ).call();
+
         return snapshotList;
     }
 

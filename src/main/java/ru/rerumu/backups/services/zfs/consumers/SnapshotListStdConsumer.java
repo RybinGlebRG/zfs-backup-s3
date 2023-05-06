@@ -3,15 +3,15 @@ package ru.rerumu.backups.services.zfs.consumers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.services.zfs.models.Snapshot;
-import ru.rerumu.backups.utils.processes.TriConsumer;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
-public class SnapshotListStdConsumer implements TriConsumer<BufferedInputStream,Runnable,Runnable> {
+public class SnapshotListStdConsumer implements Consumer<BufferedInputStream> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final List<Snapshot> snapshotList;
 
@@ -20,7 +20,7 @@ public class SnapshotListStdConsumer implements TriConsumer<BufferedInputStream,
     }
 
     @Override
-    public void accept(BufferedInputStream bufferedInputStream, Runnable close, Runnable kill) {
+    public void accept(BufferedInputStream bufferedInputStream) {
         try {
             byte[] output = bufferedInputStream.readAllBytes();
             String str = new String(output, StandardCharsets.UTF_8);
@@ -34,7 +34,6 @@ public class SnapshotListStdConsumer implements TriConsumer<BufferedInputStream,
                      .forEach(snapshotList::add);
         } catch (IOException e) {
             logger.error(e.getMessage(),e);
-            kill.run();
             throw new RuntimeException(e);
         }
     }

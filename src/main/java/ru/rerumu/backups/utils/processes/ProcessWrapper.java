@@ -2,7 +2,6 @@ package ru.rerumu.backups.utils.processes;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.backups.utils.processes.TriConsumer;
 import ru.rerumu.backups.utils.processes.factories.ProcessFactory;
 
 import java.io.BufferedInputStream;

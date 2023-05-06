@@ -1,19 +1,24 @@
 package ru.rerumu.backups.services.zfs.factories;
 
 import ru.rerumu.backups.services.s3.repositories.impl.S3StreamRepositoryImpl;
-import ru.rerumu.backups.utils.processes.TriConsumer;
+import ru.rerumu.backups.services.zfs.models.Snapshot;
 
 import java.io.BufferedInputStream;
 import java.util.List;
+import java.util.function.Consumer;
 
 public interface StdConsumerFactory {
 
-    TriConsumer<BufferedInputStream,Runnable,Runnable> getSendStdoutConsumer(
+    Consumer<BufferedInputStream> getSendStdoutConsumer(
             S3StreamRepositoryImpl s3StreamRepository,
             String prefix
     );
 
-    TriConsumer<BufferedInputStream,Runnable,Runnable> getDatasetStringStdConsumer(
+    Consumer<BufferedInputStream> getDatasetStringStdConsumer(
             List<String> res
+    );
+
+    Consumer<BufferedInputStream> getSnapshotListStdConsumer(
+            List<Snapshot> snapshotList
     );
 }

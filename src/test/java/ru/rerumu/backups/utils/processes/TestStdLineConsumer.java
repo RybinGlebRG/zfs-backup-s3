@@ -9,9 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 
@@ -24,12 +22,6 @@ public class TestStdLineConsumer {
     @Mock
     Consumer<String> consumer;
 
-    @Mock
-    Runnable close;
-
-    @Mock
-    Runnable kill;
-
     @Test
     void shouldCall() throws Exception{
         String str = """
@@ -41,7 +33,7 @@ public class TestStdLineConsumer {
         BufferedInputStream bufferedInputStream = new BufferedInputStream(byteArrayInputStream);
 
         StdLineConsumer stdLineConsumer = new StdLineConsumer(consumer);
-        stdLineConsumer.accept(bufferedInputStream,close,kill);
+        stdLineConsumer.accept(bufferedInputStream);
 
         InOrder inOrder = inOrder(consumer);
 
@@ -52,7 +44,7 @@ public class TestStdLineConsumer {
     }
 
     @Test
-    void shouldKill() throws Exception{
+    void shouldThrowException() throws Exception{
         String str = """
                 Line1
                 Line2
@@ -66,8 +58,7 @@ public class TestStdLineConsumer {
         StdLineConsumer stdLineConsumer = new StdLineConsumer(consumer);
 
 
-        Assertions.assertThrows(RuntimeException.class,()->stdLineConsumer.accept(bufferedInputStream,close,kill));
+        Assertions.assertThrows(RuntimeException.class,()-> stdLineConsumer.accept(bufferedInputStream));
 
-        verify(kill).run();
     }
 }

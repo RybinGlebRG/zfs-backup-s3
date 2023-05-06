@@ -31,8 +31,10 @@ import ru.rerumu.backups.services.zfs.factories.impl.ZFSCallableFactoryImpl;
 import ru.rerumu.backups.services.zfs.impl.ZFSServiceImpl;
 import ru.rerumu.backups.utils.processes.factories.ProcessFactory;
 import ru.rerumu.backups.utils.processes.factories.ProcessWrapperFactory;
+import ru.rerumu.backups.utils.processes.factories.StdProcessorFactory;
 import ru.rerumu.backups.utils.processes.factories.impl.ProcessFactoryImpl;
 import ru.rerumu.backups.utils.processes.factories.impl.ProcessWrapperFactoryImpl;
+import ru.rerumu.backups.utils.processes.factories.impl.StdProcessorFactoryImpl;
 import software.amazon.awssdk.regions.Region;
 
 import java.io.IOException;
@@ -90,12 +92,14 @@ public class EntityFactory {
         // TODO: Did not found any guarantee that submit() is thread safe. Need to separate executors;
         ExecutorService executorService = Executors.newCachedThreadPool();
         ProcessFactory processFactory = new ProcessFactoryImpl();
-        ProcessWrapperFactory processWrapperFactory = new ProcessWrapperFactoryImpl(executorService,processFactory);
+        ProcessWrapperFactory processWrapperFactory = new ProcessWrapperFactoryImpl(processFactory);
 
         SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
+        // TODO: will not work
         ZFSService zfsService = null;
         StdConsumerFactory stdConsumerFactory = new StdConsumerFactoryImpl();
-        ZFSCallableFactory zfsCallableFactory = new ZFSCallableFactoryImpl(processWrapperFactory,executorService, zfsService,stdConsumerFactory);
+        StdProcessorFactory stdProcessorFactory = new StdProcessorFactoryImpl();
+        ZFSCallableFactory zfsCallableFactory = new ZFSCallableFactoryImpl(processWrapperFactory,stdConsumerFactory,stdProcessorFactory);
         SnapshotService snapshotService = new SnapshotServiceImpl(zfsCallableFactory);
         zfsService = new ZFSServiceImpl(zfsCallableFactory);
 
@@ -104,7 +108,6 @@ public class EntityFactory {
                 snapshotService,
                 snapshotNamingService,
                 zfsService,
-                zfsCallableFactory,
                 stdConsumerFactory
         );
         return sendService;
@@ -149,10 +152,12 @@ public class EntityFactory {
         );
         ExecutorService executorService = Executors.newCachedThreadPool();
         ProcessFactory processFactory = new ProcessFactoryImpl();
-        ProcessWrapperFactory processWrapperFactory = new ProcessWrapperFactoryImpl(executorService,processFactory);
+        ProcessWrapperFactory processWrapperFactory = new ProcessWrapperFactoryImpl(processFactory);
+        // TODO: will not work
         ZFSService zfsService = null;
         StdConsumerFactory stdConsumerFactory = new StdConsumerFactoryImpl();
-        ZFSCallableFactory zfsCallableFactory = new ZFSCallableFactoryImpl(processWrapperFactory,executorService,zfsService,stdConsumerFactory);
+        StdProcessorFactory stdProcessorFactory = new StdProcessorFactoryImpl();
+        ZFSCallableFactory zfsCallableFactory = new ZFSCallableFactoryImpl(processWrapperFactory,stdConsumerFactory,stdProcessorFactory);
         zfsService = new ZFSServiceImpl(zfsCallableFactory);
         SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
         ReceiveService receiveService = new ReceiveServiceImpl(

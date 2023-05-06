@@ -24,17 +24,14 @@ public class SendServiceImpl implements SendService {
 
     private final SnapshotNamingService snapshotNamingService;
     private final ZFSService zfsService;
-
-    private final ZFSCallableFactory zfsCallableFactory;
     private final StdConsumerFactory stdConsumerFactory;
 
 
-    public SendServiceImpl(S3StreamRepositoryImpl s3StreamRepository, SnapshotService snapshotService, SnapshotNamingService snapshotNamingService, ZFSService zfsService, ZFSCallableFactory zfsCallableFactory, StdConsumerFactory stdConsumerFactory) {
+    public SendServiceImpl(S3StreamRepositoryImpl s3StreamRepository, SnapshotService snapshotService, SnapshotNamingService snapshotNamingService, ZFSService zfsService, StdConsumerFactory stdConsumerFactory) {
         this.s3StreamRepository = s3StreamRepository;
         this.snapshotService = snapshotService;
         this.snapshotNamingService = snapshotNamingService;
         this.zfsService = zfsService;
-        this.zfsCallableFactory = zfsCallableFactory;
         this.stdConsumerFactory = stdConsumerFactory;
     }
 
@@ -56,10 +53,10 @@ public class SendServiceImpl implements SendService {
         );
 
         try {
-            zfsCallableFactory.getSendReplica(
+            zfsService.send(
                     snapshot,
                     stdConsumerFactory.getSendStdoutConsumer(s3StreamRepository, prefix)
-            ).call();
+            );
         } catch (Exception e) {
             logger.error(e.getMessage(),e);
             throw new SendError(e);
@@ -69,9 +66,14 @@ public class SendServiceImpl implements SendService {
     }
 
     @Override
-    public void send(String poolName, String bucketName) {
-        Bucket bucket = new Bucket(bucketName);
-        Pool pool = zfsService.getPool(poolName);
-        send(pool,bucket);
+    public void send(String poolName, String bucketName) throws Exception {
+        try {
+            Bucket bucket = new Bucket(bucketName);
+            Pool pool = zfsService.getPool(poolName);
+            send(pool, bucket);
+        } catch (Exception e){
+            logger.error(e.getMessage(), e);
+            throw e;
+        }
     }
 }

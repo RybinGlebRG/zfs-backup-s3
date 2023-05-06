@@ -3,30 +3,32 @@ package ru.rerumu.backups.services.zfs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.backups.services.zfs.models.Snapshot;
-import ru.rerumu.backups.utils.processes.factories.ProcessWrapperFactory;
 import ru.rerumu.backups.utils.processes.StdLineConsumer;
-import ru.rerumu.backups.utils.processes.TriConsumer;
+import ru.rerumu.backups.utils.processes.factories.ProcessWrapperFactory;
+import ru.rerumu.backups.utils.processes.factories.StdProcessorFactory;
 
 import java.io.BufferedInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 
 public class SendReplica implements Callable<Void> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final Snapshot snapshot;
     private final ProcessWrapperFactory processWrapperFactory;
 
-    private final TriConsumer<BufferedInputStream,Runnable,Runnable> consumer;
+    private final Consumer<BufferedInputStream> stdoutConsumer;
 
-    private final ExecutorService executorService;
 
-    public SendReplica(Snapshot snapshot, ProcessWrapperFactory processWrapperFactory, TriConsumer<BufferedInputStream,Runnable,Runnable> consumer, ExecutorService executorService) {
+    private final StdProcessorFactory stdProcessorFactory;
+
+    // TODO: Check not null
+    public SendReplica(Snapshot snapshot, ProcessWrapperFactory processWrapperFactory, Consumer<BufferedInputStream> stdoutConsumer, StdProcessorFactory stdProcessorFactory) {
         this.snapshot = snapshot;
         this.processWrapperFactory = processWrapperFactory;
-        this.consumer = consumer;
-        this.executorService = executorService;
+        this.stdoutConsumer = stdoutConsumer;
+        this.stdProcessorFactory = stdProcessorFactory;
     }
 
     @Override
@@ -39,8 +41,10 @@ public class SendReplica implements Callable<Void> {
 
         processWrapperFactory.getProcessWrapper(
                 command,
-                new StdLineConsumer(logger::debug),
-                consumer
+                stdProcessorFactory.getStdProcessor(
+                        new StdLineConsumer(logger::debug),
+                        stdoutConsumer
+                )
         ).call();
 
         return null;

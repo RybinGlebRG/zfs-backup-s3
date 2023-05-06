@@ -5,8 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import ru.rerumu.backups.services.zfs.factories.StdConsumerFactory;
 import ru.rerumu.backups.services.zfs.models.Dataset;
 import ru.rerumu.backups.utils.processes.factories.ProcessWrapperFactory;
+import ru.rerumu.backups.utils.processes.factories.StdProcessorFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,16 +28,24 @@ public class TestGetDataset {
     @Mock
     Callable<Void> processWrapper;
 
+    @Mock
+    StdProcessorFactory stdProcessorFactory;
+
+    @Mock
+    StdConsumerFactory stdConsumerFactory;
+
     @Test
     void shouldCall() throws Exception{
 
 
-        when(processWrapperFactory.getProcessWrapper(any(),any(),any())).thenReturn(processWrapper);
+        when(processWrapperFactory.getProcessWrapper(any(),any())).thenReturn(processWrapper);
 
 
         Callable<Dataset> getDataset = new GetDataset(
                 "TestDataset",
-                processWrapperFactory
+                processWrapperFactory,
+                stdProcessorFactory,
+                stdConsumerFactory
         );
 
         Dataset res = getDataset.call();
@@ -44,7 +54,7 @@ public class TestGetDataset {
 
         verify(processWrapperFactory).getProcessWrapper(eq(List.of(
                 "zfs","list","-rH","-t","snapshot","-o","name","-s","creation","-d","1","TestDataset"
-        )),any(),any());
+        )),any());
 
         Dataset shouldDataset = new Dataset("TestDataset",new ArrayList<>());
         Assertions.assertEquals(shouldDataset,res);

@@ -2,11 +2,12 @@ package ru.rerumu.backups.services.zfs;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.rerumu.backups.services.zfs.factories.StdConsumerFactory;
 import ru.rerumu.backups.services.zfs.models.Snapshot;
 import ru.rerumu.backups.services.zfs.models.Dataset;
-import ru.rerumu.backups.services.zfs.consumers.SnapshotListStdConsumer;
-import ru.rerumu.backups.utils.processes.factories.ProcessWrapperFactory;
 import ru.rerumu.backups.utils.processes.StdLineConsumer;
+import ru.rerumu.backups.utils.processes.factories.ProcessWrapperFactory;
+import ru.rerumu.backups.utils.processes.factories.StdProcessorFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,10 +19,15 @@ public class GetDataset implements Callable<Dataset> {
 
     private final ProcessWrapperFactory processWrapperFactory;
 
+    private final StdProcessorFactory stdProcessorFactory;
+    private final StdConsumerFactory stdConsumerFactory;
 
-    public GetDataset(String datasetName, ProcessWrapperFactory processWrapperFactory) {
+    // TODO: Check not null
+    public GetDataset(String datasetName, ProcessWrapperFactory processWrapperFactory, StdProcessorFactory stdProcessorFactory, StdConsumerFactory stdConsumerFactory) {
         this.datasetName = datasetName;
         this.processWrapperFactory = processWrapperFactory;
+        this.stdProcessorFactory = stdProcessorFactory;
+        this.stdConsumerFactory = stdConsumerFactory;
     }
 
     private List<Snapshot> getSnapshots() throws Exception {
@@ -43,9 +49,10 @@ public class GetDataset implements Callable<Dataset> {
 
         processWrapperFactory.getProcessWrapper(
                 command,
-                new StdLineConsumer(logger::error),
-                // TODO: Use factory. Will be possible to test
-                new SnapshotListStdConsumer(snapshotList)
+                stdProcessorFactory.getStdProcessor(
+                        new StdLineConsumer(logger::error),
+                        stdConsumerFactory.getSnapshotListStdConsumer(snapshotList)
+                )
         ).call();
 
         return snapshotList;

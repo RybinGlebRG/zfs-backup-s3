@@ -6,9 +6,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.backups.services.zfs.factories.StdConsumerFactory;
+import ru.rerumu.backups.services.zfs.factories.ZFSCallableFactory;
 import ru.rerumu.backups.services.zfs.models.Dataset;
 import ru.rerumu.backups.services.zfs.models.Pool;
 import ru.rerumu.backups.utils.processes.factories.ProcessWrapperFactory;
+import ru.rerumu.backups.utils.processes.factories.StdProcessorFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +34,13 @@ public class TestGetPool {
     @Mock
     StdConsumerFactory stdConsumerFactory;
 
+    @Mock
+    StdProcessorFactory stdProcessorFactory;
+
+    @Mock
+    ZFSCallableFactory zfsCallableFactory;
+
+
 
     @Test
     void shouldCall() throws Exception{
@@ -39,7 +48,11 @@ public class TestGetPool {
         Dataset dataset2 = new Dataset("TestDataset2",new ArrayList<>());
         Dataset dataset3 = new Dataset("TestDataset3",new ArrayList<>());
 
-        when(processWrapperFactory.getProcessWrapper(any(),any(),any())).thenReturn(processWrapper);
+        Callable<Dataset> callable1 =(Callable<Dataset>) mock(Callable.class);
+        Callable<Dataset> callable2 =(Callable<Dataset>) mock(Callable.class);
+        Callable<Dataset> callable3 =(Callable<Dataset>) mock(Callable.class);
+
+        when(processWrapperFactory.getProcessWrapper(any(),any())).thenReturn(processWrapper);
         when(stdConsumerFactory.getDatasetStringStdConsumer(any())).thenAnswer(invocationOnMock -> {
             List<String> datasetStrings = invocationOnMock.getArgument(0);
             datasetStrings.add("TestDataset1");
@@ -47,14 +60,18 @@ public class TestGetPool {
             datasetStrings.add("TestDataset3");
             return null;
         });
-        when(zfsService.getDataset(anyString()))
-                .thenReturn(dataset1)
-                .thenReturn(dataset2)
-                .thenReturn(dataset3)
+        when(zfsCallableFactory.getDatasetCallable(anyString()))
+                .thenReturn(callable1)
+                .thenReturn(callable2)
+                .thenReturn(callable3)
         ;
+        when(callable1.call()).thenReturn(dataset1);
+        when(callable2.call()).thenReturn(dataset2);
+        when(callable3.call()).thenReturn(dataset3);
 
 
-        Callable<Pool> getPool = new GetPool("TestPool", processWrapperFactory,zfsService,stdConsumerFactory);
+
+        Callable<Pool> getPool = new GetPool("TestPool", processWrapperFactory,zfsCallableFactory,stdConsumerFactory, stdProcessorFactory);
 
         Pool res = getPool.call();
 
@@ -62,7 +79,7 @@ public class TestGetPool {
 
         verify(processWrapperFactory).getProcessWrapper(eq(List.of(
                 "zfs","list","-rH","-o","name","-s","name","TestPool"
-        )),any(),any());
+        )),any());
 
         Pool shouldPool = new Pool("TestPool", List.of(dataset1,dataset2,dataset3));
         Assertions.assertEquals(shouldPool,res);

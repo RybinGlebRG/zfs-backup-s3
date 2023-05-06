@@ -64,15 +64,12 @@ public class TestSendServiceImpl {
                 .thenReturn("zfs-backup-s3__2023-03-22T194000");
         when(snapshotService.createRecursiveSnapshot(any(),anyString()))
                 .thenReturn(new Snapshot("TestPool@zfs-backup-s3__2023-03-22T194000"));
-        when(zfsCallableFactory.getSendReplica(any(),any())).thenReturn(sendReplica);
-
 
         SendServiceImpl sendService = new SendServiceImpl(
                 s3StreamRepository,
                 snapshotService,
                 snapshotNamingService,
                 zfsService,
-                zfsCallableFactory,
                 stdConsumerFactory
         );
         sendService.send("TestPool","TestBucket");
@@ -86,6 +83,6 @@ public class TestSendServiceImpl {
                 "zfs-backup-s3__2023-03-22T194000"
         );
         verify(stdConsumerFactory).getSendStdoutConsumer(any(),eq("TestBucket/TestPool/level-0/zfs-backup-s3__2023-03-22T194000/"));
-        verify(zfsCallableFactory).getSendReplica(eq(shouldSnapshot),any());
+        verify(zfsService).send(eq(shouldSnapshot),any());
     }
 }

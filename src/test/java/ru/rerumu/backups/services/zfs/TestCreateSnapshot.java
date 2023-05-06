@@ -6,6 +6,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.backups.services.zfs.models.Dataset;
 import ru.rerumu.backups.utils.processes.factories.ProcessWrapperFactory;
+import ru.rerumu.backups.utils.processes.factories.StdProcessorFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,11 +27,14 @@ public class TestCreateSnapshot {
     @Mock
     Callable<Void> processWrapper;
 
+    @Mock
+    StdProcessorFactory stdProcessorFactory;
+
     @Test
     void shouldCall() throws Exception{
         Dataset dataset = new Dataset("TestDataset",new ArrayList<>());
 
-        when(processWrapperFactory.getProcessWrapper(any(),any(),any())).thenReturn(processWrapper);
+        when(processWrapperFactory.getProcessWrapper(any(),any())).thenReturn(processWrapper);
 
 
         Callable<Void> createSnapshot = new CreateSnapshot(
@@ -38,7 +42,7 @@ public class TestCreateSnapshot {
                 "zfs-backup-s3__2023-03-22T194000",
                 false,
                 processWrapperFactory,
-                executorService
+                stdProcessorFactory
         );
 
         createSnapshot.call();
@@ -47,14 +51,14 @@ public class TestCreateSnapshot {
 
         verify(processWrapperFactory).getProcessWrapper(eq(List.of(
                 "zfs","snapshot","TestDataset@zfs-backup-s3__2023-03-22T194000"
-        )),any(),any());
+        )),any());
     }
 
     @Test
     void shouldCallRecursive() throws Exception{
         Dataset dataset = new Dataset("TestDataset",new ArrayList<>());
 
-        when(processWrapperFactory.getProcessWrapper(any(),any(),any())).thenReturn(processWrapper);
+        when(processWrapperFactory.getProcessWrapper(any(),any())).thenReturn(processWrapper);
 
 
         Callable<Void> createSnapshot = new CreateSnapshot(
@@ -62,7 +66,7 @@ public class TestCreateSnapshot {
                 "zfs-backup-s3__2023-03-22T194000",
                 true,
                 processWrapperFactory,
-                executorService
+                stdProcessorFactory
         );
 
         createSnapshot.call();
@@ -71,6 +75,6 @@ public class TestCreateSnapshot {
 
         verify(processWrapperFactory).getProcessWrapper(eq(List.of(
                 "zfs","snapshot","-r","TestDataset@zfs-backup-s3__2023-03-22T194000"
-        )),any(),any());
+        )),any());
     }
 }
