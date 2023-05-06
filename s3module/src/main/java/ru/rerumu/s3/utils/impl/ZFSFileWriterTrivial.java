@@ -1,10 +1,10 @@
-package ru.rerumu.s3.impl;
+package ru.rerumu.s3.utils.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.s3.exceptions.FileHitSizeLimitException;
 import ru.rerumu.s3.exceptions.ZFSStreamEndedException;
-import ru.rerumu.s3.ZFSFileWriter;
+import ru.rerumu.s3.utils.ZFSFileWriter;
 
 import java.io.*;
 import java.nio.file.Files;

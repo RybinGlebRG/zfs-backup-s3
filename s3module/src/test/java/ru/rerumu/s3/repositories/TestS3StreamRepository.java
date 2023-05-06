@@ -10,10 +10,10 @@ import ru.rerumu.s3.exceptions.FileHitSizeLimitException;
 import ru.rerumu.s3.exceptions.ZFSStreamEndedException;
 import ru.rerumu.s3.factories.ZFSFileReaderFactory;
 import ru.rerumu.s3.factories.ZFSFileWriterFactory;
-import ru.rerumu.s3.ZFSFileReader;
-import ru.rerumu.s3.ZFSFileWriter;
-import ru.rerumu.s3.repositories.impl.S3StreamRepositoryImpl;
-import ru.rerumu.s3.FileManager;
+import ru.rerumu.s3.utils.ZFSFileReader;
+import ru.rerumu.s3.utils.ZFSFileWriter;
+import ru.rerumu.s3.repositories.impl.S3StreamRepository;
+import ru.rerumu.s3.utils.FileManager;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -29,7 +29,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class TestS3StreamRepositoryImpl {
+public class TestS3StreamRepository {
 
     @Mock
     S3Repository s3Repository;
@@ -73,7 +73,7 @@ public class TestS3StreamRepositoryImpl {
 
         InOrder inOrder = inOrder(s3Repository, zfsFileWriterFactory, fileManager, zfsFileWriter);
 
-        S3StreamRepositoryImpl s3StreamRepository = new S3StreamRepositoryImpl(
+        S3StreamRepository s3StreamRepository = new S3StreamRepository(
                 s3Repository,
                 zfsFileWriterFactory,
                 zfsFileReaderFactory,
@@ -117,7 +117,7 @@ public class TestS3StreamRepositoryImpl {
         InOrder inOrder = inOrder(s3Repository, zfsFileReaderFactory);
 
 
-        S3StreamRepositoryImpl s3StreamRepository = new S3StreamRepositoryImpl(
+        S3StreamRepository s3StreamRepository = new S3StreamRepository(
                 s3Repository,
                 zfsFileWriterFactory,
                 zfsFileReaderFactory,

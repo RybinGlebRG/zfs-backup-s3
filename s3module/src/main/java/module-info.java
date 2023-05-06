@@ -8,12 +8,14 @@ module ru.rerumu.s3module {
     requires org.apache.commons.lang3;
     requires ru.rerumu.utils;
 
-    exports ru.rerumu.s3.repositories.impl;
-    exports ru.rerumu.s3.models;
-    exports ru.rerumu.s3.factories;
-    exports ru.rerumu.s3.factories.impl;
-    exports ru.rerumu.s3;
-    exports ru.rerumu.s3.impl;
-    exports ru.rerumu.s3.repositories;
+    exports ru.rerumu.s3.repositories.impl to ru.rerumu.backup;
+    exports ru.rerumu.s3.models to ru.rerumu.backup;
+    exports ru.rerumu.s3.factories to ru.rerumu.backup;
+    exports ru.rerumu.s3.factories.impl to ru.rerumu.backup;
+    exports ru.rerumu.s3 to ru.rerumu.backup;
+    exports ru.rerumu.s3.impl to ru.rerumu.backup;
+    exports ru.rerumu.s3.repositories to ru.rerumu.backup;
+    exports ru.rerumu.s3.utils to ru.rerumu.backup;
+    exports ru.rerumu.s3.utils.impl to ru.rerumu.backup;
 
 }

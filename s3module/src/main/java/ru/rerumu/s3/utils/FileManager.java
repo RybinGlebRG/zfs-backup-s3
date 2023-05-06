@@ -1,4 +1,4 @@
-package ru.rerumu.s3;
+package ru.rerumu.s3.utils;
 
 import java.io.IOException;
 import java.nio.file.Path;

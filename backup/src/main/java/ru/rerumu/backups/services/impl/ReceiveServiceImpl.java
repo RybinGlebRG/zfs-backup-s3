@@ -2,11 +2,11 @@ package ru.rerumu.backups.services.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.rerumu.backups.factories.StdConsumerFactory;
 import ru.rerumu.backups.services.ReceiveService;
 import ru.rerumu.backups.services.SnapshotNamingService;
-import ru.rerumu.backups.consumers.ReceiveStdinConsumer;
 
-import ru.rerumu.s3.repositories.impl.S3StreamRepositoryImpl;
+import ru.rerumu.s3.S3Service;
 
 import ru.rerumu.zfs.models.Pool;
 import ru.rerumu.zfs.ZFSService;
@@ -20,14 +20,18 @@ import java.util.List;
 public class ReceiveServiceImpl implements ReceiveService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final S3StreamRepositoryImpl s3StreamRepository;
     private final ZFSService zfsService;
-    private final SnapshotNamingService snapshotNamingService;    ;
+    private final SnapshotNamingService snapshotNamingService;
 
-    public ReceiveServiceImpl(S3StreamRepositoryImpl s3StreamRepository, ZFSService zfsService, SnapshotNamingService snapshotNamingService) {
-        this.s3StreamRepository = s3StreamRepository;
+    private final S3Service s3Service;
+
+    private final StdConsumerFactory stdConsumerFactory;
+
+    public ReceiveServiceImpl(ZFSService zfsService, SnapshotNamingService snapshotNamingService, S3Service s3Service, StdConsumerFactory stdConsumerFactory) {
         this.zfsService = zfsService;
         this.snapshotNamingService = snapshotNamingService;
+        this.s3Service = s3Service;
+        this.stdConsumerFactory = stdConsumerFactory;
     }
 
     private String getNewestPrefix(String bucketName) {
@@ -35,7 +39,7 @@ public class ReceiveServiceImpl implements ReceiveService {
                 "%s/",
                 bucketName
         );
-        List<String> keys = s3StreamRepository.listAll(prefix);
+        List<String> keys = s3Service.list(prefix);
 
         String maxDateKey = keys.stream()
                 .filter(item -> item.matches(bucketName + "/\\w+/level-0/[a-zA-Z0-9:_-]+/.*"))
@@ -69,7 +73,8 @@ public class ReceiveServiceImpl implements ReceiveService {
             Pool pool = zfsService.getPool(poolName);
             zfsService.receive(
                     pool,
-                    new ReceiveStdinConsumer(s3StreamRepository, prefix)
+                    // TODO: Test
+                    stdConsumerFactory.getReceiveStdinConsumer(prefix)
             );
         } catch (Exception e) {
             logger.error(e.getMessage(), e);

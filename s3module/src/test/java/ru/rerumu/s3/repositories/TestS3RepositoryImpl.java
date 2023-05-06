@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import ru.rerumu.s3.factories.S3CallableFactory;
 import ru.rerumu.s3.models.S3Storage;
 import ru.rerumu.s3.S3Service;
 import ru.rerumu.s3.repositories.impl.S3RepositoryImpl;
@@ -25,7 +26,10 @@ public class TestS3RepositoryImpl {
     @Mock
     S3Service s3Service;
 
+    @Mock
+    S3CallableFactory s3CallableFactory;
 
+   // TODO: Check
     @Test
     void shouldListAllUnordered() throws Exception {
         S3Storage s3Storage = new S3Storage(
@@ -48,7 +52,7 @@ public class TestS3RepositoryImpl {
         when(s3Service.list(anyString()))
                 .thenReturn(keys);
 
-        S3RepositoryImpl s3Repository = new S3RepositoryImpl(s3Storage,s3Service);
+        S3RepositoryImpl s3Repository = new S3RepositoryImpl(s3CallableFactory);
         List<String> res = s3Repository.listAll("test-bucket/test-pool/level-0/zfs-backup-s3");
 
 //        verify(s3Service).list("test-bucket/test-pool/level-0/zfs-backup-s3");

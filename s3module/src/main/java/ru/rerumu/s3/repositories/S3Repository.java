@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface S3Repository {
 
-    void add(String prefix,Path path) throws IOException, NoSuchAlgorithmException, IncorrectHashException, S3MissesFileException;
+    void add(String prefix,Path path) ;
 
     List<String> listAll(String prefix);
 

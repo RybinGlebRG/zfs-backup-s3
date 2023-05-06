@@ -1,4 +1,4 @@
-package ru.rerumu.backups.integration;
+package ru.rerumu.s3.integration;
 
 import ch.qos.logback.classic.Level;
 import org.junit.jupiter.api.Assertions;
@@ -27,6 +27,8 @@ import java.util.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+
+// TODO: rewrite
 @ExtendWith(MockitoExtension.class)
 public class ITS3List {
 

@@ -1,4 +1,4 @@
-package ru.rerumu.s3;
+package ru.rerumu.s3.utils;
 
 import ru.rerumu.s3.exceptions.FileHitSizeLimitException;
 import ru.rerumu.s3.exceptions.ZFSStreamEndedException;

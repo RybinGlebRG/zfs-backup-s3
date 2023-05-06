@@ -1,8 +1,8 @@
 package ru.rerumu.s3.factories.impl;
 
-import ru.rerumu.s3.ZFSFileWriter;
+import ru.rerumu.s3.utils.ZFSFileWriter;
 import ru.rerumu.s3.factories.ZFSFileWriterFactory;
-import ru.rerumu.s3.impl.ZFSFileWriterTrivial;
+import ru.rerumu.s3.utils.impl.ZFSFileWriterTrivial;
 
 import java.io.IOException;
 import java.nio.file.Path;

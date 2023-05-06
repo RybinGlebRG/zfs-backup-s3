@@ -1,6 +1,6 @@
-package ru.rerumu.s3.impl;
+package ru.rerumu.s3.utils.impl;
 
-import ru.rerumu.s3.FileManager;
+import ru.rerumu.s3.utils.FileManager;
 
 import java.io.IOException;
 import java.nio.file.Files;

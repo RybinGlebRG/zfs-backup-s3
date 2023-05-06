@@ -5,10 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import ru.rerumu.s3.exceptions.FileHitSizeLimitException;
 import ru.rerumu.s3.exceptions.ZFSStreamEndedException;
-import ru.rerumu.s3.ZFSFileReader;
-import ru.rerumu.s3.ZFSFileWriter;
-import ru.rerumu.s3.impl.ZFSFileReaderTrivial;
-import ru.rerumu.s3.impl.ZFSFileWriterTrivial;
+import ru.rerumu.s3.utils.ZFSFileReader;
+import ru.rerumu.s3.utils.ZFSFileWriter;
+import ru.rerumu.s3.utils.impl.ZFSFileReaderTrivial;
+import ru.rerumu.s3.utils.impl.ZFSFileWriterTrivial;
 
 import java.io.*;
 import java.nio.file.Path;

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.rerumu.s3.repositories.impl.S3StreamRepositoryImpl;
+import ru.rerumu.backups.factories.StdConsumerFactory;
 import ru.rerumu.backups.services.impl.SendServiceImpl;
 import ru.rerumu.zfs.ZFSService;
 import ru.rerumu.zfs.models.Dataset;
@@ -19,17 +19,18 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+// TODO: Check
 @ExtendWith(MockitoExtension.class)
 public class TestSendServiceImpl {
-
-    @Mock
-    S3StreamRepositoryImpl s3StreamRepository;
 
     @Mock
     SnapshotNamingService snapshotNamingService;
 
     @Mock
     ZFSService zfsService;
+
+    @Mock
+    StdConsumerFactory stdConsumerFactory;
 
     @Test
     void shouldSend() throws Exception {
@@ -45,9 +46,9 @@ public class TestSendServiceImpl {
                 .thenReturn(new Snapshot("TestPool@zfs-backup-s3__2023-03-22T194000"));
 
         SendServiceImpl sendService = new SendServiceImpl(
-                s3StreamRepository,
                 snapshotNamingService,
-                zfsService
+                zfsService,
+                stdConsumerFactory
         );
         sendService.send("TestPool","TestBucket");
 

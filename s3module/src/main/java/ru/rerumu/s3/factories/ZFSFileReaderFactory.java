@@ -1,6 +1,6 @@
 package ru.rerumu.s3.factories;
 
-import ru.rerumu.s3.ZFSFileReader;
+import ru.rerumu.s3.utils.ZFSFileReader;
 
 import java.io.BufferedOutputStream;
 import java.nio.file.Path;
