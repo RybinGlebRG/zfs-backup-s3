@@ -9,19 +9,12 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>zfs</artifactId>
+    <artifactId>backup</artifactId>
     <dependencies>
         <dependency>
             <groupId>ru.rerumu</groupId>
-            <artifactId>s3module</artifactId>
+            <artifactId>zfs</artifactId>
             <version>3.0.0</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>ru.rerumu</groupId>
-            <artifactId>utils</artifactId>
-            <version>3.0.0</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 

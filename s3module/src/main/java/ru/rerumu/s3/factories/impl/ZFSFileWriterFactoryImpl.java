@@ -1,0 +1,21 @@
+package ru.rerumu.s3.factories.impl;
+
+import ru.rerumu.s3.ZFSFileWriter;
+import ru.rerumu.s3.factories.ZFSFileWriterFactory;
+import ru.rerumu.s3.impl.ZFSFileWriterTrivial;
+
+import java.io.IOException;
+import java.nio.file.Path;
+
+public class ZFSFileWriterFactoryImpl implements ZFSFileWriterFactory {
+    private final long filePartSize;
+
+    public ZFSFileWriterFactoryImpl(long filePartSize) {
+        this.filePartSize = filePartSize;
+    }
+
+    @Override
+    public ZFSFileWriter getZFSFileWriter(Path path) throws IOException {
+        return new ZFSFileWriterTrivial(filePartSize, path);
+    }
+}
