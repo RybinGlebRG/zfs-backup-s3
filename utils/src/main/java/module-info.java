@@ -5,4 +5,6 @@ module ru.rerumu.utils {
     exports ru.rerumu.utils.processes.factories.impl;
     exports ru.rerumu.utils.processes;
     exports ru.rerumu.utils;
+    exports ru.rerumu.utils.callables;
+    exports ru.rerumu.utils.callables.impl;
 }

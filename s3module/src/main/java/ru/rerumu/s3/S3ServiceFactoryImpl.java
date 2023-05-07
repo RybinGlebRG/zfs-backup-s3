@@ -12,6 +12,8 @@ import ru.rerumu.s3.repositories.S3Repository;
 import ru.rerumu.s3.repositories.impl.S3RepositoryImpl;
 import ru.rerumu.s3.repositories.impl.S3StreamRepository;
 import ru.rerumu.s3.utils.impl.FileManagerImpl;
+import ru.rerumu.utils.callables.CallableExecutor;
+import ru.rerumu.utils.callables.impl.CallableExecutorImpl;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -27,7 +29,8 @@ public class S3ServiceFactoryImpl implements S3ServiceFactory {
     ) {
         S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(List.of(s3Storage));
         S3CallableFactory s3CallableFactory = new S3CallableFactoryImpl(maxPartSize, s3Storage, s3ClientFactory);
-        S3Repository s3Repository = new S3RepositoryImpl(s3CallableFactory);
+        CallableExecutor callableExecutor = new CallableExecutorImpl();
+        S3Repository s3Repository = new S3RepositoryImpl(s3CallableFactory,callableExecutor);
         S3StreamRepository s3StreamRepository = new S3StreamRepository(
                 s3Repository,
                 new ZFSFileWriterFactoryImpl(filePartSize),
