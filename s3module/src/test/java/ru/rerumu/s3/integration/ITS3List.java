@@ -22,6 +22,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -47,7 +49,11 @@ public class ITS3List {
 //        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
 //        logger.setLevel(Level.INFO);
 
-        String prefix = UUID.randomUUID().toString();
+        String key = "TestBucket/TestPool/level-0/zfs-backup-s3__"
+                + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"))
+                +"/"
+                +UUID.randomUUID().toString();
+//        String prefix = UUID.randomUUID().toString();
 
         S3Storage s3Storage = new S3Storage(
                 Region.AWS_GLOBAL,
@@ -55,7 +61,7 @@ public class ITS3List {
                 "1111",
                 "1111",
                 Paths.get("level-0"),
-                new URI("http://localhost:9090/"),
+                new URI("http://127.0.0.1:9090/"),
                 "STANDARD"
         );
 
@@ -102,19 +108,19 @@ public class ITS3List {
 
         new OnepartUploadCallable(
                 tempDir.resolve("test1.txt"),
-                prefix+".part1",
+                key+".part1",
                 s3Storage,
                 s3ClientFactory
         ).call();
         new OnepartUploadCallable(
                 tempDir.resolve("test2.txt"),
-                prefix+".part2",
+                key+".part2",
                 s3Storage,
                 s3ClientFactory
         ).call();
         new OnepartUploadCallable(
                 tempDir.resolve("test3.txt"),
-                prefix+".part3",
+                key+".part3",
                 s3Storage,
                 s3ClientFactory
         ).call();
@@ -124,13 +130,13 @@ public class ITS3List {
 
 
         Set<String> res = new HashSet<>(new ListCallable(
-                prefix,
+                key,
                 s3Storage,
                 s3ClientFactory
         ).call());
 
 
-        Assertions.assertEquals(Set.of(prefix+".part1",prefix+".part2",prefix+".part3"),res);
+        Assertions.assertEquals(Set.of(key+".part1",key+".part2",key+".part3"),res);
 
 
     }
@@ -146,7 +152,11 @@ public class ITS3List {
 //        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
 //        logger.setLevel(Level.INFO);
 
-        String prefix = UUID.randomUUID().toString();
+        String key = "TestBucket/TestPool/level-0/zfs-backup-s3__"
+                + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"))
+                +"/"
+                +UUID.randomUUID().toString();
+//        String prefix = UUID.randomUUID().toString();
 
         S3Storage s3Storage = new S3Storage(
                 Region.AWS_GLOBAL,
@@ -154,9 +164,10 @@ public class ITS3List {
                 "1111",
                 "1111",
                 Paths.get("level-0"),
-                new URI("http://localhost:9090/"),
+                new URI("http://127.0.0.1:9090/"),
                 "STANDARD"
         );
+
 
         when(s3ClientFactory.getS3Client(any()))
                 .thenReturn(
@@ -201,19 +212,19 @@ public class ITS3List {
 
         new OnepartUploadCallable(
                 tempDir.resolve("test1.txt"),
-                prefix+".part1",
+                key+".part1",
                 s3Storage,
                 s3ClientFactory
         ).call();
         new OnepartUploadCallable(
                 tempDir.resolve("test2.txt"),
-                prefix+".part2",
+                key+".part2",
                 s3Storage,
                 s3ClientFactory
         ).call();
         new OnepartUploadCallable(
                 tempDir.resolve("test3.txt"),
-                prefix+".part3",
+                key+".part3",
                 s3Storage,
                 s3ClientFactory
         ).call();
@@ -223,13 +234,13 @@ public class ITS3List {
 
 
         Set<String> res = new HashSet<>(new ListCallable(
-                prefix+".part2",
+                key+".part2",
                 s3Storage,
                 s3ClientFactory
         ).call());
 
 
-        Assertions.assertEquals(Set.of(prefix+".part2"),res);
+        Assertions.assertEquals(Set.of(key+".part2"),res);
 
 
     }
@@ -244,8 +255,11 @@ public class ITS3List {
 //        logger.setLevel(Level.INFO);
 //        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
 //        logger.setLevel(Level.INFO);
-
-        String prefix = UUID.randomUUID().toString();
+        String key = "TestBucket/TestPool/level-0/zfs-backup-s3__"
+                + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"))
+                +"/"
+                +UUID.randomUUID().toString();
+//        String prefix = UUID.randomUUID().toString();
 
         S3Storage s3Storage = new S3Storage(
                 Region.AWS_GLOBAL,
@@ -253,7 +267,7 @@ public class ITS3List {
                 "1111",
                 "1111",
                 Paths.get("level-0"),
-                new URI("http://localhost:9090/"),
+                new URI("http://127.0.0.1:9090/"),
                 "STANDARD"
         );
 
@@ -300,19 +314,19 @@ public class ITS3List {
 
         new OnepartUploadCallable(
                 tempDir.resolve("test1.txt"),
-                prefix+".part1",
+                key+".part1",
                 s3Storage,
                 s3ClientFactory
         ).call();
         new OnepartUploadCallable(
                 tempDir.resolve("test2.txt"),
-                prefix+".part2",
+                key+".part2",
                 s3Storage,
                 s3ClientFactory
         ).call();
         new OnepartUploadCallable(
                 tempDir.resolve("test3.txt"),
-                prefix+".part3",
+                key+".part3",
                 s3Storage,
                 s3ClientFactory
         ).call();
@@ -322,7 +336,7 @@ public class ITS3List {
 
 
         Set<String> res = new HashSet<>(new ListCallable(
-                prefix+".part4",
+                key+".part4",
                 s3Storage,
                 s3ClientFactory
         ).call());

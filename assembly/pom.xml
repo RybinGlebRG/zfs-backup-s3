@@ -56,6 +56,9 @@
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
                     <appendAssemblyId>false</appendAssemblyId>
+<!--                        <descriptors>-->
+<!--                            <descriptor>assembly.xml</descriptor>-->
+<!--                        </descriptors>-->
                 </configuration>
                 <executions>
                     <execution>

@@ -67,7 +67,7 @@ public class ITBackupRestore {
                 "1111",
                 "1111",
                 Paths.get("level-0"),
-                new URI("http://localhost:9090/"),
+                new URI("http://127.0.0.1:9090/"),
                 "STANDARD"
         );
         S3ServiceFactory s3ServiceFactory =  new S3ServiceFactoryImpl();
@@ -95,7 +95,7 @@ public class ITBackupRestore {
                 "1111",
                 "1111",
                 Path.of(""),
-                new URI("http://localhost:9090/"),
+                new URI("http://127.0.0.1:9090/"),
                 "STANDARD"
         );
         S3ServiceFactory s3ServiceFactory =  new S3ServiceFactoryImpl();

@@ -14,6 +14,9 @@ public class TestSnapshot {
         Assertions.assertEquals(lastFullSnapshot.getFullName(),"MainPool@level_0_25_02_2020__20_50");
         Assertions.assertEquals(lastFullSnapshot.getDataset(),"MainPool");
         Assertions.assertEquals(lastFullSnapshot.getName(),"level_0_25_02_2020__20_50");
+
+        Assertions.assertEquals(lastFullSnapshot.dataset(),"MainPool");
+        Assertions.assertEquals(lastFullSnapshot.name(),"level_0_25_02_2020__20_50");
     }
 
     @Test
@@ -23,24 +26,16 @@ public class TestSnapshot {
         Assertions.assertEquals(lastFullSnapshot.getFullName(),"MainPool@level_0_25_02_2020__20_50");
         Assertions.assertEquals(lastFullSnapshot.getDataset(),"MainPool");
         Assertions.assertEquals(lastFullSnapshot.getName(),"level_0_25_02_2020__20_50");
-    }
 
-    @Test
-    void shouldCreate3(){
-        Snapshot lastFullSnapshot = new Snapshot("MainPool","level_0_25_02_2020__20_50", "MainPool@level_0_25_02_2020__20_50");
-
-        Assertions.assertEquals(lastFullSnapshot.getFullName(),"MainPool@level_0_25_02_2020__20_50");
-        Assertions.assertEquals(lastFullSnapshot.getDataset(),"MainPool");
-        Assertions.assertEquals(lastFullSnapshot.getName(),"level_0_25_02_2020__20_50");
+        Assertions.assertEquals(lastFullSnapshot.dataset(),"MainPool");
+        Assertions.assertEquals(lastFullSnapshot.name(),"level_0_25_02_2020__20_50");
     }
 
     @Test
     void shouldCreateSame(){
         Snapshot one = new Snapshot("MainPool@level_0_25_02_2020__20_50");
         Snapshot two = new Snapshot("MainPool","level_0_25_02_2020__20_50");
-        Snapshot three = new Snapshot("MainPool","level_0_25_02_2020__20_50","MainPool@level_0_25_02_2020__20_50");
 
         Assertions.assertEquals(one,two);
-        Assertions.assertEquals(one,three);
     }
 }

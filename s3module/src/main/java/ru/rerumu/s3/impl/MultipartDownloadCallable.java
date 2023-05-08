@@ -25,6 +25,7 @@ import java.util.concurrent.Callable;
 import static ru.rerumu.utils.MD5.getMD5Bytes;
 import static ru.rerumu.utils.MD5.getMD5Hex;
 
+// TODO: Add multiple attempts?
 public class MultipartDownloadCallable implements Callable<Void> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 

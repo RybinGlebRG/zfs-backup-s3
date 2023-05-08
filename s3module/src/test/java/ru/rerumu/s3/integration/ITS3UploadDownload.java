@@ -21,6 +21,8 @@ import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Random;
 import java.util.UUID;
 
@@ -45,9 +47,12 @@ public class ITS3UploadDownload {
                 "1111",
                 "1111",
                 Paths.get("level-0"),
-                new URI("http://localhost:9090/"),
+                new URI("http://127.0.0.1:9090/"),
                 "STANDARD"
         );
+        String key = "TestBucket/TestPool/level-0/shouldUploadDownloadOnepart__"
+                +LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"))
+                +"/";
 
         byte[] data = new byte[3_000];
 
@@ -63,7 +68,7 @@ public class ITS3UploadDownload {
         );
         s3Service.upload(
                 new BufferedInputStream(new ByteArrayInputStream(data)),
-                "TestBucket/TestPool/level-0/zfs-backup-s3__2023-05-06T184000/"
+                key
         );
 
 
@@ -76,11 +81,11 @@ public class ITS3UploadDownload {
                 tempDir
         );
         s3Service1.download(
-                "TestBucket/TestPool/level-0/zfs-backup-s3__2023-05-06T184000/",
+                key,
                 bufferedOutputStream
         );
 
-        // TODO: Flush?
+        bufferedOutputStream.flush();
         byte[] actual = byteArrayOutputStream.toByteArray();
 
         Assertions.assertArrayEquals(data,actual);
@@ -103,9 +108,13 @@ public class ITS3UploadDownload {
                 "1111",
                 "1111",
                 Paths.get("level-0"),
-                new URI("http://localhost:9090/"),
+                new URI("http://127.0.0.1:9090/"),
                 "STANDARD"
         );
+        String key = "TestBucket/TestPool/level-0/shouldUploadDownloadMultipart__"
+                +LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"))
+                +"/";
+
 
         byte[] data = new byte[30_000_000];
 
@@ -121,7 +130,7 @@ public class ITS3UploadDownload {
         );
         s3Service.upload(
                 new BufferedInputStream(new ByteArrayInputStream(data)),
-                "TestBucket/TestPool/level-0/zfs-backup-s3__2023-05-06T184000/"
+                key
         );
 
 
@@ -134,11 +143,11 @@ public class ITS3UploadDownload {
                 tempDir
         );
         s3Service1.download(
-                "TestBucket/TestPool/level-0/zfs-backup-s3__2023-05-06T184000/",
+                key,
                 bufferedOutputStream
         );
 
-        // TODO: Flush?
+        bufferedOutputStream.flush();
         byte[] actual = byteArrayOutputStream.toByteArray();
 
         Assertions.assertArrayEquals(data,actual);
