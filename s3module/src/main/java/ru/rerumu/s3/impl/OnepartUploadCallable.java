@@ -44,7 +44,6 @@ public class OnepartUploadCallable implements Callable<Void> {
 
             S3Client s3Client = s3ClientFactory.getS3Client(s3Storage);
 
-            // TODO: Put retry here
             byte[] buf = bufferedInputStream.readAllBytes();
             String md5 = MD5.getMD5Hex(buf);
 
@@ -56,14 +55,6 @@ public class OnepartUploadCallable implements Callable<Void> {
                     buf
             ));
 
-
-//            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-//                    .bucket(s3Storage.getBucketName())
-//                    .key(key)
-//                    .storageClass(s3Storage.getStorageClass())
-//                    .build();
-//
-//            PutObjectResponse putObjectResponse = s3Client.putObject(putObjectRequest, RequestBody.fromBytes(buf));
             String eTag = putObjectResponse.eTag();
             logger.info(String.format("ETag='%s'", eTag));
             if (!(eTag.equals('"' + md5 + '"'))) {

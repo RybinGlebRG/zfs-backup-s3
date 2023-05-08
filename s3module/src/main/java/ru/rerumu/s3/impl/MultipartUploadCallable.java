@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 // TODO: Add multiple attempts?
+// TODO: Send with the same part number?
 public class MultipartUploadCallable implements Callable<Void> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
