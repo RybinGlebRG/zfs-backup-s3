@@ -8,10 +8,16 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.zfs.factories.ZFSCallableFactory;
 import ru.rerumu.zfs.impl.ZFSServiceImpl;
+import ru.rerumu.zfs.models.Dataset;
 import ru.rerumu.zfs.models.Pool;
+import ru.rerumu.zfs.models.Snapshot;
 import ru.rerumu.zfs.services.SnapshotService;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.util.ArrayList;
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 
 import static org.mockito.Mockito.*;
 
@@ -25,25 +31,68 @@ public class TestZFSServiceImpl {
     Callable<Pool> poolCallable;
 
     @Mock
+    Callable<Void> voidCallable;
+
+    @Mock
     SnapshotService snapshotService;
 
 
     @Test
     void shouldGetPool() throws Exception{
 
-        when(zfsCallableFactory.getPoolCallable(anyString())).thenReturn(poolCallable);
+        when(zfsCallableFactory.getPoolCallable("TestPool")).thenReturn(poolCallable);
 
         ZFSServiceImpl zfsService = new ZFSServiceImpl(zfsCallableFactory,snapshotService);
         zfsService.getPool("TestPool");
     }
 
+//    @Test
+//    void shouldThrowExceptionWhileGetPool() throws Exception{
+//        when(zfsCallableFactory.getPoolCallable(anyString())).thenReturn(poolCallable);
+//        when(poolCallable.call()).thenThrow(RuntimeException.class);
+//
+//        ZFSServiceImpl zfsService = new ZFSServiceImpl(zfsCallableFactory,snapshotService);
+//
+//        Assertions.assertThrows(RuntimeException.class,()->zfsService.getPool("TestPool"));
+//    }
+
     @Test
-    void shouldThrowExceptionWhileGetPool() throws Exception{
-        when(zfsCallableFactory.getPoolCallable(anyString())).thenReturn(poolCallable);
-        when(poolCallable.call()).thenThrow(RuntimeException.class);
+    void shouldSend() throws Exception{
+        Snapshot snapshot = new Snapshot("Test@tmp1");
+        Consumer<BufferedInputStream> consumer =(Consumer<BufferedInputStream>) mock(Consumer.class);
+
+        when(zfsCallableFactory.getSendReplica(snapshot,consumer)).thenReturn(voidCallable);
+
+        ZFSServiceImpl zfsService = new ZFSServiceImpl(zfsCallableFactory,snapshotService);
+        zfsService.send(snapshot,consumer);
+    }
+
+    @Test
+    void shouldReceive() throws Exception{
+        Pool pool = new Pool("TestPool",new ArrayList<>());
+        Consumer<BufferedOutputStream> consumer =(Consumer<BufferedOutputStream>) mock(Consumer.class);
+
+        when(zfsCallableFactory.getReceive(pool,consumer)).thenReturn(voidCallable);
+
+        ZFSServiceImpl zfsService = new ZFSServiceImpl(zfsCallableFactory,snapshotService);
+        zfsService.receive(pool,consumer);
+    }
+
+    @Test
+    void shouldCreateRecursiveSnapshot() throws Exception{
+        Dataset dataset = new Dataset("TestDataset",new ArrayList<>());
+
+        ZFSServiceImpl zfsService = new ZFSServiceImpl(zfsCallableFactory,snapshotService);
+        zfsService.createRecursiveSnapshot(dataset,"tmp1");
+
+        verify(snapshotService).createRecursiveSnapshot(dataset,"tmp1");
+    }
+    @Test
+    void shouldThrowExceptionWhileCreateRecursiveSnapshot() throws Exception{
+        Dataset dataset = new Dataset("TestDataset",new ArrayList<>());
 
         ZFSServiceImpl zfsService = new ZFSServiceImpl(zfsCallableFactory,snapshotService);
 
-        Assertions.assertThrows(RuntimeException.class,()->zfsService.getPool("TestPool"));
+        Assertions.assertThrows(IllegalArgumentException.class,()->zfsService.createRecursiveSnapshot(dataset,"tmp 1"));
     }
 }

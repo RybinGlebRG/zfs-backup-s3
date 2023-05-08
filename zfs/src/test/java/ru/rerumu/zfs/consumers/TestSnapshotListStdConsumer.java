@@ -53,4 +53,19 @@ public class TestSnapshotListStdConsumer {
         Assertions.assertThrows(RuntimeException.class,()->snapshotListStdConsumer.accept(bufferedInputStream));
 
     }
+
+    @Test
+    void shouldThrowValidationException() throws Exception{
+        List<Snapshot> snapshotList = new ArrayList<>();
+        String str = """
+                Some kind of error
+                """;
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8));
+        BufferedInputStream bufferedInputStream = new BufferedInputStream(byteArrayInputStream);
+
+
+        SnapshotListStdConsumer snapshotListStdConsumer = new SnapshotListStdConsumer(snapshotList);
+        Assertions.assertThrows(RuntimeException.class,()->snapshotListStdConsumer.accept(bufferedInputStream));
+
+    }
 }
