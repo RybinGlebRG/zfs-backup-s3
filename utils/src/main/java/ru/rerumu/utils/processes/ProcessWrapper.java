@@ -1,5 +1,6 @@
 package ru.rerumu.utils.processes;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.utils.processes.factories.ProcessFactory;
@@ -9,20 +10,19 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.*;
 
-// TODO: Test concurrency?
 public class ProcessWrapper implements Callable<Void> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final List<String> args;
-    private final ExecutorService executorService = Executors.newCachedThreadPool();
-    private final List<Future<Void>> futureList = new ArrayList<>();
-
     private final ProcessFactory processFactory;
 
     private final StdProcessor stdProcessor;
 
-    public ProcessWrapper(List<String> args, ProcessFactory processFactory, StdProcessor stdProcessor) {
+    public ProcessWrapper(List<String> args, @NonNull ProcessFactory processFactory, @NonNull StdProcessor stdProcessor) {
+        Objects.requireNonNull(processFactory);
+        Objects.requireNonNull(stdProcessor);
         this.args = args;
         this.processFactory = processFactory;
         this.stdProcessor = stdProcessor;

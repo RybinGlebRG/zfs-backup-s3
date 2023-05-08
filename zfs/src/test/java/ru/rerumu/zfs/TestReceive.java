@@ -5,7 +5,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.utils.processes.factories.ProcessWrapperFactory;
-import ru.rerumu.utils.processes.factories.StdProcessorFactory;
 import ru.rerumu.zfs.callable.Receive;
 import ru.rerumu.zfs.models.Pool;
 
@@ -26,15 +25,10 @@ public class TestReceive {
 
     @Mock
     ProcessWrapperFactory processWrapperFactory;
-
     @Mock
     Callable<Void> processWrapper;
-
     @Mock
     Consumer<BufferedOutputStream> consumer;
-
-    @Mock
-    StdProcessorFactory stdProcessorFactory;
 
     @Test
     void shouldCall() throws Exception{
@@ -43,7 +37,7 @@ public class TestReceive {
         when(processWrapperFactory.getProcessWrapper(any(),any())).thenReturn(processWrapper);
 
 
-        Callable<Void> receive = new Receive(pool, processWrapperFactory,consumer,stdProcessorFactory);
+        Callable<Void> receive = new Receive(pool, processWrapperFactory,consumer);
 
         receive.call();
 

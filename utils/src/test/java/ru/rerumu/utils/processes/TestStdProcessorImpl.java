@@ -9,6 +9,8 @@ import ru.rerumu.utils.processes.impl.StdProcessorImpl;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 import static org.mockito.Mockito.*;
@@ -42,7 +44,7 @@ public class TestStdProcessorImpl {
     }
 
     @Test
-    void shouldProcessNoStdin()throws Exception{
+    void shouldProcessNoStdinAndConsumer()throws Exception{
         StdProcessorImpl stdProcessor = new StdProcessorImpl(stderrConsumer,stdoutConsumer,null);
 
         stdProcessor.processStd(stderr,stdout,null);
@@ -53,16 +55,26 @@ public class TestStdProcessorImpl {
     }
 
     @Test
-    void shouldThrowException1()throws Exception{
+    void shouldProcessNoStdinConsumerOnly()throws Exception{
         StdProcessorImpl stdProcessor = new StdProcessorImpl(stderrConsumer,stdoutConsumer,null);
 
         Assertions.assertThrows(IllegalArgumentException.class,()->stdProcessor.processStd(stderr,stdout,stdin));
     }
 
     @Test
-    void shouldThrowException2()throws Exception{
+    void shouldProcessNoStdinOnly()throws Exception{
         StdProcessorImpl stdProcessor = new StdProcessorImpl(stderrConsumer,stdoutConsumer,stdinConsumer);
 
         Assertions.assertThrows(IllegalArgumentException.class,()->stdProcessor.processStd(stderr,stdout,null));
+    }
+
+    @Test
+    void shouldCloseStdin()throws Exception{
+        doThrow(RuntimeException.class).when(stdinConsumer).accept(any());
+
+        StdProcessorImpl stdProcessor = new StdProcessorImpl(stderrConsumer,stdoutConsumer,stdinConsumer);
+        Assertions.assertThrows(ExecutionException.class,()->stdProcessor.processStd(stderr,stdout,stdin));
+
+        verify(stdin).close();
     }
 }

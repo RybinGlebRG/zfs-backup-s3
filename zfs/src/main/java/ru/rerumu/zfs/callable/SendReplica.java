@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.utils.processes.StdLineConsumer;
 import ru.rerumu.utils.processes.factories.ProcessWrapperFactory;
-import ru.rerumu.utils.processes.factories.StdProcessorFactory;
+import ru.rerumu.utils.processes.impl.StdProcessorImpl;
 import ru.rerumu.zfs.models.Snapshot;
 
 
@@ -22,14 +22,11 @@ public class SendReplica implements Callable<Void> {
     private final Consumer<BufferedInputStream> stdoutConsumer;
 
 
-    private final StdProcessorFactory stdProcessorFactory;
-
     // TODO: Check not null
-    public SendReplica(Snapshot snapshot, ProcessWrapperFactory processWrapperFactory, Consumer<BufferedInputStream> stdoutConsumer, StdProcessorFactory stdProcessorFactory) {
+    public SendReplica(Snapshot snapshot, ProcessWrapperFactory processWrapperFactory, Consumer<BufferedInputStream> stdoutConsumer) {
         this.snapshot = snapshot;
         this.processWrapperFactory = processWrapperFactory;
         this.stdoutConsumer = stdoutConsumer;
-        this.stdProcessorFactory = stdProcessorFactory;
     }
 
     @Override
@@ -42,9 +39,10 @@ public class SendReplica implements Callable<Void> {
 
         processWrapperFactory.getProcessWrapper(
                 command,
-                stdProcessorFactory.getStdProcessor(
+                new StdProcessorImpl(
                         new StdLineConsumer(logger::debug),
-                        stdoutConsumer
+                        stdoutConsumer,
+                        null
                 )
         ).call();
 

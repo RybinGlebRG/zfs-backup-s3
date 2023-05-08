@@ -5,14 +5,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.utils.processes.factories.ProcessWrapperFactory;
-import ru.rerumu.utils.processes.factories.StdProcessorFactory;
 import ru.rerumu.zfs.callable.SendReplica;
 import ru.rerumu.zfs.models.Snapshot;
 
 import java.io.BufferedInputStream;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
 import static org.mockito.Mockito.*;
@@ -23,16 +21,10 @@ public class TestSendReplica {
     ProcessWrapperFactory processWrapperFactory;
 
     @Mock
-    ExecutorService executorService;
-
-    @Mock
     Consumer<BufferedInputStream> consumer;
 
     @Mock
     Callable<Void> processWrapper;
-
-    @Mock
-    StdProcessorFactory stdProcessorFactory;
 
 
     @Test
@@ -44,8 +36,7 @@ public class TestSendReplica {
         Callable<Void> sendReplica = new SendReplica(
                 snapshot,
                 processWrapperFactory,
-                consumer,
-                stdProcessorFactory
+                consumer
         );
 
         sendReplica.call();

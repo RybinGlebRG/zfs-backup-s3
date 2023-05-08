@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.utils.processes.StdLineConsumer;
 import ru.rerumu.utils.processes.factories.ProcessWrapperFactory;
-import ru.rerumu.utils.processes.factories.StdProcessorFactory;
+import ru.rerumu.utils.processes.impl.StdProcessorImpl;
 import ru.rerumu.zfs.factories.StdConsumerFactory;
 import ru.rerumu.zfs.models.Snapshot;
 import ru.rerumu.zfs.models.Dataset;
@@ -19,14 +19,12 @@ public class GetDataset implements Callable<Dataset> {
 
     private final ProcessWrapperFactory processWrapperFactory;
 
-    private final StdProcessorFactory stdProcessorFactory;
     private final StdConsumerFactory stdConsumerFactory;
 
     // TODO: Check not null
-    public GetDataset(String datasetName, ProcessWrapperFactory processWrapperFactory, StdProcessorFactory stdProcessorFactory, StdConsumerFactory stdConsumerFactory) {
+    public GetDataset(String datasetName, ProcessWrapperFactory processWrapperFactory, StdConsumerFactory stdConsumerFactory) {
         this.datasetName = datasetName;
         this.processWrapperFactory = processWrapperFactory;
-        this.stdProcessorFactory = stdProcessorFactory;
         this.stdConsumerFactory = stdConsumerFactory;
     }
 
@@ -49,9 +47,10 @@ public class GetDataset implements Callable<Dataset> {
 
         processWrapperFactory.getProcessWrapper(
                 command,
-                stdProcessorFactory.getStdProcessor(
+                new StdProcessorImpl(
                         new StdLineConsumer(logger::error),
-                        stdConsumerFactory.getSnapshotListStdConsumer(snapshotList)
+                        stdConsumerFactory.getSnapshotListStdConsumer(snapshotList),
+                        null
                 )
         ).call();
 

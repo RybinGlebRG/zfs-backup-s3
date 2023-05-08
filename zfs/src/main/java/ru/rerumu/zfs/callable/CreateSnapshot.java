@@ -4,13 +4,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.utils.processes.StdLineConsumer;
 import ru.rerumu.utils.processes.factories.ProcessWrapperFactory;
-import ru.rerumu.utils.processes.factories.StdProcessorFactory;
+import ru.rerumu.utils.processes.impl.StdProcessorImpl;
 import ru.rerumu.zfs.models.Dataset;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+// TODO: Check nullable
 public class CreateSnapshot implements Callable<Void> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final Dataset dataset;
@@ -18,15 +19,12 @@ public class CreateSnapshot implements Callable<Void> {
     private final Boolean isRecursive;
     private final ProcessWrapperFactory processWrapperFactory;
 
-    private final StdProcessorFactory stdProcessorFactory;
 
-
-    public CreateSnapshot(Dataset dataset, String name, Boolean isRecursive, ProcessWrapperFactory processWrapperFactory, StdProcessorFactory stdProcessorFactory) {
+    public CreateSnapshot(Dataset dataset, String name, Boolean isRecursive, ProcessWrapperFactory processWrapperFactory) {
         this.dataset = dataset;
         this.name = name;
         this.isRecursive = isRecursive;
         this.processWrapperFactory = processWrapperFactory;
-        this.stdProcessorFactory = stdProcessorFactory;
     }
 
     @Override
@@ -41,9 +39,10 @@ public class CreateSnapshot implements Callable<Void> {
 
         processWrapperFactory.getProcessWrapper(
                 command,
-                stdProcessorFactory.getStdProcessor(
+                new StdProcessorImpl(
                         new StdLineConsumer(logger::error),
-                        new StdLineConsumer(logger::debug)
+                        new StdLineConsumer(logger::debug),
+                        null
                 )
         ).call();
 

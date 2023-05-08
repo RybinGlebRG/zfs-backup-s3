@@ -6,16 +6,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.utils.processes.factories.ProcessWrapperFactory;
-import ru.rerumu.utils.processes.factories.StdProcessorFactory;
 import ru.rerumu.zfs.callable.GetPool;
 import ru.rerumu.zfs.factories.StdConsumerFactory;
 import ru.rerumu.zfs.factories.ZFSCallableFactory;
 import ru.rerumu.zfs.models.Dataset;
 import ru.rerumu.zfs.models.Pool;
 
+import java.io.BufferedInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -25,19 +26,10 @@ public class TestGetPool {
 
     @Mock
     ProcessWrapperFactory processWrapperFactory;
-
     @Mock
     Callable<Void> processWrapper;
-
-    @Mock
-    ZFSService zfsService;
-
     @Mock
     StdConsumerFactory stdConsumerFactory;
-
-    @Mock
-    StdProcessorFactory stdProcessorFactory;
-
     @Mock
     ZFSCallableFactory zfsCallableFactory;
 
@@ -59,7 +51,7 @@ public class TestGetPool {
             datasetStrings.add("TestDataset1");
             datasetStrings.add("TestDataset2");
             datasetStrings.add("TestDataset3");
-            return null;
+            return (Consumer<BufferedInputStream>)mock(Consumer.class);
         });
         when(zfsCallableFactory.getDatasetCallable(anyString()))
                 .thenReturn(callable1)
@@ -72,7 +64,7 @@ public class TestGetPool {
 
 
 
-        Callable<Pool> getPool = new GetPool("TestPool", processWrapperFactory,zfsCallableFactory,stdConsumerFactory, stdProcessorFactory);
+        Callable<Pool> getPool = new GetPool("TestPool", processWrapperFactory,zfsCallableFactory,stdConsumerFactory);
 
         Pool res = getPool.call();
 

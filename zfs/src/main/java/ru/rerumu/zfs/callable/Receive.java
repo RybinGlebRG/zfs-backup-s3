@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.utils.processes.StdLineConsumer;
 import ru.rerumu.utils.processes.factories.ProcessWrapperFactory;
-import ru.rerumu.utils.processes.factories.StdProcessorFactory;
+import ru.rerumu.utils.processes.impl.StdProcessorImpl;
 import ru.rerumu.zfs.models.Pool;
 
 import java.io.BufferedOutputStream;
@@ -20,13 +20,10 @@ public class Receive implements Callable<Void> {
     private final ProcessWrapperFactory processWrapperFactory;
     private final Consumer<BufferedOutputStream> stdinConsumer;
 
-    private final StdProcessorFactory stdProcessorFactory;
-
-    public Receive(Pool pool, ProcessWrapperFactory processWrapperFactory, Consumer<BufferedOutputStream> stdinConsumer, StdProcessorFactory stdProcessorFactory) {
+    public Receive(Pool pool, ProcessWrapperFactory processWrapperFactory, Consumer<BufferedOutputStream> stdinConsumer) {
         this.pool = pool;
         this.processWrapperFactory = processWrapperFactory;
         this.stdinConsumer = stdinConsumer;
-        this.stdProcessorFactory = stdProcessorFactory;
     }
 
     @Override
@@ -39,11 +36,10 @@ public class Receive implements Callable<Void> {
 
         processWrapperFactory.getProcessWrapper(
                 command,
-                stdProcessorFactory.getStdProcessor(
+                new StdProcessorImpl(
                         new StdLineConsumer(logger::error),
                         new StdLineConsumer(logger::debug),
-                        stdinConsumer
-                )
+                        stdinConsumer)
         ).call();
 
         return null;

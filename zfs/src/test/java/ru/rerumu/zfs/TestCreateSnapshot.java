@@ -5,14 +5,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.utils.processes.factories.ProcessWrapperFactory;
-import ru.rerumu.utils.processes.factories.StdProcessorFactory;
 import ru.rerumu.zfs.callable.CreateSnapshot;
 import ru.rerumu.zfs.models.Dataset;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
 
 import static org.mockito.Mockito.*;
 
@@ -21,15 +19,8 @@ import static org.mockito.Mockito.*;
 public class TestCreateSnapshot {
     @Mock
     ProcessWrapperFactory processWrapperFactory;
-
-    @Mock
-    ExecutorService executorService;
-
     @Mock
     Callable<Void> processWrapper;
-
-    @Mock
-    StdProcessorFactory stdProcessorFactory;
 
     @Test
     void shouldCall() throws Exception{
@@ -42,8 +33,7 @@ public class TestCreateSnapshot {
                 dataset,
                 "zfs-backup-s3__2023-03-22T194000",
                 false,
-                processWrapperFactory,
-                stdProcessorFactory
+                processWrapperFactory
         );
 
         createSnapshot.call();
@@ -66,8 +56,7 @@ public class TestCreateSnapshot {
                 dataset,
                 "zfs-backup-s3__2023-03-22T194000",
                 true,
-                processWrapperFactory,
-                stdProcessorFactory
+                processWrapperFactory
         );
 
         createSnapshot.call();

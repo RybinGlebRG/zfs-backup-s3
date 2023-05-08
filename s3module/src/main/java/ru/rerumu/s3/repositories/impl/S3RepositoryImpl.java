@@ -4,9 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.s3.factories.S3CallableFactory;
 import ru.rerumu.s3.repositories.S3Repository;
-import ru.rerumu.utils.callables.CallableExecutor;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
@@ -25,11 +23,8 @@ public class S3RepositoryImpl implements S3Repository {
 
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
-    private final CallableExecutor callableExecutor;
-
-    public S3RepositoryImpl(S3CallableFactory s3CallableFactory,CallableExecutor callableExecutor) {
+    public S3RepositoryImpl(S3CallableFactory s3CallableFactory) {
         this.s3CallableFactory = s3CallableFactory;
-        this.callableExecutor = callableExecutor;
     }
 
     private boolean isExists(String key) {
@@ -60,32 +55,44 @@ public class S3RepositoryImpl implements S3Repository {
         String key = prefix + path.getFileName().toString();
         logger.info(String.format("Trying to upload file '%s' to '%s'", path.toString(), key));
 
-        callableExecutor.callWithRetry(s3CallableFactory.getUploadCallable(path, key));
 
-        while (!isExists(key)) {
-            logger.warn(String.format("File '%s' is not found on S3. Trying to upload again", key));
-            callableExecutor.callWithRetry(s3CallableFactory.getUploadCallable(path, key));
+        try {
+            s3CallableFactory.getUploadCallable(path, key).call();
+
+            while (!isExists(key)) {
+                logger.warn(String.format("File '%s' is not found on S3. Trying to upload again", key));
+                s3CallableFactory.getUploadCallable(path, key).call();
+            }
+        } catch (Exception e){
+            logger.error(e.getMessage(),e);
+            throw new RuntimeException(e);
         }
     }
 
     @Override
     public List<String> listAll(String prefix) {
-        List<String> keys = callableExecutor.callWithRetry(s3CallableFactory.getListCallable(prefix));
-        keys.sort(
-                Comparator.comparing(
-                        item -> Integer.valueOf(item.substring(item.lastIndexOf(PART_SUFFIX) + PART_SUFFIX.length()))
-                )
-        );
-        return keys;
+        try {
+            List<String> keys = s3CallableFactory.getListCallable(prefix).call();
+            keys.sort(
+                    Comparator.comparing(
+                            item -> Integer.valueOf(item.substring(item.lastIndexOf(PART_SUFFIX) + PART_SUFFIX.length()))
+                    )
+            );
+            return keys;
+        } catch (Exception e){
+            logger.error(e.getMessage(),e);
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public void getOne(String prefix, Path targetPath) {
         try {
             logger.info(String.format("Trying to download file '%s' to '%s'", prefix, targetPath.toString()));
-            callableExecutor.callWithRetry(s3CallableFactory.getDownloadCallable(prefix, targetPath));
+            s3CallableFactory.getDownloadCallable(prefix, targetPath).call();
             logger.debug(String.format("Successfully downloaded file '%s' to  '%s'. Size = %d", prefix, targetPath.toString(), Files.size(targetPath)));
-        } catch (IOException e) {
+        } catch (Exception e){
+            logger.error(e.getMessage(),e);
             throw new RuntimeException(e);
         }
     }

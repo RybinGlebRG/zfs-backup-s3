@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import ru.rerumu.utils.callables.CallableExecutor;
 
 import java.util.concurrent.*;
+import java.util.function.Supplier;
 
 public class CallableExecutorImpl implements CallableExecutor {
     private final static Long DELAY = 10L;
@@ -13,8 +14,8 @@ public class CallableExecutorImpl implements CallableExecutor {
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
     @Override
-    public <T> T callWithRetry(Callable<T> callable) {
-        Future<T> future = scheduledExecutorService.submit(callable);
+    public <T> T callWithRetry(Supplier<Callable<T>> callableSupplier) {
+        Future<T> future = scheduledExecutorService.submit(callableSupplier.get());
         while (true) {
             try {
                 return future.get();
@@ -22,7 +23,7 @@ public class CallableExecutorImpl implements CallableExecutor {
                 logger.warn(e.getMessage(), e);
             }
             future = scheduledExecutorService.schedule(
-                    callable,
+                    callableSupplier.get(),
                     DELAY,
                     TimeUnit.SECONDS
             );

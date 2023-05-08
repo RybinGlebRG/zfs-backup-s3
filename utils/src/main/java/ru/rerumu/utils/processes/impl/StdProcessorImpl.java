@@ -1,5 +1,7 @@
 package ru.rerumu.utils.processes.impl;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.utils.processes.StdProcessor;
@@ -16,7 +18,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
-public class StdProcessorImpl implements StdProcessor {
+public final class StdProcessorImpl implements StdProcessor {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final ExecutorService executorService = Executors.newCachedThreadPool();
     private final Consumer<BufferedInputStream> stderrConsumer;
@@ -25,29 +27,38 @@ public class StdProcessorImpl implements StdProcessor {
 
     private final List<Future<Void>> futureList = new ArrayList<>();
 
-    public StdProcessorImpl(Consumer<BufferedInputStream> stderrConsumer, Consumer<BufferedInputStream> stdoutConsumer, Consumer<BufferedOutputStream> stdinConsumer) {
-        Objects.requireNonNull(stderrConsumer, "stderrConsumer should not be null");
-        Objects.requireNonNull(stdoutConsumer, "stdoutConsumer should not be null");
+    public StdProcessorImpl(
+            @NonNull Consumer<BufferedInputStream> stderrConsumer,
+            @NonNull Consumer<BufferedInputStream> stdoutConsumer,
+            @Nullable Consumer<BufferedOutputStream> stdinConsumer
+    ) {
+        Objects.requireNonNull(stderrConsumer, "StdProcessorImpl: stderrConsumer should not be null");
+        Objects.requireNonNull(stdoutConsumer, "StdProcessorImpl: stdoutConsumer should not be null");
         this.stderrConsumer = stderrConsumer;
         this.stdoutConsumer = stdoutConsumer;
         this.stdinConsumer = stdinConsumer;
     }
 
     @Override
-    public void processStd(BufferedInputStream stderr, BufferedInputStream stdout, BufferedOutputStream stdin) throws ExecutionException, InterruptedException, IOException {
-        Objects.requireNonNull(stderr, "Stderr should not be null");
-        Objects.requireNonNull(stdout, "Stdout should not be null");
-
-        if (
-                (stdin != null && stdinConsumer == null) || (stdin == null && stdinConsumer != null)
-        ){
-            throw new IllegalArgumentException("Inconsistent parameters");
-        }
+    public void processStd(
+            @NonNull BufferedInputStream stderr,
+            @NonNull BufferedInputStream stdout,
+            @Nullable BufferedOutputStream stdin
+    )
+            throws ExecutionException, InterruptedException, IOException {
+        Objects.requireNonNull(stderr, "StdProcessorImpl: Stderr should not be null");
+        Objects.requireNonNull(stdout, "StdProcessorImpl: Stdout should not be null");
 
         Future<Void> stdinFuture = null;
 
         try {
-            if (stdin != null && stdinConsumer != null) {
+            if (stdin == null || stdinConsumer == null){
+                if (stdin != null){
+                    throw new IllegalArgumentException("StdProcessorImpl: If stdin is not null, stdinConsumer should be present");
+                } else if (stdinConsumer != null){
+                    throw new IllegalArgumentException("StdProcessorImpl: If stdinConsumer is present, stdin should also be present");
+                }
+            } else {
                 stdinFuture = executorService.submit(
                         () -> {
                             stdinConsumer.accept(stdin);

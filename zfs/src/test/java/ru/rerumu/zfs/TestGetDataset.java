@@ -6,19 +6,19 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.utils.processes.factories.ProcessWrapperFactory;
-import ru.rerumu.utils.processes.factories.StdProcessorFactory;
 import ru.rerumu.zfs.callable.GetDataset;
 import ru.rerumu.zfs.factories.StdConsumerFactory;
 import ru.rerumu.zfs.models.Dataset;
 
+import java.io.BufferedInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class TestGetDataset {
@@ -30,9 +30,6 @@ public class TestGetDataset {
     Callable<Void> processWrapper;
 
     @Mock
-    StdProcessorFactory stdProcessorFactory;
-
-    @Mock
     StdConsumerFactory stdConsumerFactory;
 
     @Test
@@ -40,12 +37,12 @@ public class TestGetDataset {
 
 
         when(processWrapperFactory.getProcessWrapper(any(),any())).thenReturn(processWrapper);
+        when(stdConsumerFactory.getSnapshotListStdConsumer(any())).thenReturn((Consumer<BufferedInputStream>) mock(Consumer.class));
 
 
         Callable<Dataset> getDataset = new GetDataset(
                 "TestDataset",
                 processWrapperFactory,
-                stdProcessorFactory,
                 stdConsumerFactory
         );
 

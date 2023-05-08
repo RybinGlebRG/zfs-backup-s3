@@ -7,7 +7,6 @@ import ru.rerumu.zfs.models.Dataset;
 import ru.rerumu.zfs.models.Pool;
 import ru.rerumu.zfs.factories.ZFSCallableFactory;
 import ru.rerumu.utils.processes.factories.ProcessWrapperFactory;
-import ru.rerumu.utils.processes.factories.StdProcessorFactory;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -18,34 +17,31 @@ public class ZFSCallableFactoryImpl implements ZFSCallableFactory {
     private final ProcessWrapperFactory processWrapperFactory;
     private final StdConsumerFactory stdConsumerFactory;
 
-    private final StdProcessorFactory stdProcessorFactory;
-
     // TODO: Check not null
-    public ZFSCallableFactoryImpl(ProcessWrapperFactory processWrapperFactory, StdConsumerFactory stdConsumerFactory, StdProcessorFactory stdProcessorFactory) {
+    public ZFSCallableFactoryImpl(ProcessWrapperFactory processWrapperFactory, StdConsumerFactory stdConsumerFactory) {
         this.processWrapperFactory = processWrapperFactory;
         this.stdConsumerFactory = stdConsumerFactory;
-        this.stdProcessorFactory = stdProcessorFactory;
     }
 
     @Override
     public Callable<Pool> getPoolCallable(String poolName) {
         // TODO: Thread safe?
-        return new GetPool(poolName, processWrapperFactory,this,stdConsumerFactory, stdProcessorFactory);
+        return new GetPool(poolName, processWrapperFactory,this,stdConsumerFactory);
     }
 
     @Override
     public Callable<Dataset> getDatasetCallable(String datasetName) {
-        return new GetDataset(datasetName, processWrapperFactory, stdProcessorFactory, stdConsumerFactory);
+        return new GetDataset(datasetName, processWrapperFactory, stdConsumerFactory);
     }
 
     @Override
     public CreateSnapshot getCreateSnapshotCallable(Dataset dataset, String name, Boolean isRecursive) {
-        return new CreateSnapshot(dataset, name, isRecursive, processWrapperFactory,stdProcessorFactory);
+        return new CreateSnapshot(dataset, name, isRecursive, processWrapperFactory);
     }
 
     @Override
     public ListSnapshots getListSnapshotsCallable(Dataset dataset) {
-        return new ListSnapshots(processWrapperFactory, dataset, stdProcessorFactory,stdConsumerFactory);
+        return new ListSnapshots(processWrapperFactory, dataset, stdConsumerFactory);
     }
 
     @Override
@@ -53,11 +49,11 @@ public class ZFSCallableFactoryImpl implements ZFSCallableFactory {
             Snapshot snapshot,
             Consumer<BufferedInputStream> consumer
     ) {
-        return new SendReplica(snapshot, processWrapperFactory,consumer,stdProcessorFactory);
+        return new SendReplica(snapshot, processWrapperFactory,consumer);
     }
 
     @Override
     public Callable<Void> getReceive(Pool pool, Consumer<BufferedOutputStream> stdinConsumer) {
-        return new Receive(pool, processWrapperFactory,stdinConsumer,stdProcessorFactory);
+        return new Receive(pool, processWrapperFactory,stdinConsumer);
     }
 }

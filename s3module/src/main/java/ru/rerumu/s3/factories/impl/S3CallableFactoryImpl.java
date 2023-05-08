@@ -7,6 +7,8 @@ import ru.rerumu.s3.impl.MultipartUploadCallable;
 import ru.rerumu.s3.impl.OnepartUploadCallable;
 import ru.rerumu.s3.models.S3Storage;
 import ru.rerumu.s3.factories.S3CallableFactory;
+import ru.rerumu.utils.callables.CallableExecutor;
+import ru.rerumu.utils.callables.impl.CallableExecutorImpl;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,7 +32,7 @@ public class S3CallableFactoryImpl implements S3CallableFactory {
             if (Files.size(path) > maxPartSize) {
                 return new MultipartUploadCallable(path, key, s3Storage, s3ClientFactory, maxPartSize);
             } else {
-                return new OnepartUploadCallable(path, key, s3Storage, s3ClientFactory);
+                return new OnepartUploadCallable(path, key, s3Storage, s3ClientFactory, new CallableExecutorImpl());
 
             }
         } catch (Exception e){

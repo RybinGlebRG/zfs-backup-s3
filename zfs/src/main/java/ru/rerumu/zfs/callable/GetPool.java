@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.utils.processes.StdLineConsumer;
 import ru.rerumu.utils.processes.factories.ProcessWrapperFactory;
-import ru.rerumu.utils.processes.factories.StdProcessorFactory;
+import ru.rerumu.utils.processes.impl.StdProcessorImpl;
 import ru.rerumu.zfs.factories.StdConsumerFactory;
 import ru.rerumu.zfs.factories.ZFSCallableFactory;
 import ru.rerumu.zfs.models.Dataset;
@@ -19,17 +19,14 @@ public class GetPool implements Callable<Pool> {
     private final String poolName;
     private final ProcessWrapperFactory processWrapperFactory;
     private final StdConsumerFactory stdConsumerFactory;
-    private final StdProcessorFactory stdProcessorFactory;
-
     private final ZFSCallableFactory zfsCallableFactory;
 
     // TODO: Check not null
-    public GetPool(String poolName, ProcessWrapperFactory processWrapperFactory, ZFSCallableFactory zfsCallableFactory, StdConsumerFactory stdConsumerFactory, StdProcessorFactory stdProcessorFactory) {
+    public GetPool(String poolName, ProcessWrapperFactory processWrapperFactory, ZFSCallableFactory zfsCallableFactory, StdConsumerFactory stdConsumerFactory) {
         this.poolName = poolName;
         this.processWrapperFactory = processWrapperFactory;
         this.zfsCallableFactory = zfsCallableFactory;
         this.stdConsumerFactory = stdConsumerFactory;
-        this.stdProcessorFactory = stdProcessorFactory;
     }
 
     private List<String> getDatasetNames() throws Exception {
@@ -47,9 +44,10 @@ public class GetPool implements Callable<Pool> {
 
         processWrapperFactory.getProcessWrapper(
                 command,
-                stdProcessorFactory.getStdProcessor(
+                new StdProcessorImpl(
                         new StdLineConsumer(logger::error),
-                        stdConsumerFactory.getDatasetStringStdConsumer(datasetStrings)
+                        stdConsumerFactory.getDatasetStringStdConsumer(datasetStrings),
+                        null
                 )
         ).call();
 
