@@ -133,8 +133,8 @@ public class ITS3List {
         Set<String> res = new HashSet<>(new ListCallable(
                 key,
                 s3Storage,
-                s3ClientFactory
-        ).call());
+                s3ClientFactory,
+                new CallableExecutorImpl()).call());
 
 
         Assertions.assertEquals(Set.of(key+".part1",key+".part2",key+".part3"),res);
@@ -237,8 +237,8 @@ public class ITS3List {
         Set<String> res = new HashSet<>(new ListCallable(
                 key+".part2",
                 s3Storage,
-                s3ClientFactory
-        ).call());
+                s3ClientFactory,
+                new CallableExecutorImpl()).call());
 
 
         Assertions.assertEquals(Set.of(key+".part2"),res);
@@ -339,8 +339,8 @@ public class ITS3List {
         Set<String> res = new HashSet<>(new ListCallable(
                 key+".part4",
                 s3Storage,
-                s3ClientFactory
-        ).call());
+                s3ClientFactory,
+                new CallableExecutorImpl()).call());
 
 
         Assertions.assertEquals(0, res.size());

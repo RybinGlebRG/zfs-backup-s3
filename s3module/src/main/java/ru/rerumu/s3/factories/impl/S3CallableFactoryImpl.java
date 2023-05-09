@@ -5,9 +5,9 @@ import ru.rerumu.s3.impl.ListCallable;
 import ru.rerumu.s3.impl.MultipartDownloadCallable;
 import ru.rerumu.s3.impl.MultipartUploadCallable;
 import ru.rerumu.s3.impl.OnepartUploadCallable;
+import ru.rerumu.s3.impl.helper.factories.impl.HelperCallableFactoryImpl;
 import ru.rerumu.s3.models.S3Storage;
 import ru.rerumu.s3.factories.S3CallableFactory;
-import ru.rerumu.utils.callables.CallableExecutor;
 import ru.rerumu.utils.callables.impl.CallableExecutorImpl;
 
 import java.nio.file.Files;
@@ -30,7 +30,10 @@ public class S3CallableFactoryImpl implements S3CallableFactory {
     public Callable<Void> getUploadCallable(Path path, String key) {
         try {
             if (Files.size(path) > maxPartSize) {
-                return new MultipartUploadCallable(path, key, s3Storage, s3ClientFactory, maxPartSize);
+                return new MultipartUploadCallable(path, key, s3Storage, s3ClientFactory, maxPartSize, new CallableExecutorImpl(), new HelperCallableFactoryImpl(
+                        s3Storage,
+                        s3ClientFactory
+                ));
             } else {
                 return new OnepartUploadCallable(path, key, s3Storage, s3ClientFactory, new CallableExecutorImpl());
 
@@ -47,6 +50,6 @@ public class S3CallableFactoryImpl implements S3CallableFactory {
 
     @Override
     public Callable<List<String>> getListCallable(String prefix) {
-        return new ListCallable(prefix, s3Storage,s3ClientFactory);
+        return new ListCallable(prefix, s3Storage,s3ClientFactory, new CallableExecutorImpl());
     }
 }

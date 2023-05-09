@@ -8,7 +8,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import java.util.concurrent.Callable;
 
 // TODO: Check nullable
-public final class PutCallable implements Callable<PutObjectResponse> {
+public final class PutObjectCallable implements Callable<PutObjectResponse> {
 
     private final String bucketName;
     private final String key;
@@ -18,7 +18,7 @@ public final class PutCallable implements Callable<PutObjectResponse> {
 
     private final byte[] data;
 
-    public PutCallable(String bucketName, String key, String storageClass, S3Client s3Client, byte[] data) {
+    public PutObjectCallable(String bucketName, String key, String storageClass, S3Client s3Client, byte[] data) {
         this.bucketName = bucketName;
         this.key = key;
         this.storageClass = storageClass;

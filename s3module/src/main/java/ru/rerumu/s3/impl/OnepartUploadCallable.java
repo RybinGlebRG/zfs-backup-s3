@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.s3.exceptions.IncorrectHashException;
 import ru.rerumu.s3.factories.S3ClientFactory;
-import ru.rerumu.s3.impl.helper.PutCallable;
+import ru.rerumu.s3.impl.helper.PutObjectCallable;
 import ru.rerumu.s3.models.S3Storage;
 import ru.rerumu.utils.MD5;
 import ru.rerumu.utils.callables.CallableExecutor;
@@ -42,16 +42,16 @@ public class OnepartUploadCallable implements Callable<Void> {
 
         try (BufferedInputStream bufferedInputStream = new BufferedInputStream(Files.newInputStream(path))) {
 
-            S3Client s3Client = s3ClientFactory.getS3Client(s3Storage);
+//            S3Client s3Client = s3ClientFactory.getS3Client(s3Storage);
 
             byte[] buf = bufferedInputStream.readAllBytes();
             String md5 = MD5.getMD5Hex(buf);
 
-            PutObjectResponse putObjectResponse = callableExecutor.callWithRetry(() -> new PutCallable(
+            PutObjectResponse putObjectResponse = callableExecutor.callWithRetry(() -> new PutObjectCallable(
                     s3Storage.getBucketName(),
                     key,
                     s3Storage.getStorageClass(),
-                    s3Client,
+                    s3ClientFactory.getS3Client(s3Storage),
                     buf
             ));
 

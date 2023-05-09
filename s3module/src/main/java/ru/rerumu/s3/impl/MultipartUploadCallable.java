@@ -1,13 +1,15 @@
 package ru.rerumu.s3.impl;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.s3.exceptions.IncorrectHashException;
 import ru.rerumu.s3.factories.S3ClientFactory;
+import ru.rerumu.s3.impl.helper.factories.HelperCallableFactory;
 import ru.rerumu.s3.models.S3Storage;
 import ru.rerumu.utils.MD5;
-import software.amazon.awssdk.core.sync.RequestBody;
+import ru.rerumu.utils.callables.CallableExecutor;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
@@ -17,9 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 // TODO: Add multiple attempts?
@@ -31,25 +31,34 @@ public class MultipartUploadCallable implements Callable<Void> {
     private final String key;
     private final S3Storage s3Storage;
     private final S3ClientFactory s3ClientFactory;
-
     private final int maxPartSize;
+    private final CallableExecutor callableExecutor;
+    private final HelperCallableFactory helperCallableFactory;
 
-    public MultipartUploadCallable(Path path, String key, S3Storage s3Storage, S3ClientFactory s3ClientFactory, int maxPartSize) {
+    private final S3Client s3Client;
+    private final List<byte[]> md5List = new ArrayList<>();
+    private final List<CompletedPart> completedPartList = new ArrayList<>();
+    private String uploadId = null;
+
+
+
+    public MultipartUploadCallable(Path path, String key, S3Storage s3Storage, S3ClientFactory s3ClientFactory, int maxPartSize, CallableExecutor callableExecutor, HelperCallableFactory helperCallableFactory) {
         this.path = path;
         this.key = key;
         this.s3Storage = s3Storage;
         this.s3ClientFactory = s3ClientFactory;
         this.maxPartSize = maxPartSize;
+        this.callableExecutor = callableExecutor;
+        this.helperCallableFactory = helperCallableFactory;
+        this.s3Client = s3ClientFactory.getS3Client(s3Storage);
     }
 
-    private String start(S3Client s3Client){
-        CreateMultipartUploadRequest createMultipartUploadRequest = CreateMultipartUploadRequest.builder()
-                .bucket(s3Storage.getBucketName())
-                .key(key)
-                .storageClass(s3Storage.getStorageClass())
-                .build();
-        CreateMultipartUploadResponse response = s3Client.createMultipartUpload(createMultipartUploadRequest);
-        String uploadId = response.uploadId();
+    private String start(){
+        Map<String,String> response = callableExecutor.callWithRetry(()->
+                helperCallableFactory.getCreateMultipartUploadCallable(key)
+        );
+        String uploadId = response.get("uploadId");
+        Objects.requireNonNull(uploadId);
         logger.info(String.format("uploadId '%s'", uploadId));
 
         return uploadId;
@@ -65,26 +74,30 @@ public class MultipartUploadCallable implements Callable<Void> {
     }
 
     private void uploadPart(
-            byte[] data,
-            Integer partNumber,
-            S3Client s3Client,
-            String uploadId,
-            List<byte[]> md5List,
-            List<CompletedPart> completedPartList
+            @NonNull byte[] data,
+            @NonNull Integer partNumber
     ) throws IOException, EOFException, NoSuchAlgorithmException, IncorrectHashException {
         logger.debug("Getting new part");
         logger.debug(String.format("Starting loading part '%d'",partNumber));
-        String md5 = MD5.getMD5Hex(data);
-        // TODO: Max part number?
-        UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
-                .bucket(s3Storage.getBucketName())
-                .key(key)
-                .uploadId(uploadId)
-                .partNumber(partNumber).build();
 
-        String eTag = s3Client.uploadPart(
-                uploadPartRequest, RequestBody.fromBytes(data)
-        ).eTag();
+        Objects.requireNonNull(uploadId);
+        Objects.requireNonNull(data);
+        Objects.requireNonNull(partNumber);
+
+        String md5 = MD5.getMD5Hex(data);
+
+        // TODO: Max part number?
+        Map<String,String> response = callableExecutor.callWithRetry(()->
+                helperCallableFactory.getUploadPartCallable(
+                        key,
+                        uploadId,
+                        partNumber,
+                        data
+                )
+        );
+        String eTag = response.get("eTag");
+        Objects.requireNonNull(eTag);
+
         logger.info(String.format("ETag='%s'", eTag));
         if (!(eTag.equals('"' + md5 + '"'))) {
             throw new IncorrectHashException(String.format("Got '%s', but expected '%s'",eTag, '"' + md5 + '"'));
@@ -98,12 +111,12 @@ public class MultipartUploadCallable implements Callable<Void> {
     }
 
     private void finish(
-            List<CompletedPart> completedPartList,
-            String uploadId,
-            S3Client s3Client,
-            List<byte[]> md5List,
-            Integer partNumber
+            @NonNull S3Client s3Client,
+            @NonNull Integer partNumber
     ) throws NoSuchAlgorithmException, IOException, IncorrectHashException {
+        Objects.requireNonNull(s3Client);
+        Objects.requireNonNull(partNumber);
+
         CompletedMultipartUpload completedMultipartUpload = CompletedMultipartUpload.builder()
                 .parts(completedPartList)
                 .build();
@@ -144,34 +157,22 @@ public class MultipartUploadCallable implements Callable<Void> {
     @Override
     public Void call() throws IOException, NoSuchAlgorithmException, IncorrectHashException {
         try (BufferedInputStream bufferedInputStream = new BufferedInputStream(Files.newInputStream(path))) {
-            S3Client s3Client = s3ClientFactory.getS3Client(s3Storage);
-            String uploadId = null;
             int partNumber = 0;
-            List<byte[]> md5List = new ArrayList<>();
-            List<CompletedPart> completedPartList = new ArrayList<>();
 
             try {
-
-
-                uploadId = start(s3Client);
+                uploadId = start();
 
                 while (true) {
                     try {
-                        byte[] nextPart = getNextPart(bufferedInputStream);
+                        byte[] data = getNextPart(bufferedInputStream);
                         partNumber++;
-                        uploadPart(nextPart, partNumber, s3Client,uploadId,md5List,completedPartList);
+                        uploadPart(data, partNumber);
                     } catch (EOFException e) {
                         break;
                     }
                 }
 
-                finish(
-                        completedPartList,
-                        uploadId,
-                        s3Client,
-                        md5List,
-                        partNumber
-                );
+                finish(s3Client,partNumber);
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
                 if (uploadId != null) {
