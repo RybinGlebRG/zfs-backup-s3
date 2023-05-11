@@ -1,9 +1,11 @@
-package ru.rerumu.s3.impl.helper;
+package ru.rerumu.s3.services.impl.helper;
 
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 public class ListObjectCallable implements Callable<ListObjectsResponse> {
@@ -24,7 +26,6 @@ public class ListObjectCallable implements Callable<ListObjectsResponse> {
                 .prefix(key)
                 .build();
         ListObjectsResponse res = s3Client.listObjects(listObjects);
-
         return res;
     }
 }

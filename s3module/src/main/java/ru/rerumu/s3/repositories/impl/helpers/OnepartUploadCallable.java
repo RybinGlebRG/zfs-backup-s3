@@ -1,14 +1,13 @@
-package ru.rerumu.s3.impl;
+package ru.rerumu.s3.repositories.impl.helpers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.s3.exceptions.IncorrectHashException;
 import ru.rerumu.s3.factories.S3ClientFactory;
-import ru.rerumu.s3.impl.helper.PutObjectCallable;
 import ru.rerumu.s3.models.S3Storage;
+import ru.rerumu.s3.services.S3RequestService;
 import ru.rerumu.utils.MD5;
 import ru.rerumu.utils.callables.CallableExecutor;
-import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 import java.io.BufferedInputStream;
@@ -23,18 +22,13 @@ public class OnepartUploadCallable implements Callable<Void> {
 
     private final Path path;
     private final String key;
-    private final S3Storage s3Storage;
-    private final S3ClientFactory s3ClientFactory;
-
-    private final CallableExecutor callableExecutor;
+    private final S3RequestService s3RequestService;
 
 
-    public OnepartUploadCallable(Path path, String key, S3Storage s3Storage, S3ClientFactory s3ClientFactory, CallableExecutor callableExecutor) {
+    public OnepartUploadCallable(Path path, String key, S3RequestService s3RequestService) {
         this.path = path;
         this.key = key;
-        this.s3Storage = s3Storage;
-        this.s3ClientFactory = s3ClientFactory;
-        this.callableExecutor = callableExecutor;
+        this.s3RequestService = s3RequestService;
     }
 
     @Override
@@ -42,18 +36,10 @@ public class OnepartUploadCallable implements Callable<Void> {
 
         try (BufferedInputStream bufferedInputStream = new BufferedInputStream(Files.newInputStream(path))) {
 
-//            S3Client s3Client = s3ClientFactory.getS3Client(s3Storage);
-
             byte[] buf = bufferedInputStream.readAllBytes();
             String md5 = MD5.getMD5Hex(buf);
 
-            PutObjectResponse putObjectResponse = callableExecutor.callWithRetry(() -> new PutObjectCallable(
-                    s3Storage.getBucketName(),
-                    key,
-                    s3Storage.getStorageClass(),
-                    s3ClientFactory.getS3Client(s3Storage),
-                    buf
-            ));
+            PutObjectResponse putObjectResponse = s3RequestService.putObject(key,buf);
 
             String eTag = putObjectResponse.eTag();
             logger.info(String.format("ETag='%s'", eTag));

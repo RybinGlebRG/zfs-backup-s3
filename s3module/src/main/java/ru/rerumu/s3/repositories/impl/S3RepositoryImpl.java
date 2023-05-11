@@ -21,8 +21,6 @@ public class S3RepositoryImpl implements S3Repository {
 
     private final S3CallableFactory s3CallableFactory;
 
-    private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-
     public S3RepositoryImpl(S3CallableFactory s3CallableFactory) {
         this.s3CallableFactory = s3CallableFactory;
     }
@@ -33,23 +31,6 @@ public class S3RepositoryImpl implements S3Repository {
         return keys.stream()
                 .anyMatch(item -> item.equals(key));
     }
-
-//    private <T> T runWithRetry(Callable<T> callable) {
-//        Future<T> future = scheduledExecutorService.submit(callable);
-//        while (true) {
-//            try {
-//                return future.get();
-//            } catch (Exception e) {
-//                logger.warn(e.getMessage(), e);
-//            }
-//            future = scheduledExecutorService.schedule(
-//                    callable,
-//                    DELAY,
-//                    TimeUnit.SECONDS
-//            );
-//        }
-//    }
-
     @Override
     public void add(String prefix, Path path) {
         String key = prefix + path.getFileName().toString();

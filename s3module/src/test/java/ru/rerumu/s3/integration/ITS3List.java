@@ -11,8 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.s3.factories.S3ClientFactory;
 import ru.rerumu.s3.models.S3Storage;
-import ru.rerumu.s3.impl.ListCallable;
-import ru.rerumu.s3.impl.OnepartUploadCallable;
+import ru.rerumu.s3.repositories.impl.helpers.ListCallable;
+import ru.rerumu.s3.repositories.impl.helpers.OnepartUploadCallable;
 import ru.rerumu.utils.callables.impl.CallableExecutorImpl;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
@@ -112,19 +112,19 @@ public class ITS3List {
                 key+".part1",
                 s3Storage,
                 s3ClientFactory,
-                new CallableExecutorImpl()).call();
+                new CallableExecutorImpl(), s3RequestService).call();
         new OnepartUploadCallable(
                 tempDir.resolve("test2.txt"),
                 key+".part2",
                 s3Storage,
                 s3ClientFactory,
-                new CallableExecutorImpl()).call();
+                new CallableExecutorImpl(), s3RequestService).call();
         new OnepartUploadCallable(
                 tempDir.resolve("test3.txt"),
                 key+".part3",
                 s3Storage,
                 s3ClientFactory,
-                new CallableExecutorImpl()).call();
+                new CallableExecutorImpl(), s3RequestService).call();
 
 
 
@@ -216,19 +216,19 @@ public class ITS3List {
                 key+".part1",
                 s3Storage,
                 s3ClientFactory,
-                new CallableExecutorImpl()).call();
+                new CallableExecutorImpl(), s3RequestService).call();
         new OnepartUploadCallable(
                 tempDir.resolve("test2.txt"),
                 key+".part2",
                 s3Storage,
                 s3ClientFactory,
-                new CallableExecutorImpl()).call();
+                new CallableExecutorImpl(), s3RequestService).call();
         new OnepartUploadCallable(
                 tempDir.resolve("test3.txt"),
                 key+".part3",
                 s3Storage,
                 s3ClientFactory,
-                new CallableExecutorImpl()).call();
+                new CallableExecutorImpl(), s3RequestService).call();
 
 
 
@@ -318,19 +318,19 @@ public class ITS3List {
                 key+".part1",
                 s3Storage,
                 s3ClientFactory,
-                new CallableExecutorImpl()).call();
+                new CallableExecutorImpl(), s3RequestService).call();
         new OnepartUploadCallable(
                 tempDir.resolve("test2.txt"),
                 key+".part2",
                 s3Storage,
                 s3ClientFactory,
-                new CallableExecutorImpl()).call();
+                new CallableExecutorImpl(), s3RequestService).call();
         new OnepartUploadCallable(
                 tempDir.resolve("test3.txt"),
                 key+".part3",
                 s3Storage,
                 s3ClientFactory,
-                new CallableExecutorImpl()).call();
+                new CallableExecutorImpl(), s3RequestService).call();
 
 
 

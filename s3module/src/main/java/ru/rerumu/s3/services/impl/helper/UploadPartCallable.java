@@ -1,15 +1,16 @@
-package ru.rerumu.s3.impl.helper;
+package ru.rerumu.s3.services.impl.helper;
 
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.UploadPartRequest;
+import software.amazon.awssdk.services.s3.model.UploadPartResponse;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 
-public class UploadPartCallable implements Callable<Map<String,String>> {
+public class UploadPartCallable implements Callable<UploadPartResponse> {
     private final String bucketName;
     private final String key;
     private final S3Client s3Client;
@@ -27,20 +28,17 @@ public class UploadPartCallable implements Callable<Map<String,String>> {
     }
 
     @Override
-    public Map<String, String> call() throws Exception {
+    public UploadPartResponse call() throws Exception {
         UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
                 .bucket(bucketName)
                 .key(key)
                 .uploadId(uploadId)
                 .partNumber(partNumber).build();
 
-        String eTag = s3Client.uploadPart(
+        UploadPartResponse response = s3Client.uploadPart(
                 uploadPartRequest, RequestBody.fromBytes(data)
-        ).eTag();
-        Objects.requireNonNull(eTag);
+        );
 
-        Map<String,String> res = new HashMap<>();
-        res.put("eTag",eTag);
-        return res;
+        return response;
     }
 }

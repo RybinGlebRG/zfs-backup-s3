@@ -1,4 +1,4 @@
-package ru.rerumu.s3.impl;
+package ru.rerumu.s3.repositories.impl.helpers;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;

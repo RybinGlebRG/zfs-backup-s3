@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// TODO: Is thread safe?
 public class S3ClientFactoryImpl implements S3ClientFactory {
     private final Map<S3Storage,S3Client> map = new HashMap<>();
 

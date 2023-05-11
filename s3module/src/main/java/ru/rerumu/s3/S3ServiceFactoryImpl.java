@@ -11,7 +11,10 @@ import ru.rerumu.s3.models.S3Storage;
 import ru.rerumu.s3.repositories.S3Repository;
 import ru.rerumu.s3.repositories.impl.S3RepositoryImpl;
 import ru.rerumu.s3.repositories.impl.S3StreamRepository;
+import ru.rerumu.s3.services.S3RequestService;
+import ru.rerumu.s3.services.impl.S3RequestServiceImpl;
 import ru.rerumu.s3.utils.impl.FileManagerImpl;
+import ru.rerumu.utils.callables.impl.CallableExecutorImpl;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -25,8 +28,14 @@ public class S3ServiceFactoryImpl implements S3ServiceFactory {
             long filePartSize,
             Path tempDir
     ) {
+
         S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(List.of(s3Storage));
-        S3CallableFactory s3CallableFactory = new S3CallableFactoryImpl(maxPartSize, s3Storage, s3ClientFactory);
+        S3RequestService s3RequestService = new S3RequestServiceImpl(
+                new CallableExecutorImpl(),
+                s3ClientFactory,
+                s3Storage
+        );
+        S3CallableFactory s3CallableFactory = new S3CallableFactoryImpl(maxPartSize, s3Storage, s3ClientFactory, s3RequestService);
         S3Repository s3Repository = new S3RepositoryImpl(s3CallableFactory);
         S3StreamRepository s3StreamRepository = new S3StreamRepository(
                 s3Repository,

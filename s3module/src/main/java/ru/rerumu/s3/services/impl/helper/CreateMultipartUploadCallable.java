@@ -1,6 +1,5 @@
-package ru.rerumu.s3.impl.helper;
+package ru.rerumu.s3.services.impl.helper;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.CreateMultipartUploadResponse;
@@ -10,7 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 
-public class CreateMultipartUploadCallable implements Callable<Map<String,String>> {
+public class CreateMultipartUploadCallable implements Callable<CreateMultipartUploadResponse> {
     private final String bucketName;
     private final String key;
     private final String storageClass;
@@ -30,19 +29,14 @@ public class CreateMultipartUploadCallable implements Callable<Map<String,String
     }
 
     @Override
-    public Map<String, String> call() throws Exception {
+    public CreateMultipartUploadResponse call() throws Exception {
         CreateMultipartUploadRequest createMultipartUploadRequest = CreateMultipartUploadRequest.builder()
                 .bucket(bucketName)
                 .key(key)
                 .storageClass(storageClass)
                 .build();
         CreateMultipartUploadResponse response = s3Client.createMultipartUpload(createMultipartUploadRequest);
-        Map<String,String> res = new HashMap<>();
-        String uploadId = response.uploadId();
-        Objects.requireNonNull(uploadId);
 
-        res.put("uploadId", response.uploadId());
-
-        return res;
+        return response;
     }
 }

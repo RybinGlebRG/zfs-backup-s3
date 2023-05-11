@@ -5,11 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.s3.exceptions.IncorrectHashException;
 import ru.rerumu.s3.factories.S3ClientFactory;
-import ru.rerumu.s3.impl.OnepartUploadCallable;
+import ru.rerumu.s3.repositories.impl.helpers.OnepartUploadCallable;
 import ru.rerumu.s3.models.S3Storage;
 import ru.rerumu.utils.MD5;
 import ru.rerumu.utils.callables.CallableExecutor;
@@ -18,7 +17,6 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -74,8 +72,8 @@ public class TestOnepartUploadCallable {
                 "key",
                 s3Storage,
                 s3ClientFactory,
-                callableExecutor
-        );
+                callableExecutor,
+                s3RequestService);
 
         callable.call();
     }
@@ -111,8 +109,8 @@ public class TestOnepartUploadCallable {
                 "key",
                 s3Storage,
                 s3ClientFactory,
-                callableExecutor
-        );
+                callableExecutor,
+                s3RequestService);
 
         Assertions.assertThrows(IncorrectHashException.class, callable::call);
     }
