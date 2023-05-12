@@ -1,4 +1,4 @@
-package ru.rerumu.s3.repositories.impl.helpers;
+package ru.rerumu.s3.impl.operations;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

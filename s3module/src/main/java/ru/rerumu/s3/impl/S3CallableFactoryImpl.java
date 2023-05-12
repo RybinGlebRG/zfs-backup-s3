@@ -1,13 +1,13 @@
-package ru.rerumu.s3.factories.impl;
+package ru.rerumu.s3.impl;
 
 import ru.rerumu.s3.factories.S3ClientFactory;
-import ru.rerumu.s3.repositories.impl.helpers.ListCallable;
-import ru.rerumu.s3.repositories.impl.helpers.MultipartDownloadCallable;
-import ru.rerumu.s3.repositories.impl.helpers.MultipartUploadCallable;
-import ru.rerumu.s3.repositories.impl.helpers.OnepartUploadCallable;
+import ru.rerumu.s3.impl.S3CallableFactory;
+import ru.rerumu.s3.impl.operations.ListCallable;
+import ru.rerumu.s3.impl.operations.MultipartDownloadCallable;
+import ru.rerumu.s3.impl.operations.MultipartUploadCallable;
+import ru.rerumu.s3.impl.operations.OnepartUploadCallable;
 import ru.rerumu.s3.services.S3RequestService;
 import ru.rerumu.s3.models.S3Storage;
-import ru.rerumu.s3.factories.S3CallableFactory;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

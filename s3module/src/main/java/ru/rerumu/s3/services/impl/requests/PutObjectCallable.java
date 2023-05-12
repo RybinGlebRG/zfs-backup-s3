@@ -1,4 +1,4 @@
-package ru.rerumu.s3.services.impl.helper;
+package ru.rerumu.s3.services.impl.requests;
 
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;

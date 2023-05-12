@@ -1,16 +1,13 @@
 package ru.rerumu.s3;
 
-import ru.rerumu.s3.factories.S3CallableFactory;
+import ru.rerumu.s3.impl.S3CallableFactory;
 import ru.rerumu.s3.factories.S3ClientFactory;
-import ru.rerumu.s3.factories.impl.S3CallableFactoryImpl;
+import ru.rerumu.s3.impl.S3CallableFactoryImpl;
 import ru.rerumu.s3.factories.impl.S3ClientFactoryImpl;
 import ru.rerumu.s3.factories.impl.ZFSFileReaderFactoryImpl;
 import ru.rerumu.s3.factories.impl.ZFSFileWriterFactoryImpl;
 import ru.rerumu.s3.impl.S3ServiceImpl;
 import ru.rerumu.s3.models.S3Storage;
-import ru.rerumu.s3.repositories.S3Repository;
-import ru.rerumu.s3.repositories.impl.S3RepositoryImpl;
-import ru.rerumu.s3.repositories.impl.S3StreamRepository;
 import ru.rerumu.s3.services.S3RequestService;
 import ru.rerumu.s3.services.impl.S3RequestServiceImpl;
 import ru.rerumu.s3.utils.impl.FileManagerImpl;
@@ -36,16 +33,16 @@ public class S3ServiceFactoryImpl implements S3ServiceFactory {
                 s3Storage
         );
         S3CallableFactory s3CallableFactory = new S3CallableFactoryImpl(maxPartSize, s3Storage, s3ClientFactory, s3RequestService);
-        S3Repository s3Repository = new S3RepositoryImpl(s3CallableFactory);
-        S3StreamRepository s3StreamRepository = new S3StreamRepository(
-                s3Repository,
-                new ZFSFileWriterFactoryImpl(filePartSize),
-                new ZFSFileReaderFactoryImpl(),
+//        S3Repository s3Repository = new S3RepositoryImpl(s3CallableFactory);
+
+        return new S3ServiceImpl(
                 new FileManagerImpl(
                         UUID.randomUUID().toString(),
                         tempDir
-                )
+                ),
+                new ZFSFileWriterFactoryImpl(filePartSize),
+                new ZFSFileReaderFactoryImpl(),
+                s3CallableFactory
         );
-        return new S3ServiceImpl(s3Repository, s3StreamRepository);
     }
 }

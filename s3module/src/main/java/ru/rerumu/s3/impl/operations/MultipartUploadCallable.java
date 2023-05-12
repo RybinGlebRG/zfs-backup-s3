@@ -1,4 +1,4 @@
-package ru.rerumu.s3.repositories.impl.helpers;
+package ru.rerumu.s3.impl.operations;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.checkerframework.checker.nullness.qual.NonNull;

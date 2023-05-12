@@ -1,5 +1,6 @@
-package ru.rerumu;
+package ru.rerumu.s3.operations;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,8 +9,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.s3.exceptions.IncorrectHashException;
 import ru.rerumu.s3.factories.S3ClientFactory;
-import ru.rerumu.s3.repositories.impl.helpers.OnepartUploadCallable;
+import ru.rerumu.s3.impl.operations.OnepartUploadCallable;
 import ru.rerumu.s3.models.S3Storage;
+import ru.rerumu.s3.services.S3RequestService;
 import ru.rerumu.utils.MD5;
 import ru.rerumu.utils.callables.CallableExecutor;
 import software.amazon.awssdk.regions.Region;
@@ -25,6 +27,8 @@ import java.util.Random;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,21 +42,18 @@ public class TestOnepartUploadCallable {
     S3Client s3Client;
     @Mock
     PutObjectResponse putObjectResponse;
+    @Mock
+    S3RequestService s3RequestService;
 
     @Test
     void shouldCall(@TempDir Path tempDir) throws Exception {
         Path target = tempDir.resolve(UUID.randomUUID().toString());
-        S3Storage s3Storage = new S3Storage(
-                Region.EU_NORTH_1,
-                "bucket",
-                "1111",
-                "2222",
-                Paths.get("prefix"),
-                new URI("https://endpoint.example"),
-                "standard"
-        );
+
         byte[] data = new byte[1000];
         new Random().nextBytes(data);
+
+        byte[] expected = ArrayUtils.clone(data);
+
         Files.write(
                 target,
                 data,
@@ -61,37 +62,30 @@ public class TestOnepartUploadCallable {
                 StandardOpenOption.WRITE
         );
 
-        when(s3ClientFactory.getS3Client(any())).thenReturn(s3Client);
-        when(callableExecutor.callWithRetry(any())).thenReturn(putObjectResponse);
+        when(s3RequestService.putObject(anyString(),any())).thenReturn(putObjectResponse);
         when(putObjectResponse.eTag()).thenReturn(
                 String.format("\"%s\"",MD5.getMD5Hex(data))
         );
 
         OnepartUploadCallable callable = new OnepartUploadCallable(
                 target,
-                "key",
-                s3Storage,
-                s3ClientFactory,
-                callableExecutor,
+                "test-key",
                 s3RequestService);
-
         callable.call();
+
+        verify(s3RequestService).putObject("test-key",expected);
+
     }
 
     @Test
     void shouldThrowException(@TempDir Path tempDir) throws Exception {
         Path target = tempDir.resolve(UUID.randomUUID().toString());
-        S3Storage s3Storage = new S3Storage(
-                Region.EU_NORTH_1,
-                "bucket",
-                "1111",
-                "2222",
-                Paths.get("prefix"),
-                new URI("https://endpoint.example"),
-                "standard"
-        );
+
         byte[] data = new byte[1000];
         new Random().nextBytes(data);
+
+        byte[] expected = ArrayUtils.clone(data);
+
         Files.write(
                 target,
                 data,
@@ -100,18 +94,15 @@ public class TestOnepartUploadCallable {
                 StandardOpenOption.WRITE
         );
 
-        when(s3ClientFactory.getS3Client(any())).thenReturn(s3Client);
-        when(callableExecutor.callWithRetry(any())).thenReturn(putObjectResponse);
+        when(s3RequestService.putObject(anyString(),any())).thenReturn(putObjectResponse);
         when(putObjectResponse.eTag()).thenReturn("Wrong hash");
 
         OnepartUploadCallable callable = new OnepartUploadCallable(
                 target,
-                "key",
-                s3Storage,
-                s3ClientFactory,
-                callableExecutor,
+                "test-key",
                 s3RequestService);
 
         Assertions.assertThrows(IncorrectHashException.class, callable::call);
+        verify(s3RequestService).putObject("test-key",expected);
     }
 }

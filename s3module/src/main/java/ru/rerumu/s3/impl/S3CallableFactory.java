@@ -1,4 +1,4 @@
-package ru.rerumu.s3.factories;
+package ru.rerumu.s3.impl;
 
 import java.nio.file.Path;
 import java.util.List;

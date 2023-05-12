@@ -1,4 +1,4 @@
-package ru.rerumu.s3.repositories.impl.helpers;
+package ru.rerumu.s3.impl.operations;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -25,7 +25,6 @@ import java.util.concurrent.Callable;
 import static ru.rerumu.utils.MD5.getMD5Bytes;
 import static ru.rerumu.utils.MD5.getMD5Hex;
 
-// TODO: Add multiple attempts?
 public class MultipartDownloadCallable implements Callable<Void> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 

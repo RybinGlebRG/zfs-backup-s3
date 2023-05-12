@@ -4,20 +4,18 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.s3.factories.S3ClientFactory;
-import ru.rerumu.s3.services.impl.helper.PutObjectCallable;
-import ru.rerumu.s3.services.impl.helper.ListObjectCallable;
-import ru.rerumu.s3.services.impl.helper.CompleteMultipartUploadCallable;
-import ru.rerumu.s3.services.impl.helper.AbortMultipartUploadCallable;
-import ru.rerumu.s3.services.impl.helper.CreateMultipartUploadCallable;
+import ru.rerumu.s3.services.impl.requests.PutObjectCallable;
+import ru.rerumu.s3.services.impl.requests.ListObjectCallable;
+import ru.rerumu.s3.services.impl.requests.CompleteMultipartUploadCallable;
+import ru.rerumu.s3.services.impl.requests.AbortMultipartUploadCallable;
+import ru.rerumu.s3.services.impl.requests.CreateMultipartUploadCallable;
 import ru.rerumu.s3.models.S3Storage;
 import ru.rerumu.s3.services.S3RequestService;
-import ru.rerumu.s3.services.impl.helper.UploadPartCallable;
+import ru.rerumu.s3.services.impl.requests.UploadPartCallable;
 import ru.rerumu.utils.callables.CallableExecutor;
 import software.amazon.awssdk.services.s3.model.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 public class S3RequestServiceImpl implements S3RequestService {
