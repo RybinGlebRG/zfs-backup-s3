@@ -4,17 +4,14 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.s3.factories.S3ClientFactory;
-import ru.rerumu.s3.services.impl.requests.PutObjectCallable;
-import ru.rerumu.s3.services.impl.requests.ListObjectCallable;
-import ru.rerumu.s3.services.impl.requests.CompleteMultipartUploadCallable;
-import ru.rerumu.s3.services.impl.requests.AbortMultipartUploadCallable;
-import ru.rerumu.s3.services.impl.requests.CreateMultipartUploadCallable;
+import ru.rerumu.s3.services.impl.requests.*;
 import ru.rerumu.s3.models.S3Storage;
 import ru.rerumu.s3.services.S3RequestService;
-import ru.rerumu.s3.services.impl.requests.UploadPartCallable;
+import ru.rerumu.s3.services.impl.requests.models.UploadPartResult;
 import ru.rerumu.utils.callables.CallableExecutor;
 import software.amazon.awssdk.services.s3.model.*;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 
@@ -33,8 +30,8 @@ public class S3RequestServiceImpl implements S3RequestService {
 
     // TODO: Max part number?
     @Override
-    public UploadPartResponse uploadPart(String key, String uploadId, Integer partNumber, byte[] data) {
-        UploadPartResponse response = callableExecutor.callWithRetry(()->
+    public UploadPartResult uploadPart(String key, String uploadId, Integer partNumber, byte[] data) {
+        UploadPartResult partResult = callableExecutor.callWithRetry(()->
                 new UploadPartCallable(
                         s3Storage.getBucketName(),
                         key,
@@ -44,12 +41,12 @@ public class S3RequestServiceImpl implements S3RequestService {
                         data
                 )
         );
-        return response;
+        return partResult;
     }
 
     @Override
-    public CreateMultipartUploadResponse createMultipartUpload(String key) {
-        CreateMultipartUploadResponse response = callableExecutor.callWithRetry(() ->
+    public String createMultipartUpload(String key) {
+        String uploadId = callableExecutor.callWithRetry(() ->
                 new CreateMultipartUploadCallable(
                         s3Storage.getBucketName(),
                         key,
@@ -57,13 +54,11 @@ public class S3RequestServiceImpl implements S3RequestService {
                         s3ClientFactory.getS3Client(s3Storage)
                 )
         );
-        return response;
+        return uploadId;
     }
 
     @Override
-    public AbortMultipartUploadResponse abortMultipartUpload(@NonNull String key, @NonNull String uploadId) {
-        Objects.requireNonNull(key);
-        Objects.requireNonNull(uploadId);
+    public void abortMultipartUpload(String key, String uploadId) {
         logger.info(String.format("Aborting upload by id '%s'", uploadId));
 
         AbortMultipartUploadResponse response = callableExecutor.callWithRetry(() ->
@@ -76,21 +71,20 @@ public class S3RequestServiceImpl implements S3RequestService {
         );
 
         logger.info(String.format("Upload '%s' aborted", uploadId));
-        return response;
     }
 
     @Override
-    public CompleteMultipartUploadResponse completeMultipartUpload(List<CompletedPart> completedPartList, String key, String uploadId) {
-        CompleteMultipartUploadResponse response = callableExecutor.callWithRetry(() ->
+    public void completeMultipartUpload(List<CompletedPart> completedPartList, String key, String uploadId, List<byte[]> md5List) {
+        callableExecutor.callWithRetry(() ->
                 new CompleteMultipartUploadCallable(
                         completedPartList,
                         s3Storage.getBucketName(),
                         key,
                         uploadId,
-                        s3ClientFactory.getS3Client(s3Storage)
+                        s3ClientFactory.getS3Client(s3Storage),
+                        md5List
                 )
         );
-        return response;
     }
 
     @Override
@@ -106,14 +100,13 @@ public class S3RequestServiceImpl implements S3RequestService {
     }
 
     @Override
-    public PutObjectResponse putObject(String key, byte[] data) {
-        PutObjectResponse putObjectResponse = callableExecutor.callWithRetry(() -> new PutObjectCallable(
+    public void putObject(Path sourcePath, String targetKey) {
+        callableExecutor.callWithRetry(()-> new PutObjectCallable(
                 s3Storage.getBucketName(),
-                key,
+                targetKey,
                 s3Storage.getStorageClass(),
                 s3ClientFactory.getS3Client(s3Storage),
-                data
+                sourcePath
         ));
-        return putObjectResponse;
     }
 }

@@ -26,22 +26,11 @@ import java.nio.file.StandardOpenOption;
 import java.util.Random;
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class TestOnepartUploadCallable {
 
-    @Mock
-    S3ClientFactory s3ClientFactory;
-    @Mock
-    CallableExecutor callableExecutor;
-    @Mock
-    S3Client s3Client;
-    @Mock
-    PutObjectResponse putObjectResponse;
     @Mock
     S3RequestService s3RequestService;
 
@@ -49,60 +38,13 @@ public class TestOnepartUploadCallable {
     void shouldCall(@TempDir Path tempDir) throws Exception {
         Path target = tempDir.resolve(UUID.randomUUID().toString());
 
-        byte[] data = new byte[1000];
-        new Random().nextBytes(data);
-
-        byte[] expected = ArrayUtils.clone(data);
-
-        Files.write(
-                target,
-                data,
-                StandardOpenOption.CREATE,
-                StandardOpenOption.APPEND,
-                StandardOpenOption.WRITE
-        );
-
-        when(s3RequestService.putObject(anyString(),any())).thenReturn(putObjectResponse);
-        when(putObjectResponse.eTag()).thenReturn(
-                String.format("\"%s\"",MD5.getMD5Hex(data))
-        );
-
         OnepartUploadCallable callable = new OnepartUploadCallable(
                 target,
                 "test-key",
                 s3RequestService);
         callable.call();
 
-        verify(s3RequestService).putObject("test-key",expected);
+        verify(s3RequestService).putObject(target,"test-key");
 
-    }
-
-    @Test
-    void shouldThrowException(@TempDir Path tempDir) throws Exception {
-        Path target = tempDir.resolve(UUID.randomUUID().toString());
-
-        byte[] data = new byte[1000];
-        new Random().nextBytes(data);
-
-        byte[] expected = ArrayUtils.clone(data);
-
-        Files.write(
-                target,
-                data,
-                StandardOpenOption.CREATE,
-                StandardOpenOption.APPEND,
-                StandardOpenOption.WRITE
-        );
-
-        when(s3RequestService.putObject(anyString(),any())).thenReturn(putObjectResponse);
-        when(putObjectResponse.eTag()).thenReturn("Wrong hash");
-
-        OnepartUploadCallable callable = new OnepartUploadCallable(
-                target,
-                "test-key",
-                s3RequestService);
-
-        Assertions.assertThrows(IncorrectHashException.class, callable::call);
-        verify(s3RequestService).putObject("test-key",expected);
     }
 }

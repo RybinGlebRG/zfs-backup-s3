@@ -33,20 +33,7 @@ public class OnepartUploadCallable implements Callable<Void> {
 
     @Override
     public Void call() throws IOException, NoSuchAlgorithmException, IncorrectHashException {
-
-        try (BufferedInputStream bufferedInputStream = new BufferedInputStream(Files.newInputStream(path))) {
-
-            byte[] buf = bufferedInputStream.readAllBytes();
-            String md5 = MD5.getMD5Hex(buf);
-
-            PutObjectResponse putObjectResponse = s3RequestService.putObject(key,buf);
-
-            String eTag = putObjectResponse.eTag();
-            logger.info(String.format("ETag='%s'", eTag));
-            if (!(eTag.equals('"' + md5 + '"'))) {
-                throw new IncorrectHashException();
-            }
-        }
+        s3RequestService.putObject(path,key);
         return null;
     }
 }

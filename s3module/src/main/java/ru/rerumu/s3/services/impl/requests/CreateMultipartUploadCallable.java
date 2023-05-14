@@ -4,12 +4,10 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.CreateMultipartUploadResponse;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 
-public class CreateMultipartUploadCallable implements Callable<CreateMultipartUploadResponse> {
+public class CreateMultipartUploadCallable implements Callable<String> {
     private final String bucketName;
     private final String key;
     private final String storageClass;
@@ -29,7 +27,7 @@ public class CreateMultipartUploadCallable implements Callable<CreateMultipartUp
     }
 
     @Override
-    public CreateMultipartUploadResponse call() throws Exception {
+    public String call() throws Exception {
         CreateMultipartUploadRequest createMultipartUploadRequest = CreateMultipartUploadRequest.builder()
                 .bucket(bucketName)
                 .key(key)
@@ -37,6 +35,9 @@ public class CreateMultipartUploadCallable implements Callable<CreateMultipartUp
                 .build();
         CreateMultipartUploadResponse response = s3Client.createMultipartUpload(createMultipartUploadRequest);
 
-        return response;
+        String uploadId = response.uploadId();
+        Objects.requireNonNull(uploadId);
+
+        return uploadId;
     }
 }

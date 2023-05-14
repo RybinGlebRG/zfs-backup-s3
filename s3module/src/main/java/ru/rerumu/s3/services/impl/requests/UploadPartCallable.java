@@ -1,16 +1,22 @@
 package ru.rerumu.s3.services.impl.requests;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.rerumu.s3.exceptions.IncorrectHashException;
+import ru.rerumu.s3.services.impl.requests.models.UploadPartResult;
+import ru.rerumu.utils.MD5;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.CompletedPart;
 import software.amazon.awssdk.services.s3.model.UploadPartRequest;
 import software.amazon.awssdk.services.s3.model.UploadPartResponse;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 
-public class UploadPartCallable implements Callable<UploadPartResponse> {
+public class UploadPartCallable implements Callable<UploadPartResult> {
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private final String bucketName;
     private final String key;
     private final S3Client s3Client;
@@ -19,6 +25,8 @@ public class UploadPartCallable implements Callable<UploadPartResponse> {
     private final byte[] data;
 
     public UploadPartCallable(String bucketName, String key, S3Client s3Client, String uploadId, Integer partNumber, byte[] data) {
+        Objects.requireNonNull(data);
+        Objects.requireNonNull(partNumber);
         this.bucketName = bucketName;
         this.key = key;
         this.s3Client = s3Client;
@@ -28,7 +36,9 @@ public class UploadPartCallable implements Callable<UploadPartResponse> {
     }
 
     @Override
-    public UploadPartResponse call() throws Exception {
+    public UploadPartResult call() throws Exception {
+        String md5 = MD5.getMD5Hex(data);
+
         UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
                 .bucket(bucketName)
                 .key(key)
@@ -39,6 +49,19 @@ public class UploadPartCallable implements Callable<UploadPartResponse> {
                 uploadPartRequest, RequestBody.fromBytes(data)
         );
 
-        return response;
+        String eTag = response.eTag();
+
+        logger.info(String.format("ETag='%s'", eTag));
+        if (!(eTag.equals('"' + md5 + '"'))) {
+            throw new IncorrectHashException(String.format("Got '%s', but expected '%s'", eTag, '"' + md5 + '"'));
+        }
+
+        byte[] md5bytes = MD5.getMD5Bytes(data);
+        CompletedPart completedPart = CompletedPart.builder()
+                .partNumber(partNumber)
+                .eTag(eTag)
+                .build();
+
+        return new UploadPartResult(md5bytes,completedPart);
     }
 }

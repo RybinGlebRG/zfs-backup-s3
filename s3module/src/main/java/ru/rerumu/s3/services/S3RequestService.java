@@ -1,34 +1,39 @@
 package ru.rerumu.s3.services;
 
+import ru.rerumu.s3.services.impl.requests.models.UploadPartResult;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
 public interface S3RequestService {
 
-    UploadPartResponse uploadPart(
+    UploadPartResult uploadPart(
             String key, String uploadId, Integer partNumber, byte[] data
     );
 
-    CreateMultipartUploadResponse createMultipartUpload(
+//    CreateMultipartUploadResponse createMultipartUpload(
+//            String key
+//    );
+
+    String createMultipartUpload(
             String key
     );
 
-    AbortMultipartUploadResponse abortMultipartUpload(
+    void abortMultipartUpload(
             String key, String uploadId
     );
 
-    CompleteMultipartUploadResponse completeMultipartUpload(
-            List<CompletedPart> completedPartList, String key, String uploadId
+    void completeMultipartUpload(
+            List<CompletedPart> completedPartList, String key, String uploadId,List<byte[]> md5List
     );
 
     ListObjectsResponse listObjects(
             String key
     );
 
-    PutObjectResponse putObject(
-            String key, byte[] data
-    );
+
+    void putObject(Path sourcePath, String targetKey);
 }
