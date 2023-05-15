@@ -1,12 +1,11 @@
 package ru.rerumu.s3.services;
 
+import ru.rerumu.s3.services.impl.requests.models.ListObject;
 import ru.rerumu.s3.services.impl.requests.models.UploadPartResult;
-import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 
 public interface S3RequestService {
 
@@ -30,10 +29,14 @@ public interface S3RequestService {
             List<CompletedPart> completedPartList, String key, String uploadId,List<byte[]> md5List
     );
 
-    ListObjectsResponse listObjects(
+    List<ListObject> listObjects(
             String key
     );
 
+    ListObject getMetadata(String key);
+
 
     void putObject(Path sourcePath, String targetKey);
+
+    byte[] getObjectRange(String key, Long start, Long finish, Path targetPath);
 }

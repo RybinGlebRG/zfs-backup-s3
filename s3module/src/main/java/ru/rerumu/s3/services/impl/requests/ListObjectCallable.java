@@ -12,20 +12,28 @@ public class ListObjectCallable implements Callable<ListObjectsResponse> {
     private final String bucketName;
     private final String key;
     private final S3Client s3Client;
+    private final String marker;
 
-    public ListObjectCallable(String bucketName, String key, S3Client s3Client) {
+    public ListObjectCallable(String bucketName, String key, S3Client s3Client, String marker) {
         this.bucketName = bucketName;
         this.key = key;
         this.s3Client = s3Client;
+        this.marker = marker;
     }
 
     @Override
     public ListObjectsResponse call() throws Exception {
-        ListObjectsRequest listObjects = ListObjectsRequest.builder()
+        ListObjectsRequest.Builder builder = ListObjectsRequest.builder()
                 .bucket(bucketName)
-                .prefix(key)
-                .build();
-        ListObjectsResponse res = s3Client.listObjects(listObjects);
+                .prefix(key);
+
+        if (marker != null) {
+            builder
+                    .delimiter("/")
+                    .marker(marker);
+        }
+
+        ListObjectsResponse res = s3Client.listObjects(builder.build());
         return res;
     }
 }

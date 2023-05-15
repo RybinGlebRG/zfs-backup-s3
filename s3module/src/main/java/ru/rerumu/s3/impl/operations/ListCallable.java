@@ -3,6 +3,7 @@ package ru.rerumu.s3.impl.operations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.s3.services.S3RequestService;
+import ru.rerumu.s3.services.impl.requests.models.ListObject;
 import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
@@ -26,12 +27,10 @@ public class ListCallable implements Callable<List<String>> {
     public List<String> call() {
         logger.info(String.format("Searching for files with prefix '%s'",key));
 
-        // TODO: pagination?
-        ListObjectsResponse res  = s3RequestService.listObjects(key);
-        List<S3Object> s3Objects = res.contents();
+        List<ListObject> res  = s3RequestService.listObjects(key);
 
-        List<String> keys = s3Objects.stream()
-                .map(S3Object::key)
+        List<String> keys = res.stream()
+                .map(ListObject::key)
                 .collect(Collectors.toCollection(ArrayList::new));
 
         logger.info(String.format("Found on S3:\n'%s'", keys));
