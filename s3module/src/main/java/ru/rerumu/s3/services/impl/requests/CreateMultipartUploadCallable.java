@@ -1,5 +1,7 @@
 package ru.rerumu.s3.services.impl.requests;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+import ru.rerumu.utils.ThreadSafe;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.CreateMultipartUploadResponse;
@@ -7,7 +9,8 @@ import software.amazon.awssdk.services.s3.model.CreateMultipartUploadResponse;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 
-public class CreateMultipartUploadCallable implements Callable<String> {
+@ThreadSafe
+public final class CreateMultipartUploadCallable implements Callable<String> {
     private final String bucketName;
     private final String key;
     private final String storageClass;

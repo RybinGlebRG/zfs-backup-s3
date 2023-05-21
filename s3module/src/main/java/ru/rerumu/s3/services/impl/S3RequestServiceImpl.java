@@ -100,7 +100,7 @@ public class S3RequestServiceImpl implements S3RequestService {
         );
 
         List<ListObject> result = response.contents().stream()
-                .map(item->new ListObject(item.key(), StringUtils.strip(item.eTag(),"\""), item.size()))
+                .map(item->new ListObject(item.key(), item.eTag(), item.size()))
                 .collect(Collectors.toCollection(ArrayList::new));
 
         while (response.isTruncated()){

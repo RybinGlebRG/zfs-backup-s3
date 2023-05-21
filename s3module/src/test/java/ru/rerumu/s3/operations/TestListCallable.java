@@ -30,9 +30,9 @@ public class TestListCallable {
     @Test
     void shouldList()throws Exception{
         List<ListObject> listObjects = new ArrayList<>();
-        listObjects.add(new ListObject("test1","111",1L));
-        listObjects.add(new ListObject("test2","222",2L));
-        listObjects.add(new ListObject("test3","333",3L));
+        listObjects.add(new ListObject("test1","\"111\"",1L));
+        listObjects.add(new ListObject("test2","\"222\"",2L));
+        listObjects.add(new ListObject("test3","\"333\"",3L));
 
         when(s3RequestService.listObjects(anyString())).thenReturn(listObjects);
 
