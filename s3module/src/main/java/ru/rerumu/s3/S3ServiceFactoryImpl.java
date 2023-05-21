@@ -10,6 +10,7 @@ import ru.rerumu.s3.impl.S3ServiceImpl;
 import ru.rerumu.s3.models.S3Storage;
 import ru.rerumu.s3.services.S3RequestService;
 import ru.rerumu.s3.services.impl.S3RequestServiceImpl;
+import ru.rerumu.s3.services.impl.requests.CallableSupplierFactory;
 import ru.rerumu.s3.utils.impl.FileManagerImpl;
 import ru.rerumu.utils.callables.impl.CallableExecutorImpl;
 
@@ -30,8 +31,12 @@ public class S3ServiceFactoryImpl implements S3ServiceFactory {
         S3RequestService s3RequestService = new S3RequestServiceImpl(
                 new CallableExecutorImpl(),
                 s3ClientFactory,
-                s3Storage
-        );
+                s3Storage,
+                // TODO: Thread safe?
+                new CallableSupplierFactory(
+                        s3ClientFactory,
+                        s3Storage
+                ));
         S3CallableFactory s3CallableFactory = new S3CallableFactoryImpl(maxPartSize, s3Storage, s3ClientFactory, s3RequestService);
 //        S3Repository s3Repository = new S3RepositoryImpl(s3CallableFactory);
 

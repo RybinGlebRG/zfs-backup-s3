@@ -38,5 +38,5 @@ public interface S3RequestService {
 
     void putObject(Path sourcePath, String targetKey);
 
-    byte[] getObjectRange(String key, Long start, Long finish, Path targetPath);
+    byte[] getObjectRange(String key,Long startInclusive, Long endExclusive, Path targetPath);
 }

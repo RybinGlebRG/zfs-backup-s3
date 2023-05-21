@@ -1,34 +1,9 @@
 package ru.rerumu.s3.integration;
 
-import ch.qos.logback.classic.Level;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.rerumu.s3.factories.S3ClientFactory;
-import ru.rerumu.s3.models.S3Storage;
-import ru.rerumu.s3.impl.operations.ListCallable;
-import ru.rerumu.s3.impl.operations.OnepartUploadCallable;
-import ru.rerumu.utils.callables.impl.CallableExecutorImpl;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.S3Client;
-
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 
 // TODO: rewrite

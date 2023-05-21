@@ -7,12 +7,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.rerumu.s3.impl.operations.MultipartUploadCallable;
+import ru.rerumu.s3.impl.complex_operations.MultipartUploadCallable;
 import ru.rerumu.s3.services.S3RequestService;
 import ru.rerumu.s3.services.impl.requests.models.UploadPartResult;
 import software.amazon.awssdk.services.s3.model.CompletedPart;
-import software.amazon.awssdk.services.s3.model.CreateMultipartUploadResponse;
-import software.amazon.awssdk.services.s3.model.UploadPartResponse;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,12 +29,6 @@ public class TestMultipartUploadCallable {
 
     @Mock
     S3RequestService s3RequestService;
-
-    @Mock
-    CreateMultipartUploadResponse createMultipartUploadResponse;
-
-    @Mock
-    UploadPartResponse uploadPartResponse;
 
     @Test
     void shouldUpload(@TempDir Path tempDir) throws Exception {
@@ -62,7 +54,7 @@ public class TestMultipartUploadCallable {
         );
 
 
-        when(s3RequestService.createMultipartUpload(anyString())).thenReturn(uploadId);
+        when(s3RequestService.createMultipartUpload("test-key")).thenReturn(uploadId);
 
         when(s3RequestService.uploadPart(eq("test-key"), eq("12345"), eq(1), any()))
                 .thenReturn(new UploadPartResult(md5_1, completedPart1));
@@ -109,7 +101,7 @@ public class TestMultipartUploadCallable {
         );
 
 
-        when(s3RequestService.createMultipartUpload(anyString())).thenReturn(uploadId);
+        when(s3RequestService.createMultipartUpload("test-key")).thenReturn(uploadId);
 
         when(s3RequestService.uploadPart(eq("test-key"), eq("12345"), eq(1), any()))
                 .thenReturn(new UploadPartResult(md5_1, completedPart1));
@@ -128,6 +120,26 @@ public class TestMultipartUploadCallable {
 
 
         verify(s3RequestService).abortMultipartUpload("test-key","12345");
+        verifyNoMoreInteractions(s3RequestService);
+    }
+
+    @Test
+    void shouldNotAbort(@TempDir Path tempDir) throws Exception{
+        Path target = tempDir.resolve(UUID.randomUUID().toString());
+        Files.createFile(target);
+
+        when(s3RequestService.createMultipartUpload("test-key")).thenThrow(RuntimeException.class);
+
+
+        Callable<Void> callable = new MultipartUploadCallable(
+                target,
+                "test-key",
+                700,
+                s3RequestService
+        );
+
+        Assertions.assertThrows(RuntimeException.class, callable::call);
+
         verifyNoMoreInteractions(s3RequestService);
     }
 }

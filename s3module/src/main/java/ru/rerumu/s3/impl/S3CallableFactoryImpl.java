@@ -1,10 +1,10 @@
 package ru.rerumu.s3.impl;
 
 import ru.rerumu.s3.factories.S3ClientFactory;
-import ru.rerumu.s3.impl.operations.ListCallable;
-import ru.rerumu.s3.impl.operations.MultipartDownloadCallable;
-import ru.rerumu.s3.impl.operations.MultipartUploadCallable;
-import ru.rerumu.s3.impl.operations.OnepartUploadCallable;
+import ru.rerumu.s3.impl.complex_operations.ListCallable;
+import ru.rerumu.s3.impl.complex_operations.MultipartDownloadCallable;
+import ru.rerumu.s3.impl.complex_operations.MultipartUploadCallable;
+import ru.rerumu.s3.impl.complex_operations.OnepartUploadCallable;
 import ru.rerumu.s3.services.S3RequestService;
 import ru.rerumu.s3.models.S3Storage;
 
@@ -47,7 +47,7 @@ public class S3CallableFactoryImpl implements S3CallableFactory {
 
     @Override
     public Callable<Void> getDownloadCallable(String key, Path path) {
-        return new MultipartDownloadCallable(path, key, s3Storage, s3ClientFactory, maxPartSize, s3RequestService);
+        return new MultipartDownloadCallable(path, key,  maxPartSize, s3RequestService);
     }
 
     @Override

@@ -1,11 +1,9 @@
-package ru.rerumu.s3.impl.operations;
+package ru.rerumu.s3.impl.complex_operations;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.s3.services.S3RequestService;
 import ru.rerumu.s3.services.impl.requests.models.ListObject;
-import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
-import software.amazon.awssdk.services.s3.model.S3Object;
 
 import java.util.ArrayList;
 import java.util.List;

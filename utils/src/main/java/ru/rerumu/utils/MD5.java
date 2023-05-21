@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+// TODO: Thread safety?
 public class MD5 {
 
     private static final Logger logger = LoggerFactory.getLogger(MD5.class);

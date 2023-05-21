@@ -1,6 +1,6 @@
 package ru.rerumu.s3.services.impl;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.s3.factories.S3ClientFactory;
@@ -25,10 +25,13 @@ public class S3RequestServiceImpl implements S3RequestService {
     private final S3ClientFactory s3ClientFactory;
     private final S3Storage s3Storage;
 
-    public S3RequestServiceImpl(CallableExecutor callableExecutor, S3ClientFactory s3ClientFactory, S3Storage s3Storage) {
+    private final CallableSupplierFactory callableSupplierFactory;
+
+    public S3RequestServiceImpl(CallableExecutor callableExecutor, S3ClientFactory s3ClientFactory, S3Storage s3Storage, CallableSupplierFactory callableSupplierFactory) {
         this.callableExecutor = callableExecutor;
         this.s3ClientFactory = s3ClientFactory;
         this.s3Storage = s3Storage;
+        this.callableSupplierFactory = callableSupplierFactory;
     }
 
     // TODO: Max part number?
@@ -49,13 +52,8 @@ public class S3RequestServiceImpl implements S3RequestService {
 
     @Override
     public String createMultipartUpload(String key) {
-        String uploadId = callableExecutor.callWithRetry(() ->
-                new CreateMultipartUploadCallable(
-                        s3Storage.getBucketName(),
-                        key,
-                        s3Storage.getStorageClass(),
-                        s3ClientFactory.getS3Client(s3Storage)
-                )
+        String uploadId = callableExecutor.callWithRetry(
+                callableSupplierFactory.getCreateMultipartUploadSupplier(key)
         );
         return uploadId;
     }
@@ -102,7 +100,7 @@ public class S3RequestServiceImpl implements S3RequestService {
         );
 
         List<ListObject> result = response.contents().stream()
-                .map(item->new ListObject(item.key(), item.eTag(), item.size()))
+                .map(item->new ListObject(item.key(), StringUtils.strip(item.eTag(),"\""), item.size()))
                 .collect(Collectors.toCollection(ArrayList::new));
 
         while (response.isTruncated()){
@@ -150,12 +148,12 @@ public class S3RequestServiceImpl implements S3RequestService {
     }
 
     @Override
-    public byte[] getObjectRange(String key, Long start, Long finish, Path targetPath) {
+    public byte[] getObjectRange(String key, Long startInclusive, Long endExclusive, Path targetPath) {
         byte[] md5 = callableExecutor.callWithRetry(()->new GetObjectRangedCallable(
                 key,
                 s3Storage.getBucketName(),
-                start,
-                finish,
+                startInclusive,
+                endExclusive,
                 s3ClientFactory.getS3Client(s3Storage),
                 targetPath
         ));

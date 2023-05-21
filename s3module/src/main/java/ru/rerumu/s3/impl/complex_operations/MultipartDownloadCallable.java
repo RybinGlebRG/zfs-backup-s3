@@ -1,11 +1,9 @@
-package ru.rerumu.s3.impl.operations;
+package ru.rerumu.s3.impl.complex_operations;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.s3.exceptions.IncorrectHashException;
-import ru.rerumu.s3.factories.S3ClientFactory;
-import ru.rerumu.s3.models.S3Storage;
 import ru.rerumu.s3.services.S3RequestService;
 import ru.rerumu.s3.services.impl.requests.models.Range;
 import ru.rerumu.utils.MD5;
@@ -25,19 +23,14 @@ public class MultipartDownloadCallable implements Callable<Void> {
 
     private final Path path;
     private final String key;
-    private final S3Storage s3Storage;
-    private final S3ClientFactory s3ClientFactory;
-
     private final Long maxPartSize;
 
     private final S3RequestService s3RequestService;
 
 
-    public MultipartDownloadCallable(Path path, String key, S3Storage s3Storage, S3ClientFactory s3ClientFactory, int maxPartSize, S3RequestService s3RequestService) {
+    public MultipartDownloadCallable(Path path, String key, int maxPartSize, S3RequestService s3RequestService) {
         this.path = path;
         this.key = key;
-        this.s3Storage = s3Storage;
-        this.s3ClientFactory = s3ClientFactory;
         this.maxPartSize = Long.valueOf(maxPartSize);
         this.s3RequestService = s3RequestService;
     }
@@ -70,16 +63,16 @@ public class MultipartDownloadCallable implements Callable<Void> {
 
         Range range = new Range(
                 0L,
-                Math.min(maxPartSize, fileSize) - 1
+                Math.min(maxPartSize, fileSize)
         );
 
-        while (range.start()<=fileSize-1) {
+        while (range.start()<fileSize) {
             byte[] md5 = s3RequestService.getObjectRange(key,range.start(),range.end(),path);
             md5List.add(md5);
 
             range = new Range(
-                    range.end()+1,
-                    Math.min(range.start() + maxPartSize, fileSize) - 1
+                    range.end(),
+                    Math.min(range.end() + maxPartSize, fileSize)
             );
         }
 
