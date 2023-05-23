@@ -18,10 +18,10 @@ public final class CreateMultipartUploadCallable implements Callable<String> {
     private final S3Client s3Client;
 
     public CreateMultipartUploadCallable(String bucketName, String key, String storageClass, S3Client s3Client) {
-        Objects.requireNonNull(bucketName);
-        Objects.requireNonNull(key);
-        Objects.requireNonNull(storageClass);
-        Objects.requireNonNull(s3Client);
+        Objects.requireNonNull(bucketName,"Bucket name cannot be null");
+        Objects.requireNonNull(key,"Key cannot be null");
+        Objects.requireNonNull(storageClass,"Storage class cannot be null");
+        Objects.requireNonNull(s3Client,"S3Client cannot be null");
 
         this.bucketName = bucketName;
         this.key = key;

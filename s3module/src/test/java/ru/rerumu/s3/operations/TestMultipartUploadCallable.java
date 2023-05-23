@@ -7,7 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.rerumu.s3.impl.complex_operations.MultipartUploadCallable;
+import ru.rerumu.s3.impl.operations.MultipartUploadCallable;
 import ru.rerumu.s3.services.S3RequestService;
 import ru.rerumu.s3.services.impl.requests.models.UploadPartResult;
 import software.amazon.awssdk.services.s3.model.CompletedPart;
@@ -21,7 +21,6 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)

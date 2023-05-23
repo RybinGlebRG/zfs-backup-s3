@@ -5,7 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.rerumu.s3.impl.complex_operations.OnepartUploadCallable;
+import ru.rerumu.s3.impl.operations.OnepartUploadCallable;
 import ru.rerumu.s3.services.S3RequestService;
 
 import java.nio.file.Path;

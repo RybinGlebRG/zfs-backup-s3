@@ -1,4 +1,4 @@
-package ru.rerumu.s3.impl.complex_operations;
+package ru.rerumu.s3.impl.operations;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;

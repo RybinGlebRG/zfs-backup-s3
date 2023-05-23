@@ -6,10 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.s3.exceptions.IncorrectHashException;
-import ru.rerumu.s3.impl.complex_operations.MultipartDownloadCallable;
+import ru.rerumu.s3.impl.operations.MultipartDownloadCallable;
 import ru.rerumu.s3.services.S3RequestService;
 import ru.rerumu.s3.services.impl.requests.models.ListObject;
 import ru.rerumu.utils.MD5;
@@ -17,13 +16,11 @@ import ru.rerumu.utils.MD5;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.stream.Stream;
 
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 

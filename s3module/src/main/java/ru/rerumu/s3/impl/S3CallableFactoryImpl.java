@@ -1,10 +1,10 @@
 package ru.rerumu.s3.impl;
 
 import ru.rerumu.s3.factories.S3ClientFactory;
-import ru.rerumu.s3.impl.complex_operations.ListCallable;
-import ru.rerumu.s3.impl.complex_operations.MultipartDownloadCallable;
-import ru.rerumu.s3.impl.complex_operations.MultipartUploadCallable;
-import ru.rerumu.s3.impl.complex_operations.OnepartUploadCallable;
+import ru.rerumu.s3.impl.operations.ListCallable;
+import ru.rerumu.s3.impl.operations.MultipartDownloadCallable;
+import ru.rerumu.s3.impl.operations.MultipartUploadCallable;
+import ru.rerumu.s3.impl.operations.OnepartUploadCallable;
 import ru.rerumu.s3.services.S3RequestService;
 import ru.rerumu.s3.models.S3Storage;
 

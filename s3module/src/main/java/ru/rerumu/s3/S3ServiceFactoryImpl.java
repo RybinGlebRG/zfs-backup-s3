@@ -30,8 +30,6 @@ public class S3ServiceFactoryImpl implements S3ServiceFactory {
         S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(List.of(s3Storage));
         S3RequestService s3RequestService = new S3RequestServiceImpl(
                 new CallableExecutorImpl(),
-                s3ClientFactory,
-                s3Storage,
                 // TODO: Thread safe?
                 new CallableSupplierFactory(
                         s3ClientFactory,

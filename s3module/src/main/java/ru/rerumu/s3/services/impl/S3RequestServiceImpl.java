@@ -22,30 +22,18 @@ public class S3RequestServiceImpl implements S3RequestService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final CallableExecutor callableExecutor;
-    private final S3ClientFactory s3ClientFactory;
-    private final S3Storage s3Storage;
-
     private final CallableSupplierFactory callableSupplierFactory;
 
-    public S3RequestServiceImpl(CallableExecutor callableExecutor, S3ClientFactory s3ClientFactory, S3Storage s3Storage, CallableSupplierFactory callableSupplierFactory) {
+    public S3RequestServiceImpl(CallableExecutor callableExecutor,  CallableSupplierFactory callableSupplierFactory) {
         this.callableExecutor = callableExecutor;
-        this.s3ClientFactory = s3ClientFactory;
-        this.s3Storage = s3Storage;
         this.callableSupplierFactory = callableSupplierFactory;
     }
 
     // TODO: Max part number?
     @Override
     public UploadPartResult uploadPart(String key, String uploadId, Integer partNumber, byte[] data) {
-        UploadPartResult partResult = callableExecutor.callWithRetry(()->
-                new UploadPartCallable(
-                        s3Storage.getBucketName(),
-                        key,
-                        s3ClientFactory.getS3Client(s3Storage),
-                        uploadId,
-                        partNumber,
-                        data
-                )
+        UploadPartResult partResult = callableExecutor.callWithRetry(
+                callableSupplierFactory.getUploadPartSupplier(key, uploadId, partNumber, data)
         );
         return partResult;
     }
@@ -62,13 +50,8 @@ public class S3RequestServiceImpl implements S3RequestService {
     public void abortMultipartUpload(String key, String uploadId) {
         logger.info(String.format("Aborting upload by id '%s'", uploadId));
 
-        AbortMultipartUploadResponse response = callableExecutor.callWithRetry(() ->
-                new AbortMultipartUploadCallable(
-                        s3Storage.getBucketName(),
-                        key,
-                        s3ClientFactory.getS3Client(s3Storage),
-                        uploadId
-                )
+        callableExecutor.callWithRetry(
+                callableSupplierFactory.getAbortMultipartUploadSupplier(key, uploadId)
         );
 
         logger.info(String.format("Upload '%s' aborted", uploadId));
@@ -76,27 +59,15 @@ public class S3RequestServiceImpl implements S3RequestService {
 
     @Override
     public void completeMultipartUpload(List<CompletedPart> completedPartList, String key, String uploadId, List<byte[]> md5List) {
-        callableExecutor.callWithRetry(() ->
-                new CompleteMultipartUploadCallable(
-                        completedPartList,
-                        s3Storage.getBucketName(),
-                        key,
-                        uploadId,
-                        s3ClientFactory.getS3Client(s3Storage),
-                        md5List
-                )
+        callableExecutor.callWithRetry(
+                callableSupplierFactory.getCompleteMultipartUploadSupplier(completedPartList, key, uploadId, md5List)
         );
     }
 
     @Override
     public List<ListObject> listObjects(String key) {
-        ListObjectsResponse response = callableExecutor.callWithRetry(()->
-                new ListObjectCallable(
-                        s3Storage.getBucketName(),
-                        key,
-                        s3ClientFactory.getS3Client(s3Storage),
-                        null
-                )
+        ListObjectsResponse response = callableExecutor.callWithRetry(
+                callableSupplierFactory.getListObjectSupplier(key)
         );
 
         List<ListObject> result = response.contents().stream()
@@ -108,13 +79,8 @@ public class S3RequestServiceImpl implements S3RequestService {
             Objects.requireNonNull(nextMarker);
             logger.debug(String.format("Next marker = '%s'",nextMarker));
 
-            response = callableExecutor.callWithRetry(()->
-                    new ListObjectCallable(
-                            s3Storage.getBucketName(),
-                            key,
-                            s3ClientFactory.getS3Client(s3Storage),
-                            nextMarker
-                    )
+            response = callableExecutor.callWithRetry(
+                    callableSupplierFactory.getListObjectSupplier(key,nextMarker)
             );
 
             response.contents().stream()
@@ -138,25 +104,16 @@ public class S3RequestServiceImpl implements S3RequestService {
 
     @Override
     public void putObject(Path sourcePath, String targetKey) {
-        callableExecutor.callWithRetry(()-> new PutObjectCallable(
-                s3Storage.getBucketName(),
-                targetKey,
-                s3Storage.getStorageClass(),
-                s3ClientFactory.getS3Client(s3Storage),
-                sourcePath
-        ));
+        callableExecutor.callWithRetry(
+           callableSupplierFactory.getPutObjectSupplier(sourcePath, targetKey)
+        );
     }
 
     @Override
     public byte[] getObjectRange(String key, Long startInclusive, Long endExclusive, Path targetPath) {
-        byte[] md5 = callableExecutor.callWithRetry(()->new GetObjectRangedCallable(
-                key,
-                s3Storage.getBucketName(),
-                startInclusive,
-                endExclusive,
-                s3ClientFactory.getS3Client(s3Storage),
-                targetPath
-        ));
+        byte[] md5 = callableExecutor.callWithRetry(
+                callableSupplierFactory.getGetObjectRangedSupplier(key, startInclusive, endExclusive, targetPath)
+        );
         return md5;
     }
 }

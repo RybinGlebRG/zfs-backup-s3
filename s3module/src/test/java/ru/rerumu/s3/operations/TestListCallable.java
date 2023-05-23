@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.rerumu.s3.impl.complex_operations.ListCallable;
+import ru.rerumu.s3.impl.operations.ListCallable;
 import ru.rerumu.s3.services.S3RequestService;
 import ru.rerumu.s3.services.impl.requests.models.ListObject;
 import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
