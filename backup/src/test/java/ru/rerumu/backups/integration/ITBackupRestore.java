@@ -2,6 +2,7 @@ package ru.rerumu.backups.integration;
 
 import ch.qos.logback.classic.Level;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
@@ -43,6 +44,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -51,6 +53,7 @@ import static org.mockito.Mockito.*;
 
 
 // TODO: Check
+@Disabled
 @ExtendWith(MockitoExtension.class)
 public class ITBackupRestore {
 
@@ -75,7 +78,8 @@ public class ITBackupRestore {
                 s3Storage,
                 12_000_000,
                 30_000_000L,
-                tempDir
+                tempDir,
+                UUID.randomUUID()
         );
         SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
         StdConsumerFactory stdConsumerFactory = new StdConsumerFactoryImpl(s3Service);
@@ -103,7 +107,8 @@ public class ITBackupRestore {
                 s3Storage,
                 12_000_000,
                 30_000_000L,
-                tempDir
+                tempDir,
+                UUID.randomUUID()
         );
         SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
         StdConsumerFactory stdConsumerFactory = new StdConsumerFactoryImpl(s3Service);

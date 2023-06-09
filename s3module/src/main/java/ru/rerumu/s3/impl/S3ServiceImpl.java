@@ -45,8 +45,8 @@ public class S3ServiceImpl implements S3Service {
                 .anyMatch(item -> item.equals(key));
     }
 
-    @Override
-    public void upload(Path path, String prefix) {
+
+    private void upload(Path path, String prefix) {
         String key = prefix + path.getFileName().toString();
         logger.info(String.format("Trying to upload file '%s' to '%s'", path.toString(), key));
 
@@ -91,8 +91,8 @@ public class S3ServiceImpl implements S3Service {
         }
     }
 
-    @Override
-    public void download(String prefix, Path targetPath) {
+
+    private void download(String prefix, Path targetPath) {
         try {
             logger.info(String.format("Trying to download file '%s' to '%s'", prefix, targetPath.toString()));
             s3CallableFactory.getDownloadCallable(prefix, targetPath).call();
@@ -110,7 +110,7 @@ public class S3ServiceImpl implements S3Service {
             List<String> keys = list(prefix);
             for (String key : keys) {
                 Path part = fileManager.getNew(null, "-" + Paths.get(key).getFileName());
-                download(prefix,bufferedOutputStream);
+                download(key,part);
                 ZFSFileReader zfsFileReader = zfsFileReaderFactory.getZFSFileReader(
                         bufferedOutputStream, part
                 );

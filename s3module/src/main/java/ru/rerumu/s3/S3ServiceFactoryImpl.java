@@ -19,12 +19,14 @@ import java.util.List;
 import java.util.UUID;
 
 public class S3ServiceFactoryImpl implements S3ServiceFactory {
+
     @Override
     public S3Service getS3Service(
             S3Storage s3Storage,
             int maxPartSize,
             long filePartSize,
-            Path tempDir
+            Path tempDir,
+            UUID uuid
     ) {
 
         S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(List.of(s3Storage));
@@ -40,7 +42,7 @@ public class S3ServiceFactoryImpl implements S3ServiceFactory {
 
         return new S3ServiceImpl(
                 new FileManagerImpl(
-                        UUID.randomUUID().toString(),
+                        uuid.toString(),
                         tempDir
                 ),
                 new ZFSFileWriterFactoryImpl(filePartSize),

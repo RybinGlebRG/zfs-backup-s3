@@ -73,6 +73,7 @@ public class S3RequestServiceImpl implements S3RequestService {
         List<ListObject> result = response.contents().stream()
                 .map(item->new ListObject(item.key(), item.eTag(), item.size()))
                 .collect(Collectors.toCollection(ArrayList::new));
+        logger.debug(String.format("Found on S3: %s",result));
 
         while (response.isTruncated()){
             String nextMarker = response.nextMarker();

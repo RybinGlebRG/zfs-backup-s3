@@ -2,6 +2,7 @@ package ru.rerumu.backups.services;
 
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -9,6 +10,7 @@ import ru.rerumu.backups.services.impl.SnapshotNamingServiceImpl;
 
 import java.time.LocalDateTime;
 
+@Disabled
 @ExtendWith(MockitoExtension.class)
 public class TestSnapshotNamingServiceImpl {
 

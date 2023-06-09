@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.UUID;
 
 public class EntityFactory {
     private final Configuration configuration = new Configuration();
@@ -43,7 +44,8 @@ public class EntityFactory {
                 s3Storage,
                 Integer.parseInt(configuration.getProperty("max_part_size")),
                 Long.parseLong(configuration.getProperty("max_file_size")),
-                Paths.get(configuration.getProperty("sender_temp_dir"))
+                Paths.get(configuration.getProperty("sender_temp_dir")),
+                UUID.randomUUID()
         );
         SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
         ZFSServiceFactory zfsServiceFactory = new ZFSServiceFactoryImpl();
@@ -72,7 +74,8 @@ public class EntityFactory {
                 s3Storage,
                 Integer.parseInt(configuration.getProperty("max_part_size")),
                 Long.parseLong(configuration.getProperty("max_file_size")),
-                Paths.get(configuration.getProperty("sender_temp_dir"))
+                Paths.get(configuration.getProperty("sender_temp_dir")),
+                UUID.randomUUID()
         );
         ZFSServiceFactory zfsServiceFactory = new ZFSServiceFactoryImpl();
         ZFSService zfsService = zfsServiceFactory.getZFSService();
