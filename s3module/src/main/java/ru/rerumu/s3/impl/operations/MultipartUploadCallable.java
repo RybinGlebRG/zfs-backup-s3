@@ -41,6 +41,7 @@ public class MultipartUploadCallable implements Callable<Void> {
     public Void call() throws IOException, NoSuchAlgorithmException, IncorrectHashException {
         try (BufferedInputStream bufferedInputStream = new BufferedInputStream(Files.newInputStream(path))) {
             int partNumber = 0;
+            long uploadedBytesLen = 0;
 
             uploadId = s3RequestService.createMultipartUpload(key);
 
@@ -50,15 +51,18 @@ public class MultipartUploadCallable implements Callable<Void> {
 
             while (optionalBytes.isPresent()) {
                 partNumber++;
+                byte[] data = optionalBytes.get();
 
                 UploadPartResult partResult = s3RequestService.uploadPart(
                         key,
                         uploadId,
                         partNumber,
-                        optionalBytes.get()
+                        data
                 );
                 md5List.add(partResult.md5());
                 completedPartList.add(partResult.completedPart());
+                uploadedBytesLen+=data.length;
+                logger.debug(String.format("Uploaded %d bytes",uploadedBytesLen));
 
                 optionalBytes = InputStreamUtils.readNext(bufferedInputStream, maxPartSize);
             }

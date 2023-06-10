@@ -11,6 +11,7 @@ import software.amazon.awssdk.services.s3.model.CompletedPart;
 import software.amazon.awssdk.services.s3.model.UploadPartRequest;
 import software.amazon.awssdk.services.s3.model.UploadPartResponse;
 
+import java.util.HexFormat;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 
@@ -48,6 +49,14 @@ public class UploadPartCallable implements Callable<UploadPartResult> {
         UploadPartResponse response = s3Client.uploadPart(
                 uploadPartRequest, RequestBody.fromBytes(data)
         );
+
+        String bytesHex = HexFormat.of().formatHex(data);
+        logger.trace(String.format(
+                "Uploaded %d bytes:\n%s...%s",
+                data.length,
+                bytesHex.substring(0,50),
+                bytesHex.substring(bytesHex.length()-50)
+        ));
 
         String eTag = response.eTag();
 

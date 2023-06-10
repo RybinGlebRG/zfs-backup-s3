@@ -19,6 +19,9 @@ import ru.rerumu.s3.factories.impl.ZFSFileWriterFactoryImpl;
 import ru.rerumu.s3.impl.S3CallableFactory;
 import ru.rerumu.s3.impl.S3CallableFactoryImpl;
 import ru.rerumu.s3.impl.S3ServiceImpl;
+import ru.rerumu.s3.impl.operations.MultipartDownloadCallable;
+import ru.rerumu.s3.impl.operations.MultipartUploadCallable;
+import ru.rerumu.s3.impl.operations.OnepartUploadCallable;
 import ru.rerumu.s3.models.S3Storage;
 import ru.rerumu.s3.services.S3RequestService;
 import ru.rerumu.s3.services.impl.S3RequestServiceImpl;
@@ -32,30 +35,29 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
-// TODO: rewrite - wrong service
 @ExtendWith(MockitoExtension.class)
 public class ITS3UploadDownload {
 
-    @Disabled
     @Test
     void shouldUploadDownloadOnepart(@TempDir Path tempDir) throws Exception {
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         logger.setLevel(Level.DEBUG);
-        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
+        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
         logger.setLevel(Level.INFO);
-        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
+        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
         logger.setLevel(Level.INFO);
-        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
+        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
         logger.setLevel(Level.INFO);
-        S3ServiceFactoryImpl s3ServiceFactory = new S3ServiceFactoryImpl();
 
         S3Storage s3Storage = new S3Storage(
                 Region.AWS_GLOBAL,
@@ -66,122 +68,58 @@ public class ITS3UploadDownload {
                 new URI("http://127.0.0.1:9090/"),
                 "STANDARD"
         );
-
-        S3Service serviceUpload = s3ServiceFactory.getS3Service(
-            s3Storage,
-                12_000_000,
-                100_000_000_000L,
-                tempDir,
-                UUID.randomUUID()
-        );
-
-        byte[] data = new byte[3_000];
-        new Random().nextBytes(data);
+        S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(List.of(s3Storage));
+        S3RequestService s3RequestService = new S3RequestServiceImpl(
+                new CallableExecutorImpl(),
+                // TODO: Thread safe?
+                new CallableSupplierFactory(
+                        s3ClientFactory,
+                        s3Storage
+                ));
 
         String key = "TestBucket/TestPool/level-0/shouldUploadDownloadOnepart__"
-                +LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"))
-                +"/";
+                + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"))
+                + "/" + UUID.randomUUID() + ".part0";
 
-        serviceUpload.upload(
-                new BufferedInputStream(new ByteArrayInputStream(data)),
-                key
+        Path pathUpload = tempDir.resolve(UUID.randomUUID().toString());
+        byte[] data = new byte[1_000_000];
+        new Random().nextBytes(data);
+        Files.write(
+                pathUpload,
+                data,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND,
+                StandardOpenOption.WRITE
         );
+        OnepartUploadCallable uploadCallable = new OnepartUploadCallable(pathUpload, key, s3RequestService);
+        uploadCallable.call();
 
-        S3Service serviceDownload = s3ServiceFactory.getS3Service(
-                s3Storage,
-                12_000_000,
-                100_000_000_000L,
-                tempDir,
-                UUID.randomUUID()
-        );
 
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(byteArrayOutputStream);
-
-        serviceDownload.download(
+        Path pathDownload = tempDir.resolve(UUID.randomUUID().toString());
+        MultipartDownloadCallable downloadCallable = new MultipartDownloadCallable(
+                pathDownload,
                 key,
-                bufferedOutputStream
+                12_000_000,
+                s3RequestService
         );
+        downloadCallable.call();
 
-        bufferedOutputStream.flush();
-        byte[] actual = byteArrayOutputStream.toByteArray();
 
-        Assertions.assertArrayEquals(data,actual);
+        byte[] dataUpload = Files.readAllBytes(pathUpload);
+        byte[] dataDownload = Files.readAllBytes(pathDownload);
+
+        Assertions.assertArrayEquals(dataUpload, dataDownload);
     }
 
-    @Disabled
     @Test
     void shouldUploadDownloadMultipart(@TempDir Path tempDir) throws Exception {
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        logger.setLevel(Level.DEBUG);
-        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
+        logger.setLevel(Level.TRACE);
+        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
         logger.setLevel(Level.INFO);
-        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
+        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
         logger.setLevel(Level.INFO);
-        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
-        logger.setLevel(Level.INFO);
-
-        S3Storage s3Storage = new S3Storage(
-                Region.AWS_GLOBAL,
-                "test",
-                "1111",
-                "1111",
-                Paths.get("level-0"),
-                new URI("http://127.0.0.1:9090/"),
-                "STANDARD"
-        );
-        String key = "TestBucket/TestPool/level-0/shouldUploadDownloadMultipart__"
-                +LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"))
-                +"/";
-
-
-        byte[] data = new byte[30_000_000];
-        new Random().nextBytes(data);
-
-
-        S3ServiceFactory s3ServiceFactory = new S3ServiceFactoryImpl();
-        S3Service s3Service = s3ServiceFactory.getS3Service(
-                s3Storage,
-                12_000_000,
-                100_000_000_000L,
-                tempDir,
-                UUID.randomUUID()
-        );
-        s3Service.upload(
-                new BufferedInputStream(new ByteArrayInputStream(data)),
-                key
-        );
-
-
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(byteArrayOutputStream);
-        S3Service s3Service1 = s3ServiceFactory.getS3Service(
-                s3Storage,
-                12_000_000,
-                100_000_000_000L,
-                tempDir,
-                UUID.randomUUID()
-        );
-        s3Service1.download(
-                key,
-                bufferedOutputStream
-        );
-
-        bufferedOutputStream.flush();
-        byte[] actual = byteArrayOutputStream.toByteArray();
-
-        Assertions.assertArrayEquals(data,actual);
-    }
-
-    @Test
-    void shouldSendStream(@TempDir Path tempDir) throws Exception{
-        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        logger.setLevel(Level.DEBUG);
-        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
-        logger.setLevel(Level.INFO);
-        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
-        logger.setLevel(Level.INFO);
-        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
+        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
         logger.setLevel(Level.INFO);
 
         S3Storage s3Storage = new S3Storage(
@@ -193,45 +131,51 @@ public class ITS3UploadDownload {
                 new URI("http://127.0.0.1:9090/"),
                 "STANDARD"
         );
+        S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(List.of(s3Storage));
+        S3RequestService s3RequestService = new S3RequestServiceImpl(
+                new CallableExecutorImpl(),
+                // TODO: Thread safe?
+                new CallableSupplierFactory(
+                        s3ClientFactory,
+                        s3Storage
+                ));
+
         String key = "TestBucket/TestPool/level-0/shouldUploadDownloadMultipart__"
-                +LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"))
-                +"/";
+                + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"))
+                + "/" + UUID.randomUUID() + ".part0";
 
-
+        Path pathUpload = tempDir.resolve(UUID.randomUUID().toString());
         byte[] data = new byte[30_000_000];
         new Random().nextBytes(data);
-
-        S3ServiceFactory s3ServiceFactory = new S3ServiceFactoryImpl();
-        S3Service s3Service = s3ServiceFactory.getS3Service(
-                s3Storage,
-                5_000_000,
-                13_000_000L,
-                tempDir,
-                UUID.randomUUID()
+        Files.write(
+                pathUpload,
+                data,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND,
+                StandardOpenOption.WRITE
         );
-        s3Service.upload(
-                new BufferedInputStream(new ByteArrayInputStream(data)),
-                key
-        );
-
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(byteArrayOutputStream);
-        S3Service s3Service1 = s3ServiceFactory.getS3Service(
-                s3Storage,
-                5_000_000,
-                13_000_000L,
-                tempDir,
-                UUID.randomUUID()
-        );
-        s3Service1.download(
+        MultipartUploadCallable uploadCallable = new MultipartUploadCallable(
+                pathUpload,
                 key,
-                bufferedOutputStream
+                12_000_000,
+                s3RequestService
         );
+        uploadCallable.call();
 
-        bufferedOutputStream.flush();
-        byte[] actual = byteArrayOutputStream.toByteArray();
 
-        Assertions.assertArrayEquals(data,actual);
+        Path pathDownload = tempDir.resolve(UUID.randomUUID().toString());
+        MultipartDownloadCallable downloadCallable = new MultipartDownloadCallable(
+                pathDownload,
+                key,
+                12_000_000,
+                s3RequestService
+        );
+        downloadCallable.call();
+
+
+        byte[] dataUpload = Files.readAllBytes(pathUpload);
+        byte[] dataDownload = Files.readAllBytes(pathDownload);
+
+        Assertions.assertArrayEquals(dataUpload, dataDownload);
     }
-
 }

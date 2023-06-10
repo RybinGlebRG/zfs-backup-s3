@@ -12,6 +12,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import java.io.BufferedInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HexFormat;
 import java.util.concurrent.Callable;
 
 // TODO: Check nullable
@@ -41,6 +42,7 @@ public final class PutObjectCallable implements Callable<Void> {
 
             byte[] buf = bufferedInputStream.readAllBytes();
             String md5 = MD5.getMD5Hex(buf);
+
 
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)

@@ -11,8 +11,15 @@ import org.slf4j.LoggerFactory;
 import ru.rerumu.s3.S3Service;
 import ru.rerumu.s3.S3ServiceFactory;
 import ru.rerumu.s3.S3ServiceFactoryImpl;
+import ru.rerumu.s3.factories.S3ClientFactory;
+import ru.rerumu.s3.factories.impl.S3ClientFactoryImpl;
+import ru.rerumu.s3.impl.operations.ListCallable;
 import ru.rerumu.s3.impl.operations.OnepartUploadCallable;
 import ru.rerumu.s3.models.S3Storage;
+import ru.rerumu.s3.services.S3RequestService;
+import ru.rerumu.s3.services.impl.S3RequestServiceImpl;
+import ru.rerumu.s3.services.impl.requests.CallableSupplierFactory;
+import ru.rerumu.utils.callables.impl.CallableExecutorImpl;
 import software.amazon.awssdk.regions.Region;
 
 import java.io.BufferedInputStream;
@@ -32,20 +39,16 @@ import static org.mockito.ArgumentMatchers.any;
 @ExtendWith(MockitoExtension.class)
 public class ITS3List {
 
-//    @Mock
-//    S3ClientFactory s3ClientFactory;
-//
-//
     @Test
-    void shouldListAll(@TempDir Path tempDir ) throws Exception {
+    void shouldListAll(@TempDir Path tempDir) throws Exception {
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        logger.setLevel(Level.DEBUG);
+        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
         logger.setLevel(Level.INFO);
-//        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
-//        logger.setLevel(Level.INFO);
-//        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
-//        logger.setLevel(Level.INFO);
-//        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
-//        logger.setLevel(Level.INFO);
+        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
+        logger.setLevel(Level.INFO);
+        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
+        logger.setLevel(Level.INFO);
 
         S3Storage s3Storage = new S3Storage(
                 Region.AWS_GLOBAL,
@@ -57,58 +60,84 @@ public class ITS3List {
                 "STANDARD"
         );
 
-        S3ServiceFactory s3ServiceFactory = new S3ServiceFactoryImpl();
-        S3Service s3Service = s3ServiceFactory.getS3Service(
-                s3Storage,
-                8_000_000,
-                100_000_000_000L,
-                tempDir,
-                UUID.randomUUID()
+        S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(List.of(s3Storage));
+        S3RequestService s3RequestService = new S3RequestServiceImpl(
+                new CallableExecutorImpl(),
+                // TODO: Thread safe?
+                new CallableSupplierFactory(
+                        s3ClientFactory,
+                        s3Storage
+                ));
+
+        byte[] data1 = new byte[1_000];
+        byte[] data2 = new byte[1_000];
+        byte[] data3 = new byte[1_000];
+
+        new Random().nextBytes(data1);
+        new Random().nextBytes(data2);
+        new Random().nextBytes(data3);
+
+        UUID uuid = UUID.randomUUID();
+        LocalDateTime date = LocalDateTime.now();
+        String dateFormatted =  date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"));
+
+        String key1 = "TestBucket/TestPool/level-0/shouldListAll__" + dateFormatted + "/" + uuid + ".part0";
+        String key2 = "TestBucket/TestPool/level-0/shouldListAll__" + dateFormatted + "/" + uuid + ".part1";
+        String key3 = "TestBucket/TestPool/level-0/shouldListAll__" + dateFormatted + "/" + uuid + ".part2";
+
+        Path pathUpload1 = tempDir.resolve(UUID.randomUUID().toString());
+        Path pathUpload2 = tempDir.resolve(UUID.randomUUID().toString());
+        Path pathUpload3 = tempDir.resolve(UUID.randomUUID().toString());
+
+        Files.write(
+                pathUpload1,
+                data1,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND,
+                StandardOpenOption.WRITE
+        );
+        Files.write(
+                pathUpload2,
+                data2,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND,
+                StandardOpenOption.WRITE
+        );
+        Files.write(
+                pathUpload3,
+                data3,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND,
+                StandardOpenOption.WRITE
         );
 
-        byte[] data = new byte[20_000_000];
-
-        new Random().nextBytes(data);
-
-        String key = "TestBucket/TestPool/level-0/shouldUploadDownloadOnepart__"
-                +LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"))
-                +"/";
-
-        s3Service.upload(
-                new BufferedInputStream(new ByteArrayInputStream(data)),
-                key
-        );
+        new OnepartUploadCallable(pathUpload1, key1, s3RequestService).call();
+        new OnepartUploadCallable(pathUpload2, key2, s3RequestService).call();
+        new OnepartUploadCallable(pathUpload3, key3, s3RequestService).call();
 
 
-        S3Service s3ServiceList = s3ServiceFactory.getS3Service(
-                s3Storage,
-                8_000_000,
-                100_000_000_000L,
-                tempDir,
-                UUID.randomUUID()
-        );
+        List<String> keys = new ListCallable(
+                "TestBucket/TestPool/level-0/shouldListAll__" + dateFormatted + "/",
+                s3RequestService
+        ).call();
 
-        List<String> res = s3ServiceList.list(key);
+        Assertions.assertEquals(3, keys.size());
 
-        Assertions.assertEquals(3,res.size());
-
-        for(int i=0; i<res.size();i++) {
-            Assertions.assertTrue(res.get(i).matches(".*\\.part" + i));
-        }
+        Assertions.assertEquals(key1,keys.get(0));
+        Assertions.assertEquals(key2,keys.get(1));
+        Assertions.assertEquals(key3,keys.get(2));
     }
 
     @Test
-    void shouldListOne(@TempDir Path tempDir ) throws Exception {
+    void shouldListOne(@TempDir Path tempDir) throws Exception {
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        logger.setLevel(Level.DEBUG);
+        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
         logger.setLevel(Level.INFO);
-//        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
-//        logger.setLevel(Level.INFO);
-//        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
-//        logger.setLevel(Level.INFO);
-//        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
-//        logger.setLevel(Level.INFO);
-
-        UUID uuid = UUID.randomUUID();
+        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
+        logger.setLevel(Level.INFO);
+        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
+        logger.setLevel(Level.INFO);
 
         S3Storage s3Storage = new S3Storage(
                 Region.AWS_GLOBAL,
@@ -120,57 +149,82 @@ public class ITS3List {
                 "STANDARD"
         );
 
-        S3ServiceFactory s3ServiceFactory = new S3ServiceFactoryImpl();
-        S3Service s3Service = s3ServiceFactory.getS3Service(
-                s3Storage,
-                8_000_000,
-                100_000_000_000L,
-                tempDir,
-                uuid
+        S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(List.of(s3Storage));
+        S3RequestService s3RequestService = new S3RequestServiceImpl(
+                new CallableExecutorImpl(),
+                // TODO: Thread safe?
+                new CallableSupplierFactory(
+                        s3ClientFactory,
+                        s3Storage
+                ));
+
+        byte[] data1 = new byte[1_000];
+        byte[] data2 = new byte[1_000];
+        byte[] data3 = new byte[1_000];
+
+        new Random().nextBytes(data1);
+        new Random().nextBytes(data2);
+        new Random().nextBytes(data3);
+
+        UUID uuid = UUID.randomUUID();
+        LocalDateTime date = LocalDateTime.now();
+        String dateFormatted =  date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"));
+
+        String key1 = "TestBucket/TestPool/level-0/shouldListAll__" + dateFormatted + "/" + uuid + ".part0";
+        String key2 = "TestBucket/TestPool/level-0/shouldListAll__" + dateFormatted + "/" + uuid + ".part1";
+        String key3 = "TestBucket/TestPool/level-0/shouldListAll__" + dateFormatted + "/" + uuid + ".part2";
+
+        Path pathUpload1 = tempDir.resolve(UUID.randomUUID().toString());
+        Path pathUpload2 = tempDir.resolve(UUID.randomUUID().toString());
+        Path pathUpload3 = tempDir.resolve(UUID.randomUUID().toString());
+
+        Files.write(
+                pathUpload1,
+                data1,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND,
+                StandardOpenOption.WRITE
+        );
+        Files.write(
+                pathUpload2,
+                data2,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND,
+                StandardOpenOption.WRITE
+        );
+        Files.write(
+                pathUpload3,
+                data3,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND,
+                StandardOpenOption.WRITE
         );
 
-        byte[] data = new byte[20_000_000];
-
-        new Random().nextBytes(data);
-
-        String key = "TestBucket/TestPool/level-0/shouldUploadDownloadOnepart__"
-                +LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"))
-                +"/";
-
-        s3Service.upload(
-                new BufferedInputStream(new ByteArrayInputStream(data)),
-                key
-        );
+        new OnepartUploadCallable(pathUpload1, key1, s3RequestService).call();
+        new OnepartUploadCallable(pathUpload2, key2, s3RequestService).call();
+        new OnepartUploadCallable(pathUpload3, key3, s3RequestService).call();
 
 
-        S3Service s3ServiceList = s3ServiceFactory.getS3Service(
-                s3Storage,
-                8_000_000,
-                100_000_000_000L,
-                tempDir,
-                uuid
-        );
+        List<String> keys = new ListCallable(
+                key2,
+                s3RequestService
+        ).call();
 
-        List<String> res = s3ServiceList.list(key+uuid+".part2");
+        Assertions.assertEquals(1, keys.size());
 
-        Assertions.assertEquals(1,res.size());
-
-        Assertions.assertEquals(key+uuid+".part2",res.get(0));
+        Assertions.assertEquals(key2,keys.get(0));
     }
 
-
     @Test
-    void shouldNotFind(@TempDir Path tempDir ) throws Exception {
+    void shouldNotFind(@TempDir Path tempDir) throws Exception {
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        logger.setLevel(Level.DEBUG);
+        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
         logger.setLevel(Level.INFO);
-//        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
-//        logger.setLevel(Level.INFO);
-//        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
-//        logger.setLevel(Level.INFO);
-//        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
-//        logger.setLevel(Level.INFO);
-
-        UUID uuid = UUID.randomUUID();
+        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
+        logger.setLevel(Level.INFO);
+        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
+        logger.setLevel(Level.INFO);
 
         S3Storage s3Storage = new S3Storage(
                 Region.AWS_GLOBAL,
@@ -182,40 +236,67 @@ public class ITS3List {
                 "STANDARD"
         );
 
-        S3ServiceFactory s3ServiceFactory = new S3ServiceFactoryImpl();
-        S3Service s3Service = s3ServiceFactory.getS3Service(
-                s3Storage,
-                8_000_000,
-                100_000_000_000L,
-                tempDir,
-                uuid
+        S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(List.of(s3Storage));
+        S3RequestService s3RequestService = new S3RequestServiceImpl(
+                new CallableExecutorImpl(),
+                // TODO: Thread safe?
+                new CallableSupplierFactory(
+                        s3ClientFactory,
+                        s3Storage
+                ));
+
+        byte[] data1 = new byte[1_000];
+        byte[] data2 = new byte[1_000];
+        byte[] data3 = new byte[1_000];
+
+        new Random().nextBytes(data1);
+        new Random().nextBytes(data2);
+        new Random().nextBytes(data3);
+
+        UUID uuid = UUID.randomUUID();
+        LocalDateTime date = LocalDateTime.now();
+        String dateFormatted =  date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"));
+
+        String key1 = "TestBucket/TestPool/level-0/shouldListAll__" + dateFormatted + "/" + uuid + ".part0";
+        String key2 = "TestBucket/TestPool/level-0/shouldListAll__" + dateFormatted + "/" + uuid + ".part1";
+        String key3 = "TestBucket/TestPool/level-0/shouldListAll__" + dateFormatted + "/" + uuid + ".part2";
+
+        Path pathUpload1 = tempDir.resolve(UUID.randomUUID().toString());
+        Path pathUpload2 = tempDir.resolve(UUID.randomUUID().toString());
+        Path pathUpload3 = tempDir.resolve(UUID.randomUUID().toString());
+
+        Files.write(
+                pathUpload1,
+                data1,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND,
+                StandardOpenOption.WRITE
+        );
+        Files.write(
+                pathUpload2,
+                data2,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND,
+                StandardOpenOption.WRITE
+        );
+        Files.write(
+                pathUpload3,
+                data3,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND,
+                StandardOpenOption.WRITE
         );
 
-        byte[] data = new byte[20_000_000];
-
-        new Random().nextBytes(data);
-
-        String key = "TestBucket/TestPool/level-0/shouldUploadDownloadOnepart__"
-                +LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"))
-                +"/";
-
-        s3Service.upload(
-                new BufferedInputStream(new ByteArrayInputStream(data)),
-                key
-        );
+        new OnepartUploadCallable(pathUpload1, key1, s3RequestService).call();
+        new OnepartUploadCallable(pathUpload2, key2, s3RequestService).call();
+        new OnepartUploadCallable(pathUpload3, key3, s3RequestService).call();
 
 
-        S3Service s3ServiceList = s3ServiceFactory.getS3Service(
-                s3Storage,
-                8_000_000,
-                100_000_000_000L,
-                tempDir,
-                uuid
-        );
+        List<String> keys = new ListCallable(
+                "TestBucket/TestPool/level-0/shouldListAll__" + dateFormatted + "/" + uuid + ".part4",
+                s3RequestService
+        ).call();
 
-        List<String> res = s3ServiceList.list(key+uuid+".part4");
-
-        Assertions.assertEquals(0,res.size());
-
+        Assertions.assertEquals(0, keys.size());
     }
 }
