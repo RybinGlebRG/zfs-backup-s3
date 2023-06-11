@@ -8,9 +8,6 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.s3.S3Service;
-import ru.rerumu.s3.S3ServiceFactory;
-import ru.rerumu.s3.S3ServiceFactoryImpl;
 import ru.rerumu.s3.factories.S3ClientFactory;
 import ru.rerumu.s3.factories.impl.S3ClientFactoryImpl;
 import ru.rerumu.s3.impl.operations.ListCallable;
@@ -22,8 +19,6 @@ import ru.rerumu.s3.services.impl.requests.CallableSupplierFactory;
 import ru.rerumu.utils.callables.impl.CallableExecutorImpl;
 import software.amazon.awssdk.regions.Region;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,18 +32,18 @@ import static org.mockito.ArgumentMatchers.any;
 
 
 @ExtendWith(MockitoExtension.class)
-public class ITS3List {
+public class ITS3ListOperations {
 
     @Test
     void shouldListAll(@TempDir Path tempDir) throws Exception {
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        logger.setLevel(Level.DEBUG);
-        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
-        logger.setLevel(Level.INFO);
-        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
-        logger.setLevel(Level.INFO);
-        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
-        logger.setLevel(Level.INFO);
+        logger.setLevel(Level.ERROR);
+//        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
+//        logger.setLevel(Level.INFO);
+//        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
+//        logger.setLevel(Level.INFO);
+//        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
+//        logger.setLevel(Level.INFO);
 
         S3Storage s3Storage = new S3Storage(
                 Region.AWS_GLOBAL,
@@ -131,13 +126,13 @@ public class ITS3List {
     @Test
     void shouldListOne(@TempDir Path tempDir) throws Exception {
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        logger.setLevel(Level.DEBUG);
-        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
-        logger.setLevel(Level.INFO);
-        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
-        logger.setLevel(Level.INFO);
-        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
-        logger.setLevel(Level.INFO);
+        logger.setLevel(Level.ERROR);
+//        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
+//        logger.setLevel(Level.INFO);
+//        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
+//        logger.setLevel(Level.INFO);
+//        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
+//        logger.setLevel(Level.INFO);
 
         S3Storage s3Storage = new S3Storage(
                 Region.AWS_GLOBAL,
@@ -218,13 +213,13 @@ public class ITS3List {
     @Test
     void shouldNotFind(@TempDir Path tempDir) throws Exception {
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        logger.setLevel(Level.DEBUG);
-        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
-        logger.setLevel(Level.INFO);
-        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
-        logger.setLevel(Level.INFO);
-        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
-        logger.setLevel(Level.INFO);
+        logger.setLevel(Level.ERROR);
+//        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
+//        logger.setLevel(Level.INFO);
+//        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
+//        logger.setLevel(Level.INFO);
+//        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
+//        logger.setLevel(Level.INFO);
 
         S3Storage s3Storage = new S3Storage(
                 Region.AWS_GLOBAL,
@@ -298,5 +293,68 @@ public class ITS3List {
         ).call();
 
         Assertions.assertEquals(0, keys.size());
+    }
+
+    @Test
+    void shouldListPaged(@TempDir Path tempDir) throws Exception {
+        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        logger.setLevel(Level.ERROR);
+//        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
+//        logger.setLevel(Level.INFO);
+//        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
+//        logger.setLevel(Level.INFO);
+//        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
+//        logger.setLevel(Level.INFO);
+
+        S3Storage s3Storage = new S3Storage(
+                Region.AWS_GLOBAL,
+                "test",
+                "1111",
+                "1111",
+                Paths.get("level-0"),
+                new URI("http://127.0.0.1:9090/"),
+                "STANDARD"
+        );
+
+        S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(List.of(s3Storage));
+        S3RequestService s3RequestService = new S3RequestServiceImpl(
+                new CallableExecutorImpl(),
+                // TODO: Thread safe?
+                new CallableSupplierFactory(
+                        s3ClientFactory,
+                        s3Storage
+                ));
+
+        List<byte[]> byteList = new ArrayList<>(1100);
+
+        for(int i = 0; i<1100;i++){
+            byte[] tmp = new byte[10];
+            new Random().nextBytes(tmp);
+            byteList.add(tmp);
+        }
+
+        UUID uuid = UUID.randomUUID();
+        LocalDateTime date = LocalDateTime.now();
+        String dateFormatted =  date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"));
+        for(int i=0;i<byteList.size();i++){
+            String key = "TestBucket/TestPool/level-0/shouldListPaged__" + dateFormatted + "/" + uuid + ".part"+i;
+            Path pathUpload = tempDir.resolve(UUID.randomUUID().toString());
+            Files.write(
+                    pathUpload,
+                    byteList.get(i),
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.APPEND,
+                    StandardOpenOption.WRITE
+            );
+            new OnepartUploadCallable(pathUpload, key, s3RequestService).call();
+        }
+
+
+        List<String> keys = new ListCallable(
+                "TestBucket/TestPool/level-0/shouldListPaged__" + dateFormatted + "/",
+                s3RequestService
+        ).call();
+
+        Assertions.assertEquals(1100, keys.size());
     }
 }
