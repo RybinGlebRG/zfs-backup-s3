@@ -16,6 +16,8 @@
         <module>jacoco</module>
         <module>assembly</module>
         <module>checkstyle</module>
+        <module>cli</module>
+        <module>main</module>
     </modules>
 
     <properties>

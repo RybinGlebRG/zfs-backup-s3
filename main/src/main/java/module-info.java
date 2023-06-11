@@ -1,0 +1,3 @@
+module ru.rerumu.main {
+
+}
