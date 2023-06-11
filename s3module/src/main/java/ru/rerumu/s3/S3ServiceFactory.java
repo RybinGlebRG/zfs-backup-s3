@@ -1,9 +1,8 @@
 package ru.rerumu.s3;
 
-import ru.rerumu.s3.models.S3Storage;
-
 import java.nio.file.Path;
 import java.util.UUID;
+import ru.rerumu.s3.models.S3Storage;
 
 public interface S3ServiceFactory {
 
