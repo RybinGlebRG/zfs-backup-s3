@@ -2,7 +2,6 @@ package ru.rerumu.zfs_backup_s3.backups.services.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.backups.exceptions.*;
 import ru.rerumu.zfs_backup_s3.backups.exceptions.SendError;
 import ru.rerumu.zfs_backup_s3.backups.factories.StdConsumerFactory;
 import ru.rerumu.zfs_backup_s3.backups.services.SendService;

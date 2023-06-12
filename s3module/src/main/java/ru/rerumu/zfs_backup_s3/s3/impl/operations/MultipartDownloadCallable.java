@@ -15,9 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import static ru.rerumu.zfs_backup_s3.utils.MD5.getMD5Bytes;
-import static ru.rerumu.zfs_backup_s3.utils.MD5.getMD5Hex;
-
 public class MultipartDownloadCallable implements Callable<Void> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 

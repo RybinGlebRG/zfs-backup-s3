@@ -2,7 +2,6 @@ package ru.rerumu.zfs_backup_s3.s3.services.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.s3.services.impl.requests.*;
 import ru.rerumu.zfs_backup_s3.s3.services.S3RequestService;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.requests.models.ListObject;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.requests.models.UploadPartResult;
