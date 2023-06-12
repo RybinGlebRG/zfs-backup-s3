@@ -32,6 +32,16 @@
             <artifactId>backup</artifactId>
             <version>3.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>ru.rerumu</groupId>
+            <artifactId>cli</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.rerumu</groupId>
+            <artifactId>main</artifactId>
+            <version>3.0.0</version>
+        </dependency>
     </dependencies>
 
     <properties>

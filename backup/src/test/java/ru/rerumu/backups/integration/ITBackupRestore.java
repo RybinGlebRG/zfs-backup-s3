@@ -2,7 +2,6 @@ package ru.rerumu.backups.integration;
 
 import ch.qos.logback.classic.Level;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
@@ -11,8 +10,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ru.rerumu.backups.controllers.BackupController;
-import ru.rerumu.backups.controllers.RestoreController;
 import ru.rerumu.backups.factories.StdConsumerFactory;
 import ru.rerumu.backups.factories.impl.StdConsumerFactoryImpl;
 import ru.rerumu.backups.services.ReceiveService;
@@ -52,8 +49,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 
-// TODO: Check
-@Disabled
 @ExtendWith(MockitoExtension.class)
 public class ITBackupRestore {
 
@@ -173,9 +168,8 @@ public class ITBackupRestore {
         })
                 .when(zfsServiceSend).send(any(),any());
 
-
-        BackupController backupController = new BackupController(prepareSend(tempDir1));
-        backupController.backupFull("TestPool",bucketName);
+        SendService sendService = prepareSend(tempDir1);
+        sendService.send("TestPool",bucketName);
 
 
         Pool restorePool = new Pool("RestorePool",new ArrayList<>());
@@ -190,9 +184,8 @@ public class ITBackupRestore {
         })
                 .when(zfsServiceRestore).receive(any(),any());
 
-
-        RestoreController restoreController = new RestoreController(prepareReceive(tempDir2));
-        restoreController.restore(bucketName,"RestorePool");
+        ReceiveService receiveService = prepareReceive(tempDir2);
+        receiveService.receive(bucketName,"RestorePool");
 
         byteArrayOutputStream.flush();
         byte[] dataRestored = byteArrayOutputStream.toByteArray();

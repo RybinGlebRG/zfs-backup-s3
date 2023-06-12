@@ -1,4 +1,7 @@
 module ru.rerumu.backup {
+    exports ru.rerumu.backups.services;
+    exports ru.rerumu.backups;
+
     requires ru.rerumu.zfs;
     requires org.slf4j;
     requires ru.rerumu.s3module;

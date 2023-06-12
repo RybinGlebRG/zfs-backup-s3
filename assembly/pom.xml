@@ -32,6 +32,16 @@
             <artifactId>backup</artifactId>
             <version>3.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>ru.rerumu</groupId>
+            <artifactId>cli</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.rerumu</groupId>
+            <artifactId>main</artifactId>
+            <version>3.0.0</version>
+        </dependency>
     </dependencies>
 
     <properties>
@@ -49,7 +59,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>ru.rerumu.backups.App</mainClass>
+                            <mainClass>ru.rerumu.main.Main</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
