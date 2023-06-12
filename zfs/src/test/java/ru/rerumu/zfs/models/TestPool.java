@@ -2,6 +2,9 @@ package ru.rerumu.zfs.models;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import ru.rerumu.zfs_backup_s3.zfs.models.Dataset;
+import ru.rerumu.zfs_backup_s3.zfs.models.Pool;
+import ru.rerumu.zfs_backup_s3.zfs.models.Snapshot;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>zfs-backup-s3</artifactId>
-        <groupId>ru.rerumu</groupId>
+        <groupId>ru.rerumu.zfs-backup-s3</groupId>
         <version>3.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -13,32 +13,32 @@
 
     <dependencies>
         <dependency>
-            <groupId>ru.rerumu</groupId>
+            <groupId>ru.rerumu.zfs-backup-s3</groupId>
             <artifactId>utils</artifactId>
             <version>3.0.0</version>
         </dependency>
         <dependency>
-            <groupId>ru.rerumu</groupId>
+            <groupId>ru.rerumu.zfs-backup-s3</groupId>
             <artifactId>s3module</artifactId>
             <version>3.0.0</version>
         </dependency>
         <dependency>
-            <groupId>ru.rerumu</groupId>
+            <groupId>ru.rerumu.zfs-backup-s3</groupId>
             <artifactId>zfs</artifactId>
             <version>3.0.0</version>
         </dependency>
         <dependency>
-            <groupId>ru.rerumu</groupId>
+            <groupId>ru.rerumu.zfs-backup-s3</groupId>
             <artifactId>backup</artifactId>
             <version>3.0.0</version>
         </dependency>
         <dependency>
-            <groupId>ru.rerumu</groupId>
+            <groupId>ru.rerumu.zfs-backup-s3</groupId>
             <artifactId>cli</artifactId>
             <version>3.0.0</version>
         </dependency>
         <dependency>
-            <groupId>ru.rerumu</groupId>
+            <groupId>ru.rerumu.zfs-backup-s3</groupId>
             <artifactId>main</artifactId>
             <version>3.0.0</version>
         </dependency>
@@ -59,7 +59,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>ru.rerumu.main.Main</mainClass>
+                            <mainClass>ru.rerumu.zfs-backup-s3.main.Main</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

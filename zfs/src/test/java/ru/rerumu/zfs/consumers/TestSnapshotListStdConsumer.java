@@ -2,8 +2,8 @@ package ru.rerumu.zfs.consumers;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import ru.rerumu.zfs.models.Snapshot;
+import ru.rerumu.zfs_backup_s3.zfs.consumers.SnapshotListStdConsumer;
+import ru.rerumu.zfs_backup_s3.zfs.models.Snapshot;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;

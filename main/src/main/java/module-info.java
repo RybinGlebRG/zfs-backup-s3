@@ -1,5 +1,5 @@
-module ru.rerumu.main {
-    requires ru.rerumu.cli;
-    requires ru.rerumu.backup;
+module ru.rerumu.zfs_backup_s3.main {
+    requires ru.rerumu.zfs_backup_s3.cli;
+    requires ru.rerumu.zfs_backup_s3.backup;
 
 }

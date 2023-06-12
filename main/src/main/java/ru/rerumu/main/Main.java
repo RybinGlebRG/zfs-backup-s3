@@ -1,9 +1,9 @@
 package ru.rerumu.main;
 
-import ru.rerumu.backups.EntityFactory;
-import ru.rerumu.backups.services.ReceiveService;
-import ru.rerumu.backups.services.SendService;
-import ru.rerumu.cli.CliService;
+import ru.rerumu.zfs_backup_s3.backups.EntityFactory;
+import ru.rerumu.zfs_backup_s3.backups.services.ReceiveService;
+import ru.rerumu.zfs_backup_s3.backups.services.SendService;
+import ru.rerumu.zfs_backup_s3.cli.CliService;
 
 public class Main {
     public static void main(String[] args) {

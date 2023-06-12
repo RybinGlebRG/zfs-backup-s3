@@ -2,7 +2,7 @@ package ru.rerumu.zfs.models;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.rerumu.zfs.models.Snapshot;
+import ru.rerumu.zfs_backup_s3.zfs.models.Snapshot;
 
 public class TestSnapshot {
 

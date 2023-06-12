@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import ru.rerumu.zfs_backup_s3.utils.processes.StdLineConsumer;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;

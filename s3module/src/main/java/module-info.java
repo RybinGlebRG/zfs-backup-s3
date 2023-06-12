@@ -1,4 +1,4 @@
-module ru.rerumu.s3module {
+module ru.rerumu.zfs_backup_s3.s3module {
 
     requires org.slf4j;
     requires software.amazon.awssdk.services.s3;
@@ -6,10 +6,10 @@ module ru.rerumu.s3module {
     requires software.amazon.awssdk.regions;
     requires software.amazon.awssdk.core;
     requires org.apache.commons.lang3;
-    requires ru.rerumu.utils;
+    requires ru.rerumu.zfs_backup_s3.utils;
     requires org.checkerframework.checker.qual;
 
-    exports ru.rerumu.s3.models to ru.rerumu.backup;
-    exports ru.rerumu.s3 to ru.rerumu.backup;
+    exports ru.rerumu.zfs_backup_s3.s3.models to ru.rerumu.zfs_backup_s3.backup;
+    exports ru.rerumu.zfs_backup_s3.s3 to ru.rerumu.zfs_backup_s3.backup;
 
 }

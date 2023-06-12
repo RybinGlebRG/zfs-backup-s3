@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.rerumu.backups.services.impl.SnapshotNamingServiceImpl;
+import ru.rerumu.zfs_backup_s3.backups.services.impl.SnapshotNamingServiceImpl;
 
 import java.time.LocalDateTime;
 

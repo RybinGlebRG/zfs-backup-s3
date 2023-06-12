@@ -1,11 +1,9 @@
 package ru.rerumu.utils.callables;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import ru.rerumu.utils.callables.impl.CallableExecutorImpl;
+import ru.rerumu.zfs_backup_s3.utils.callables.impl.CallableExecutorImpl;
 
 import java.util.concurrent.Callable;
-import java.util.function.Supplier;
 
 import static org.mockito.Mockito.*;
 

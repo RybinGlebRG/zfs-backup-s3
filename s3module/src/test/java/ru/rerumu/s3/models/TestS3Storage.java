@@ -2,6 +2,7 @@ package ru.rerumu.s3.models;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import ru.rerumu.zfs_backup_s3.s3.models.S3Storage;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.regions.Region;
 

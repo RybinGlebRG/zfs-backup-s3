@@ -8,11 +8,10 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.s3.S3Service;
-import ru.rerumu.s3.S3ServiceFactory;
-import ru.rerumu.s3.S3ServiceFactoryImpl;
-import ru.rerumu.s3.impl.S3ServiceImpl;
-import ru.rerumu.s3.models.S3Storage;
+import ru.rerumu.zfs_backup_s3.s3.S3Service;
+import ru.rerumu.zfs_backup_s3.s3.S3ServiceFactory;
+import ru.rerumu.zfs_backup_s3.s3.S3ServiceFactoryImpl;
+import ru.rerumu.zfs_backup_s3.s3.models.S3Storage;
 import software.amazon.awssdk.regions.Region;
 
 import java.io.BufferedInputStream;

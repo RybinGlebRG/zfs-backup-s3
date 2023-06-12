@@ -3,6 +3,7 @@ package ru.rerumu.utils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import ru.rerumu.zfs_backup_s3.utils.MD5;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,8 +11,6 @@ import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.util.Random;
 import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class TestMD5 {
 

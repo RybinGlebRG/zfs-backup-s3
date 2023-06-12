@@ -10,24 +10,24 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ru.rerumu.backups.factories.StdConsumerFactory;
-import ru.rerumu.backups.factories.impl.StdConsumerFactoryImpl;
-import ru.rerumu.backups.services.ReceiveService;
-import ru.rerumu.backups.services.SendService;
-import ru.rerumu.backups.services.SnapshotNamingService;
-import ru.rerumu.backups.services.impl.ReceiveServiceImpl;
-import ru.rerumu.backups.services.impl.SendServiceImpl;
-import ru.rerumu.backups.services.impl.SnapshotNamingServiceImpl;
+import ru.rerumu.zfs_backup_s3.backups.factories.StdConsumerFactory;
+import ru.rerumu.zfs_backup_s3.backups.factories.impl.StdConsumerFactoryImpl;
+import ru.rerumu.zfs_backup_s3.backups.services.ReceiveService;
+import ru.rerumu.zfs_backup_s3.backups.services.SendService;
+import ru.rerumu.zfs_backup_s3.backups.services.SnapshotNamingService;
+import ru.rerumu.zfs_backup_s3.backups.services.impl.ReceiveServiceImpl;
+import ru.rerumu.zfs_backup_s3.backups.services.impl.SendServiceImpl;
+import ru.rerumu.zfs_backup_s3.backups.services.impl.SnapshotNamingServiceImpl;
 
-import ru.rerumu.s3.S3ServiceFactory;
-import ru.rerumu.s3.S3ServiceFactoryImpl;
-import ru.rerumu.s3.models.S3Storage;
-import ru.rerumu.s3.S3Service;
+import ru.rerumu.zfs_backup_s3.s3.S3ServiceFactory;
+import ru.rerumu.zfs_backup_s3.s3.S3ServiceFactoryImpl;
+import ru.rerumu.zfs_backup_s3.s3.models.S3Storage;
+import ru.rerumu.zfs_backup_s3.s3.S3Service;
 
-import ru.rerumu.zfs.models.Snapshot;
-import ru.rerumu.zfs.models.Dataset;
-import ru.rerumu.zfs.models.Pool;
-import ru.rerumu.zfs.ZFSService;
+import ru.rerumu.zfs_backup_s3.zfs.models.Snapshot;
+import ru.rerumu.zfs_backup_s3.zfs.models.Dataset;
+import ru.rerumu.zfs_backup_s3.zfs.models.Pool;
+import ru.rerumu.zfs_backup_s3.zfs.ZFSService;
 
 import software.amazon.awssdk.regions.Region;
 

@@ -1,8 +1,8 @@
 package ru.rerumu.zfs.factories;
 
 import org.junit.jupiter.api.Test;
-import ru.rerumu.zfs.factories.impl.StdConsumerFactoryImpl;
-import ru.rerumu.zfs.models.Snapshot;
+import ru.rerumu.zfs_backup_s3.zfs.factories.impl.StdConsumerFactoryImpl;
+import ru.rerumu.zfs_backup_s3.zfs.models.Snapshot;
 
 import java.util.ArrayList;
 import java.util.List;

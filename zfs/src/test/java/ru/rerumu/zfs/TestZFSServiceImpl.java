@@ -6,12 +6,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.rerumu.zfs.factories.ZFSCallableFactory;
-import ru.rerumu.zfs.impl.ZFSServiceImpl;
-import ru.rerumu.zfs.models.Dataset;
-import ru.rerumu.zfs.models.Pool;
-import ru.rerumu.zfs.models.Snapshot;
-import ru.rerumu.zfs.services.SnapshotService;
+import ru.rerumu.zfs_backup_s3.zfs.factories.ZFSCallableFactory;
+import ru.rerumu.zfs_backup_s3.zfs.impl.ZFSServiceImpl;
+import ru.rerumu.zfs_backup_s3.zfs.models.Dataset;
+import ru.rerumu.zfs_backup_s3.zfs.models.Pool;
+import ru.rerumu.zfs_backup_s3.zfs.models.Snapshot;
+import ru.rerumu.zfs_backup_s3.zfs.services.SnapshotService;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

@@ -5,10 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.rerumu.utils.processes.factories.ProcessWrapperFactory;
-import ru.rerumu.zfs.callable.GetDataset;
-import ru.rerumu.zfs.factories.StdConsumerFactory;
-import ru.rerumu.zfs.models.Dataset;
+import ru.rerumu.zfs_backup_s3.utils.processes.factories.ProcessWrapperFactory;
+import ru.rerumu.zfs_backup_s3.zfs.callable.GetDataset;
+import ru.rerumu.zfs_backup_s3.zfs.factories.StdConsumerFactory;
+import ru.rerumu.zfs_backup_s3.zfs.models.Dataset;
 
 import java.io.BufferedInputStream;
 import java.util.ArrayList;

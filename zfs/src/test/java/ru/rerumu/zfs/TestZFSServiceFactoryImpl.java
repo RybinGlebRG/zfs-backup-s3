@@ -1,6 +1,7 @@
 package ru.rerumu.zfs;
 
 import org.junit.jupiter.api.Test;
+import ru.rerumu.zfs_backup_s3.zfs.ZFSServiceFactoryImpl;
 
 public class TestZFSServiceFactoryImpl {
 

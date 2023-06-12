@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>zfs-backup-s3</artifactId>
-        <groupId>ru.rerumu</groupId>
+        <groupId>ru.rerumu.zfs-backup-s3</groupId>
         <version>3.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -12,7 +12,7 @@
     <artifactId>cli</artifactId>
     <dependencies>
         <dependency>
-            <groupId>ru.rerumu</groupId>
+            <groupId>ru.rerumu.zfs-backup-s3</groupId>
             <artifactId>backup</artifactId>
             <version>3.0.0</version>
             <scope>compile</scope>

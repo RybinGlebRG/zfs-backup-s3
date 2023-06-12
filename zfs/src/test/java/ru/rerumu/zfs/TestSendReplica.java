@@ -4,9 +4,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.rerumu.utils.processes.factories.ProcessWrapperFactory;
-import ru.rerumu.zfs.callable.SendReplica;
-import ru.rerumu.zfs.models.Snapshot;
+import ru.rerumu.zfs_backup_s3.utils.processes.factories.ProcessWrapperFactory;
+import ru.rerumu.zfs_backup_s3.zfs.callable.SendReplica;
+import ru.rerumu.zfs_backup_s3.zfs.models.Snapshot;
 
 import java.io.BufferedInputStream;
 import java.util.List;
