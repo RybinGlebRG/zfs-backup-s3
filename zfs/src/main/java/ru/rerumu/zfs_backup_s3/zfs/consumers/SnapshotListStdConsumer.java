@@ -3,6 +3,7 @@ package ru.rerumu.zfs_backup_s3.zfs.consumers;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
 import ru.rerumu.zfs_backup_s3.zfs.models.Snapshot;
 
 import java.io.BufferedInputStream;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+@ThreadSafe
 public final class SnapshotListStdConsumer implements Consumer<BufferedInputStream> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final List<Snapshot> snapshotList;
@@ -34,7 +36,7 @@ public final class SnapshotListStdConsumer implements Consumer<BufferedInputStre
     }
 
     @Override
-    public void accept(@NonNull BufferedInputStream bufferedInputStream) {
+    public synchronized void accept(@NonNull BufferedInputStream bufferedInputStream) {
         Objects.requireNonNull(bufferedInputStream, "Buffered input stream cannot be null");
         try {
             byte[] output = bufferedInputStream.readAllBytes();

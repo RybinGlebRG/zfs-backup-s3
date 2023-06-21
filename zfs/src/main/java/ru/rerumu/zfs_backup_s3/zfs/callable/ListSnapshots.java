@@ -2,6 +2,7 @@ package ru.rerumu.zfs_backup_s3.zfs.callable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.rerumu.zfs_backup_s3.utils.CallableOnlyOnce;
 import ru.rerumu.zfs_backup_s3.utils.processes.StdLineConsumer;
 import ru.rerumu.zfs_backup_s3.utils.processes.factories.ProcessWrapperFactory;
 import ru.rerumu.zfs_backup_s3.utils.processes.impl.StdProcessorImpl;
@@ -13,7 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 
-public class ListSnapshots implements Callable<List<Snapshot>> {
+// TODO: Check thread safe
+public class ListSnapshots extends CallableOnlyOnce<List<Snapshot>> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final ProcessWrapperFactory processWrapperFactory;
     private final Dataset dataset;
@@ -56,7 +58,7 @@ public class ListSnapshots implements Callable<List<Snapshot>> {
     }
 
     @Override
-    public List<Snapshot> call() throws Exception {
+    public List<Snapshot> callOnce() throws Exception {
         List<Snapshot> res = getSnapshots();
         return res;
     }

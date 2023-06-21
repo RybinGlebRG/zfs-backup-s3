@@ -2,6 +2,7 @@ package ru.rerumu.zfs_backup_s3.zfs.callable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.rerumu.zfs_backup_s3.utils.CallableOnlyOnce;
 import ru.rerumu.zfs_backup_s3.utils.processes.StdLineConsumer;
 import ru.rerumu.zfs_backup_s3.utils.processes.factories.ProcessWrapperFactory;
 import ru.rerumu.zfs_backup_s3.utils.processes.impl.StdProcessorImpl;
@@ -14,7 +15,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
-public class SendReplica implements Callable<Void> {
+// TODO: Check thread safe
+public class SendReplica extends CallableOnlyOnce<Void> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final Snapshot snapshot;
     private final ProcessWrapperFactory processWrapperFactory;
@@ -30,7 +32,7 @@ public class SendReplica implements Callable<Void> {
     }
 
     @Override
-    public Void call() throws Exception {
+    public Void callOnce() throws Exception {
         List<String> command = new ArrayList<>();
         command.add("zfs");
         command.add("send");

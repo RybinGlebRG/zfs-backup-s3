@@ -1,7 +1,12 @@
 package ru.rerumu.zfs_backup_s3.zfs.callable;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.units.qual.N;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.rerumu.zfs_backup_s3.utils.CallableOnlyOnce;
+import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
 import ru.rerumu.zfs_backup_s3.utils.processes.StdLineConsumer;
 import ru.rerumu.zfs_backup_s3.utils.processes.factories.ProcessWrapperFactory;
 import ru.rerumu.zfs_backup_s3.utils.processes.impl.StdProcessorImpl;
@@ -11,9 +16,11 @@ import ru.rerumu.zfs_backup_s3.zfs.models.Dataset;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 
-public class GetDataset implements Callable<Dataset> {
+@ThreadSafe
+public class GetDataset extends CallableOnlyOnce<Dataset> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final String datasetName;
 
@@ -21,8 +28,13 @@ public class GetDataset implements Callable<Dataset> {
 
     private final StdConsumerFactory stdConsumerFactory;
 
-    // TODO: Check not null
-    public GetDataset(String datasetName, ProcessWrapperFactory processWrapperFactory, StdConsumerFactory stdConsumerFactory) {
+    public GetDataset(
+            @Nullable String datasetName,
+            @NonNull ProcessWrapperFactory processWrapperFactory,
+            @NonNull StdConsumerFactory stdConsumerFactory
+    ) {
+        Objects.requireNonNull(processWrapperFactory,"processWrapperFactory cannot be null");
+        Objects.requireNonNull(stdConsumerFactory,"stdConsumerFactory cannot be null");
         this.datasetName = datasetName;
         this.processWrapperFactory = processWrapperFactory;
         this.stdConsumerFactory = stdConsumerFactory;
@@ -59,7 +71,7 @@ public class GetDataset implements Callable<Dataset> {
 
 
     @Override
-    public Dataset call() throws Exception {
+    protected Dataset callOnce() throws Exception {
         List<Snapshot> snapshots = getSnapshots();
         Dataset dataset = new Dataset(datasetName,snapshots);
 

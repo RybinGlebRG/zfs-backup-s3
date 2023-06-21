@@ -4,6 +4,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
 import ru.rerumu.zfs_backup_s3.utils.processes.StdProcessor;
 
 import java.io.BufferedInputStream;
@@ -18,6 +19,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
+@ThreadSafe
 public final class StdProcessorImpl implements StdProcessor {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final ExecutorService executorService = Executors.newCachedThreadPool();
@@ -40,7 +42,7 @@ public final class StdProcessorImpl implements StdProcessor {
     }
 
     @Override
-    public void processStd(
+    public synchronized void processStd(
             @NonNull BufferedInputStream stderr,
             @NonNull BufferedInputStream stdout,
             @Nullable BufferedOutputStream stdin

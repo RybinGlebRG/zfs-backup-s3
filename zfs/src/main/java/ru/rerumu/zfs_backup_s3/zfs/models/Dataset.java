@@ -3,8 +3,10 @@ package ru.rerumu.zfs_backup_s3.zfs.models;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import org.checkerframework.checker.nullness.qual.NonNull;;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;;
 
+@ThreadSafe
 public record Dataset(@NonNull String name, @NonNull List<Snapshot> snapshotList) {
 
     public Dataset{

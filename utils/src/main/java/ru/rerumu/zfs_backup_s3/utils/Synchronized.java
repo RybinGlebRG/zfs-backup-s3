@@ -4,7 +4,7 @@ import java.lang.annotation.*;
 
 // TODO: How to check that depended upon type has annotation?
 @Documented
-@Target(ElementType.TYPE)
+@Target(ElementType.METHOD)
 @Retention(RetentionPolicy.CLASS)
-public @interface ThreadSafe {
+public @interface Synchronized {
 }

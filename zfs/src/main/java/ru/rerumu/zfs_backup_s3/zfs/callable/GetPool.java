@@ -2,6 +2,7 @@ package ru.rerumu.zfs_backup_s3.zfs.callable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.rerumu.zfs_backup_s3.utils.CallableOnlyOnce;
 import ru.rerumu.zfs_backup_s3.utils.processes.StdLineConsumer;
 import ru.rerumu.zfs_backup_s3.utils.processes.factories.ProcessWrapperFactory;
 import ru.rerumu.zfs_backup_s3.utils.processes.impl.StdProcessorImpl;
@@ -14,7 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 
-public class GetPool implements Callable<Pool> {
+
+// TODO: Check thread safe
+public class GetPool extends CallableOnlyOnce<Pool> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final String poolName;
     private final ProcessWrapperFactory processWrapperFactory;
@@ -56,7 +59,7 @@ public class GetPool implements Callable<Pool> {
     }
 
     @Override
-    public Pool call() throws Exception {
+    public Pool callOnce() throws Exception {
         List<String> datasetNames = getDatasetNames();
 
         List<Dataset> datasets = new ArrayList<>();
