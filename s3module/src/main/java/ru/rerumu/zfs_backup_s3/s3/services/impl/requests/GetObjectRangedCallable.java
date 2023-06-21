@@ -15,6 +15,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.HexFormat;
 import java.util.concurrent.Callable;
 
+// TODO: Check thread safe
 public class GetObjectRangedCallable implements Callable<byte[]> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final String key;

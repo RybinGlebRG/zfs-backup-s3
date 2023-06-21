@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
+// TODO: Check thread safe
 public class ReceiveServiceImpl implements ReceiveService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 

@@ -9,6 +9,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.util.function.Consumer;
 
+// TODO: Check thread safe
 public class StdConsumerFactoryImpl implements StdConsumerFactory {
 
     private final S3Service s3Service;

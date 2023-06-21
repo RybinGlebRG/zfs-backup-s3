@@ -1,6 +1,7 @@
 package ru.rerumu.zfs_backup_s3.zfs.models;
 
 
+// TODO: Check thread safe
 public record Snapshot(String dataset, String name) {
     private final static String DELIMITER ="@";
 

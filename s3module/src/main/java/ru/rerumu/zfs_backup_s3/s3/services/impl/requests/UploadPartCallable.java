@@ -15,6 +15,7 @@ import java.util.HexFormat;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 
+// TODO: Check thread safe
 public class UploadPartCallable implements Callable<UploadPartResult> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 

@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
+// TODO: Check thread safe
 public class CallableSupplierFactory {
 
     private final S3ClientFactory s3ClientFactory;

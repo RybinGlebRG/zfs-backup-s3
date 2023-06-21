@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+// TODO: Check thread safe
 public record Pool(@NonNull String name, @NonNull List<@NonNull Dataset> datasetList) {
 
     public Pool{

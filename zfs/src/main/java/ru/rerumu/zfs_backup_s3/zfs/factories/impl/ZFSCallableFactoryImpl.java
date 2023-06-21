@@ -13,6 +13,7 @@ import java.io.BufferedOutputStream;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
+// TODO: Check thread safe
 public class ZFSCallableFactoryImpl implements ZFSCallableFactory {
     private final ProcessWrapperFactory processWrapperFactory;
     private final StdConsumerFactory stdConsumerFactory;

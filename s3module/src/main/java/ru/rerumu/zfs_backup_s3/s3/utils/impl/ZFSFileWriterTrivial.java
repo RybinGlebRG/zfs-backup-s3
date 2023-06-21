@@ -10,6 +10,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+// TODO: Check thread safe
 public class ZFSFileWriterTrivial implements ZFSFileWriter {
     private final Logger logger = LoggerFactory.getLogger(ZFSFileWriterTrivial.class);
     private final long filePartSize;

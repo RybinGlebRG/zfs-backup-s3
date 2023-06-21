@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.Callable;
 
+// TODO: Check thread safe
 public class OnepartUploadCallable implements Callable<Void> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 

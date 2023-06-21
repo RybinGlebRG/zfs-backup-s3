@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+// TODO: Check thread safe
 public class S3CallableFactoryImpl implements S3CallableFactory {
     private final int maxPartSize;
     private final S3Storage s3Storage;

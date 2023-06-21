@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
+// TODO: Check thread safe
 public class S3ServiceFactoryImpl implements S3ServiceFactory {
 
     @Override

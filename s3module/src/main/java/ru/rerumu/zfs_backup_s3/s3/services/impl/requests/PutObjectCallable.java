@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
+// TODO: Check thread safe
 // TODO: Check nullable
 public final class PutObjectCallable implements Callable<Void> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());

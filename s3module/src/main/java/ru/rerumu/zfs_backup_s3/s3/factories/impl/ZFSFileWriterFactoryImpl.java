@@ -7,6 +7,7 @@ import ru.rerumu.zfs_backup_s3.s3.utils.impl.ZFSFileWriterTrivial;
 import java.io.IOException;
 import java.nio.file.Path;
 
+// TODO: Check thread safe
 public class ZFSFileWriterFactoryImpl implements ZFSFileWriterFactory {
     private final long filePartSize;
 

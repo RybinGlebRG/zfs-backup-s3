@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Optional;
 
+// TODO: Check thread safe
 public class InputStreamUtils {
 
     public static Optional<byte[]> readNext(InputStream inputStream, Integer n) throws IOException {

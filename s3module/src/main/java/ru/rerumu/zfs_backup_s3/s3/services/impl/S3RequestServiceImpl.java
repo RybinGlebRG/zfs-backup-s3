@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+// TODO: Check thread safe
 public class S3RequestServiceImpl implements S3RequestService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 

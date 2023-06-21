@@ -15,6 +15,7 @@ import ru.rerumu.zfs_backup_s3.zfs.models.Snapshot;
 
 
 // TODO: Use resume tokens?
+// TODO: Check thread safe
 public class SendServiceImpl implements SendService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final SnapshotNamingService snapshotNamingService;

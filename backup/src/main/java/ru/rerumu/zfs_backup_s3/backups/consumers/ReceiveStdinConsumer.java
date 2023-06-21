@@ -7,6 +7,7 @@ import ru.rerumu.zfs_backup_s3.s3.S3Service;
 import java.io.BufferedOutputStream;
 import java.util.function.Consumer;
 
+// TODO: Check thread safe
 public class ReceiveStdinConsumer implements Consumer<BufferedOutputStream> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final S3Service s3Service;

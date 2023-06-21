@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
+// TODO: Check thread safe
 public class EntityFactory {
     public EntityFactory() throws IOException {
     }

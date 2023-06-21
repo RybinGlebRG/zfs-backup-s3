@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
+// TODO: Check thread safe
 public class AbortMultipartUploadCallable implements Callable<AbortMultipartUploadResponse> {
     private final String bucketName;
     private final String key;

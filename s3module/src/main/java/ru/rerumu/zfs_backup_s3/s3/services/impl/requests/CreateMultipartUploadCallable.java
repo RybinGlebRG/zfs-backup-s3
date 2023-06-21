@@ -8,6 +8,7 @@ import software.amazon.awssdk.services.s3.model.CreateMultipartUploadResponse;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 
+// TODO: Check thread safe
 @ThreadSafe
 public final class CreateMultipartUploadCallable implements Callable<String> {
     private final String bucketName;

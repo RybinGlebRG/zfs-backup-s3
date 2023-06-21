@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+// TODO: Check thread safe
 public class MultipartDownloadCallable implements Callable<Void> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 

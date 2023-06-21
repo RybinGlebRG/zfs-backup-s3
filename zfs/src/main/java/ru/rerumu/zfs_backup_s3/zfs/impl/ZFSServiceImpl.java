@@ -13,6 +13,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.util.function.Consumer;
 
+// TODO: Check thread safe
 public class ZFSServiceImpl implements ZFSService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final ZFSCallableFactory zfsCallableFactory;

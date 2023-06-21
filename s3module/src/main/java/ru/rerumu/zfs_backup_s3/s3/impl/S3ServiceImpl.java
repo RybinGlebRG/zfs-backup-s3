@@ -19,6 +19,7 @@ import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
 
+// TODO: Check thread safe
 public class S3ServiceImpl implements S3Service {
     private static final String PART_SUFFIX = ".part";
 

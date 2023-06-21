@@ -12,6 +12,7 @@ import software.amazon.awssdk.services.s3.model.CompletedPart;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+// TODO: Check thread safe
 public class CompleteMultipartUploadCallable implements Callable<Void> {
 
     private final List<CompletedPart> completedPartList;

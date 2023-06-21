@@ -8,6 +8,7 @@ import java.io.BufferedInputStream;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+// TODO: Check thread safe
 public class SendStdoutConsumer implements Consumer<BufferedInputStream> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final S3Service s3Service;

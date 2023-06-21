@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
+// TODO: Check thread safe
 public class ListCallable implements Callable<List<String>> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 

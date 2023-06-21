@@ -8,6 +8,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+// TODO: Check thread safe
 public class ZFSFileReaderTrivial implements ZFSFileReader {
     private final Logger logger = LoggerFactory.getLogger(ZFSFileReaderTrivial.class);
     private final BufferedOutputStream bufferedOutputStream;

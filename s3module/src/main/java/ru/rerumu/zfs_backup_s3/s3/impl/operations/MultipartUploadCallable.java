@@ -17,6 +17,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 
 // TODO: Send with the same part number?
+// TODO: Check thread safe
 public class MultipartUploadCallable implements Callable<Void> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 

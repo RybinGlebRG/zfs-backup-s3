@@ -12,6 +12,7 @@ import ru.rerumu.zfs_backup_s3.zfs.factories.StdConsumerFactory;
 import ru.rerumu.zfs_backup_s3.zfs.factories.ZFSCallableFactory;
 import ru.rerumu.zfs_backup_s3.zfs.services.impl.SnapshotServiceImpl;
 
+// TODO: Check thread safe
 public class ZFSServiceFactoryImpl implements ZFSServiceFactory {
     @Override
     public ZFSService getZFSService() {

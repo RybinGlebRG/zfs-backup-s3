@@ -7,6 +7,7 @@ import ru.rerumu.zfs_backup_s3.s3.utils.impl.ZFSFileReaderTrivial;
 import java.io.BufferedOutputStream;
 import java.nio.file.Path;
 
+// TODO: Check thread safe
 public class ZFSFileReaderFactoryImpl implements ZFSFileReaderFactory {
 
     @Override

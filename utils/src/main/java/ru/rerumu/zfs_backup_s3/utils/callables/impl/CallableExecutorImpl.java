@@ -7,6 +7,7 @@ import ru.rerumu.zfs_backup_s3.utils.callables.CallableExecutor;
 import java.util.concurrent.*;
 import java.util.function.Supplier;
 
+// TODO: Check thread safe
 public class CallableExecutorImpl implements CallableExecutor {
     private final static Long DELAY = 10L;
 

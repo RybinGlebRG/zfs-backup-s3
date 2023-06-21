@@ -6,6 +6,7 @@ import software.amazon.awssdk.regions.Region;
 import java.net.URI;
 import java.nio.file.Path;
 
+// TODO: Check thread safe
 public class S3Storage {
     private final Region region;
     private final String bucketName;

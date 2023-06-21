@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+// TODO: Check thread safe
 public class FileManagerImpl implements FileManager {
     private final String unique;
     private final Path tempDir;
