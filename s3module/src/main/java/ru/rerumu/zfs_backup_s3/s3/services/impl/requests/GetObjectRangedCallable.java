@@ -2,6 +2,7 @@ package ru.rerumu.zfs_backup_s3.s3.services.impl.requests;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.rerumu.zfs_backup_s3.utils.ByteArray;
 import ru.rerumu.zfs_backup_s3.utils.MD5;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
@@ -61,8 +62,8 @@ public class GetObjectRangedCallable implements Callable<byte[]> {
                 bytesHex.substring(bytesHex.length()-50)
         ));
 
-        byte[] md5 = MD5.getMD5Bytes(responseBytes);
-        logger.debug(String.format("Downloaded MD5 = '%s'",MD5.getMD5Hex(responseBytes)));
+        byte[] md5 = MD5.getMD5Bytes(new ByteArray(responseBytes));
+        logger.debug(String.format("Downloaded MD5 = '%s'",MD5.getMD5Hex(new ByteArray(responseBytes))));
         logger.debug("Finished loading range");
 
         return md5;

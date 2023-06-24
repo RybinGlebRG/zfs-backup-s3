@@ -14,7 +14,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 @ThreadSafe
-public class GetDatasetStringStdConsumer implements Consumer<BufferedInputStream> {
+public final class GetDatasetStringStdConsumer implements Consumer<BufferedInputStream> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final List<String> res;
 

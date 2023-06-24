@@ -1,5 +1,6 @@
 package ru.rerumu.zfs_backup_s3.zfs;
 
+import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
 import ru.rerumu.zfs_backup_s3.utils.processes.factories.ProcessFactory;
 import ru.rerumu.zfs_backup_s3.utils.processes.factories.ProcessWrapperFactory;
 import ru.rerumu.zfs_backup_s3.utils.processes.factories.impl.ProcessFactoryImpl;
@@ -12,8 +13,8 @@ import ru.rerumu.zfs_backup_s3.zfs.factories.StdConsumerFactory;
 import ru.rerumu.zfs_backup_s3.zfs.factories.ZFSCallableFactory;
 import ru.rerumu.zfs_backup_s3.zfs.services.impl.SnapshotServiceImpl;
 
-// TODO: Check thread safe
-public class ZFSServiceFactoryImpl implements ZFSServiceFactory {
+@ThreadSafe
+public final class ZFSServiceFactoryImpl implements ZFSServiceFactory {
     @Override
     public ZFSService getZFSService() {
         StdConsumerFactory stdConsumerFactory = new StdConsumerFactoryImpl();

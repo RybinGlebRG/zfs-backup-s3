@@ -1,14 +1,17 @@
 package ru.rerumu.zfs_backup_s3.zfs.models;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
+import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-// TODO: Check thread safe
-public record Pool(@NonNull String name, @NonNull List<@NonNull Dataset> datasetList) {
+@ThreadSafe
+public record Pool(
+        @NonNull String name,
+        @NonNull List<@NonNull Dataset> datasetList) {
 
     public Pool{
         Objects.requireNonNull(name,"Pool name cannot be null");

@@ -1,7 +1,9 @@
 package ru.rerumu.zfs_backup_s3.zfs.impl;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.rerumu.zfs_backup_s3.utils.NotThreadSafe;
 import ru.rerumu.zfs_backup_s3.zfs.ZFSService;
 import ru.rerumu.zfs_backup_s3.zfs.services.SnapshotService;
 import ru.rerumu.zfs_backup_s3.zfs.models.Dataset;
@@ -11,16 +13,22 @@ import ru.rerumu.zfs_backup_s3.zfs.models.Snapshot;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.util.Objects;
 import java.util.function.Consumer;
 
-// TODO: Check thread safe
-public class ZFSServiceImpl implements ZFSService {
+@NotThreadSafe
+public final class ZFSServiceImpl implements ZFSService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final ZFSCallableFactory zfsCallableFactory;
 
     private final SnapshotService snapshotService;
 
-    public ZFSServiceImpl(ZFSCallableFactory zfsCallableFactory, SnapshotService snapshotService) {
+    public ZFSServiceImpl(
+            @NonNull ZFSCallableFactory zfsCallableFactory,
+            @NonNull SnapshotService snapshotService
+    ) {
+        Objects.requireNonNull(zfsCallableFactory);
+        Objects.requireNonNull(snapshotService);
         this.zfsCallableFactory = zfsCallableFactory;
         this.snapshotService = snapshotService;
     }

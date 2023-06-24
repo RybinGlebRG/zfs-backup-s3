@@ -1,10 +1,14 @@
 package ru.rerumu.zfs_backup_s3.s3.services.impl.requests;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.zfs_backup_s3.s3.exceptions.IncorrectHashException;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.requests.models.UploadPartResult;
+import ru.rerumu.zfs_backup_s3.utils.ByteArray;
+import ru.rerumu.zfs_backup_s3.utils.CallableOnlyOnce;
 import ru.rerumu.zfs_backup_s3.utils.MD5;
+import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CompletedPart;
@@ -15,8 +19,8 @@ import java.util.HexFormat;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 
-// TODO: Check thread safe
-public class UploadPartCallable implements Callable<UploadPartResult> {
+@ThreadSafe
+public class UploadPartCallable extends CallableOnlyOnce<UploadPartResult> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final String bucketName;
@@ -24,11 +28,21 @@ public class UploadPartCallable implements Callable<UploadPartResult> {
     private final S3Client s3Client;
     private final String uploadId;
     private final Integer partNumber;
-    private final byte[] data;
+    private final ByteArray data;
 
-    public UploadPartCallable(String bucketName, String key, S3Client s3Client, String uploadId, Integer partNumber, byte[] data) {
-        Objects.requireNonNull(data);
+    public UploadPartCallable(
+            @NonNull String bucketName,
+            @NonNull String key,
+            @NonNull S3Client s3Client,
+            @NonNull String uploadId,
+            @NonNull Integer partNumber,
+            @NonNull ByteArray data) {
+        Objects.requireNonNull(bucketName);
+        Objects.requireNonNull(key);
+        Objects.requireNonNull(s3Client);
+        Objects.requireNonNull(uploadId);
         Objects.requireNonNull(partNumber);
+        Objects.requireNonNull(data);
         this.bucketName = bucketName;
         this.key = key;
         this.s3Client = s3Client;
@@ -38,7 +52,7 @@ public class UploadPartCallable implements Callable<UploadPartResult> {
     }
 
     @Override
-    public UploadPartResult call() throws Exception {
+    protected UploadPartResult callOnce() throws Exception {
         String md5 = MD5.getMD5Hex(data);
 
         UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
@@ -48,13 +62,13 @@ public class UploadPartCallable implements Callable<UploadPartResult> {
                 .partNumber(partNumber).build();
 
         UploadPartResponse response = s3Client.uploadPart(
-                uploadPartRequest, RequestBody.fromBytes(data)
+                uploadPartRequest, RequestBody.fromBytes(data.array())
         );
 
-        String bytesHex = HexFormat.of().formatHex(data);
+        String bytesHex = HexFormat.of().formatHex(data.array());
         logger.trace(String.format(
                 "Uploaded %d bytes:\n%s...%s",
-                data.length,
+                data.array().length,
                 bytesHex.substring(0,50),
                 bytesHex.substring(bytesHex.length()-50)
         ));

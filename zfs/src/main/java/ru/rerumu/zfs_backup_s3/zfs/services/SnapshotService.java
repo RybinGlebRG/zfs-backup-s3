@@ -1,9 +1,12 @@
 package ru.rerumu.zfs_backup_s3.zfs.services;
 
+import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
 import ru.rerumu.zfs_backup_s3.zfs.models.Snapshot;
 import ru.rerumu.zfs_backup_s3.zfs.models.Dataset;
+import ru.rerumu.zfs_backup_s3.zfs.services.impl.SnapshotServiceImpl;
 
-public interface SnapshotService {
+@ThreadSafe
+public sealed interface SnapshotService permits SnapshotServiceImpl {
 
     Snapshot createRecursiveSnapshot(Dataset dataset, String name);
 }

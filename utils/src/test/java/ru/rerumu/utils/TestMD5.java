@@ -3,6 +3,7 @@ package ru.rerumu.utils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import ru.rerumu.zfs_backup_s3.utils.ByteArray;
 import ru.rerumu.zfs_backup_s3.utils.MD5;
 
 import java.nio.file.Files;
@@ -55,7 +56,7 @@ class TestMD5 {
         byte[] data =  new byte[1000];
         new Random().nextBytes(data);
 
-        MD5.getMD5Hex(data);
+        MD5.getMD5Hex(new ByteArray(data));
     }
 
     @Test
@@ -80,7 +81,7 @@ class TestMD5 {
         byte[] data =  new byte[1000];
         new Random().nextBytes(data);
 
-        MD5.getMD5Bytes(data);
+        MD5.getMD5Bytes(new ByteArray(data));
     }
 
     @Test

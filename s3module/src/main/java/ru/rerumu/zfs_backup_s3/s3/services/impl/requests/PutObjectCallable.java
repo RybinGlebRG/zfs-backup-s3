@@ -3,6 +3,7 @@ package ru.rerumu.zfs_backup_s3.s3.services.impl.requests;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.zfs_backup_s3.s3.exceptions.IncorrectHashException;
+import ru.rerumu.zfs_backup_s3.utils.ByteArray;
 import ru.rerumu.zfs_backup_s3.utils.MD5;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -41,7 +42,7 @@ public final class PutObjectCallable implements Callable<Void> {
         try (BufferedInputStream bufferedInputStream = new BufferedInputStream(Files.newInputStream(sourcePath))) {
 
             byte[] buf = bufferedInputStream.readAllBytes();
-            String md5 = MD5.getMD5Hex(buf);
+            String md5 = MD5.getMD5Hex(new ByteArray(buf));
 
 
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()

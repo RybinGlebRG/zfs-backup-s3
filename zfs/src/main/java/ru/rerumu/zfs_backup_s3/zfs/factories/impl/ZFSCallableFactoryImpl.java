@@ -1,5 +1,7 @@
 package ru.rerumu.zfs_backup_s3.zfs.factories.impl;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
 import ru.rerumu.zfs_backup_s3.zfs.callable.*;
 import ru.rerumu.zfs_backup_s3.zfs.factories.StdConsumerFactory;
 import ru.rerumu.zfs_backup_s3.zfs.models.Snapshot;
@@ -10,23 +12,26 @@ import ru.rerumu.zfs_backup_s3.utils.processes.factories.ProcessWrapperFactory;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
-// TODO: Check thread safe
-public class ZFSCallableFactoryImpl implements ZFSCallableFactory {
+@ThreadSafe
+public final class ZFSCallableFactoryImpl implements ZFSCallableFactory {
     private final ProcessWrapperFactory processWrapperFactory;
     private final StdConsumerFactory stdConsumerFactory;
 
-    // TODO: Check not null
-    public ZFSCallableFactoryImpl(ProcessWrapperFactory processWrapperFactory, StdConsumerFactory stdConsumerFactory) {
+    public ZFSCallableFactoryImpl(
+            @NonNull ProcessWrapperFactory processWrapperFactory,
+            @NonNull StdConsumerFactory stdConsumerFactory) {
+        Objects.requireNonNull(processWrapperFactory);
+        Objects.requireNonNull(stdConsumerFactory);
         this.processWrapperFactory = processWrapperFactory;
         this.stdConsumerFactory = stdConsumerFactory;
     }
 
     @Override
     public Callable<Pool> getPoolCallable(String poolName) {
-        // TODO: Thread safe?
         return new GetPool(poolName, processWrapperFactory,this,stdConsumerFactory);
     }
 

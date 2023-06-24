@@ -2,7 +2,7 @@ package ru.rerumu.zfs_backup_s3.utils;
 
 import java.util.concurrent.Callable;
 
-
+@NotThreadSafe
 public abstract class CallableOnlyOnce<T> implements Callable<T> {
 
     private boolean isCalled = false;

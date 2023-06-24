@@ -13,16 +13,16 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-// TODO: Thread safety?
+@ThreadSafe
 public class MD5 {
 
     private static final Logger logger = LoggerFactory.getLogger(MD5.class);
 
-    public static String getMD5Hex(byte[] bytes)
+    public static String getMD5Hex(ByteArray byteArray)
             throws NoSuchAlgorithmException,
             IOException {
         MessageDigest md = MessageDigest.getInstance("MD5");
-        try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+        try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArray.array());
              BufferedInputStream bufferedInputStream = new BufferedInputStream(byteArrayInputStream)) {
 
             String md5 = Hex.encodeHexString(md.digest(bufferedInputStream.readAllBytes()));
@@ -32,11 +32,11 @@ public class MD5 {
         }
     }
 
-    public static byte[] getMD5Bytes(byte[] bytes)
+    public static byte[] getMD5Bytes(ByteArray byteArray)
             throws NoSuchAlgorithmException,
             IOException {
         MessageDigest md = MessageDigest.getInstance("MD5");
-        try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+        try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArray.array());
              BufferedInputStream bufferedInputStream = new BufferedInputStream(byteArrayInputStream)) {
             return md.digest(bufferedInputStream.readAllBytes());
         }

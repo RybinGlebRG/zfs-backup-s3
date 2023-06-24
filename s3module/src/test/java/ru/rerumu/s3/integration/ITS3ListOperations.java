@@ -16,6 +16,7 @@ import ru.rerumu.zfs_backup_s3.s3.models.S3Storage;
 import ru.rerumu.zfs_backup_s3.s3.services.S3RequestService;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.S3RequestServiceImpl;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.requests.CallableSupplierFactory;
+import ru.rerumu.zfs_backup_s3.utils.ImmutableList;
 import ru.rerumu.zfs_backup_s3.utils.callables.impl.CallableExecutorImpl;
 import software.amazon.awssdk.regions.Region;
 
@@ -55,7 +56,7 @@ public class ITS3ListOperations {
                 "STANDARD"
         );
 
-        S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(List.of(s3Storage));
+        S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(new ImmutableList<>(List.of(s3Storage)));
         S3RequestService s3RequestService = new S3RequestServiceImpl(
                 new CallableExecutorImpl(),
                 // TODO: Thread safe?
@@ -144,7 +145,7 @@ public class ITS3ListOperations {
                 "STANDARD"
         );
 
-        S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(List.of(s3Storage));
+        S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(new ImmutableList<>(List.of(s3Storage)));
         S3RequestService s3RequestService = new S3RequestServiceImpl(
                 new CallableExecutorImpl(),
                 // TODO: Thread safe?
@@ -231,7 +232,7 @@ public class ITS3ListOperations {
                 "STANDARD"
         );
 
-        S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(List.of(s3Storage));
+        S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(new ImmutableList<>(List.of(s3Storage)));
         S3RequestService s3RequestService = new S3RequestServiceImpl(
                 new CallableExecutorImpl(),
                 // TODO: Thread safe?
@@ -316,7 +317,7 @@ public class ITS3ListOperations {
                 "STANDARD"
         );
 
-        S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(List.of(s3Storage));
+        S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(new ImmutableList<>(List.of(s3Storage)));
         S3RequestService s3RequestService = new S3RequestServiceImpl(
                 new CallableExecutorImpl(),
                 // TODO: Thread safe?

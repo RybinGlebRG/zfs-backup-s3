@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import ru.rerumu.zfs_backup_s3.s3.exceptions.IncorrectHashException;
 import ru.rerumu.zfs_backup_s3.s3.services.S3RequestService;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.requests.models.Range;
+import ru.rerumu.zfs_backup_s3.utils.ByteArray;
 import ru.rerumu.zfs_backup_s3.utils.MD5;
 
 import java.io.IOException;
@@ -40,7 +41,7 @@ public class MultipartDownloadCallable implements Callable<Void> {
         if (storedMd5Hex.contains("-")){
             byte[] concatenatedMd5 = md5List.stream()
                     .reduce(new byte[0],ArrayUtils::addAll,ArrayUtils::addAll);
-            md5 = MD5.getMD5Hex(concatenatedMd5)+"-"+partNumber;
+            md5 = MD5.getMD5Hex(new ByteArray(concatenatedMd5))+"-"+partNumber;
         } else {
             md5 = MD5.getMD5Hex(path);
         }

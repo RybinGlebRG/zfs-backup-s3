@@ -6,6 +6,9 @@ import ru.rerumu.zfs_backup_s3.s3.exceptions.IncorrectHashException;
 import ru.rerumu.zfs_backup_s3.s3.services.S3RequestService;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.requests.models.UploadPartResult;
 import ru.rerumu.zfs_backup_s3.s3.utils.InputStreamUtils;
+import ru.rerumu.zfs_backup_s3.utils.ByteArray;
+import ru.rerumu.zfs_backup_s3.utils.ByteArrayList;
+import ru.rerumu.zfs_backup_s3.utils.ImmutableList;
 import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.BufferedInputStream;
@@ -24,7 +27,7 @@ public class MultipartUploadCallable implements Callable<Void> {
     private final Path path;
     private final String key;
     private final int maxPartSize;
-    private final List<byte[]> md5List = new ArrayList<>();
+    private final List<ByteArray> md5List = new ArrayList<>();
     private final List<CompletedPart> completedPartList = new ArrayList<>();
     private String uploadId = null;
 
@@ -48,11 +51,11 @@ public class MultipartUploadCallable implements Callable<Void> {
 
             logger.info(String.format("uploadId = '%s'", uploadId));
 
-            Optional<byte[]> optionalBytes = InputStreamUtils.readNext(bufferedInputStream, maxPartSize);
+            Optional<ByteArray> optionalBytes = InputStreamUtils.readNext(bufferedInputStream, maxPartSize);
 
             while (optionalBytes.isPresent()) {
                 partNumber++;
-                byte[] data = optionalBytes.get();
+                ByteArray data = optionalBytes.get();
 
                 UploadPartResult partResult = s3RequestService.uploadPart(
                         key,
@@ -60,19 +63,19 @@ public class MultipartUploadCallable implements Callable<Void> {
                         partNumber,
                         data
                 );
-                md5List.add(partResult.md5());
+                md5List.add(new ByteArray(partResult.md5()));
                 completedPartList.add(partResult.completedPart());
-                uploadedBytesLen+=data.length;
+                uploadedBytesLen+=data.array().length;
                 logger.debug(String.format("Uploaded %d bytes",uploadedBytesLen));
 
                 optionalBytes = InputStreamUtils.readNext(bufferedInputStream, maxPartSize);
             }
 
             s3RequestService.completeMultipartUpload(
-                    completedPartList,
+                    new ImmutableList<>(completedPartList),
                     key,
                     uploadId,
-                    md5List
+                    new ByteArrayList(md5List)
             );
 
         } catch (Exception e) {

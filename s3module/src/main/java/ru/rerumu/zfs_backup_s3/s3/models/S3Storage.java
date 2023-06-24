@@ -1,13 +1,15 @@
 package ru.rerumu.zfs_backup_s3.s3.models;
 
+import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.regions.Region;
 
 import java.net.URI;
 import java.nio.file.Path;
 
-// TODO: Check thread safe
-public class S3Storage {
+// TODO: Change to Record
+@ThreadSafe
+public final class S3Storage {
     private final Region region;
     private final String bucketName;
     private final AwsBasicCredentials credentials;

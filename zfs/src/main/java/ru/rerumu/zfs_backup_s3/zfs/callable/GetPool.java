@@ -1,8 +1,10 @@
 package ru.rerumu.zfs_backup_s3.zfs.callable;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.zfs_backup_s3.utils.CallableOnlyOnce;
+import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
 import ru.rerumu.zfs_backup_s3.utils.processes.StdLineConsumer;
 import ru.rerumu.zfs_backup_s3.utils.processes.factories.ProcessWrapperFactory;
 import ru.rerumu.zfs_backup_s3.utils.processes.impl.StdProcessorImpl;
@@ -13,19 +15,28 @@ import ru.rerumu.zfs_backup_s3.zfs.models.Pool;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.*;
 
 
-// TODO: Check thread safe
-public class GetPool extends CallableOnlyOnce<Pool> {
+@ThreadSafe
+public final class GetPool extends CallableOnlyOnce<Pool> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final String poolName;
     private final ProcessWrapperFactory processWrapperFactory;
     private final StdConsumerFactory stdConsumerFactory;
     private final ZFSCallableFactory zfsCallableFactory;
 
-    // TODO: Check not null
-    public GetPool(String poolName, ProcessWrapperFactory processWrapperFactory, ZFSCallableFactory zfsCallableFactory, StdConsumerFactory stdConsumerFactory) {
+    public GetPool(
+            @NonNull String poolName,
+            @NonNull ProcessWrapperFactory processWrapperFactory,
+            @NonNull ZFSCallableFactory zfsCallableFactory,
+            @NonNull StdConsumerFactory stdConsumerFactory
+    ) {
+        Objects.requireNonNull(poolName);
+        Objects.requireNonNull(processWrapperFactory);
+        Objects.requireNonNull(zfsCallableFactory);
+        Objects.requireNonNull(stdConsumerFactory);
         this.poolName = poolName;
         this.processWrapperFactory = processWrapperFactory;
         this.zfsCallableFactory = zfsCallableFactory;
@@ -59,12 +70,11 @@ public class GetPool extends CallableOnlyOnce<Pool> {
     }
 
     @Override
-    public Pool callOnce() throws Exception {
+    protected Pool callOnce() throws Exception {
         List<String> datasetNames = getDatasetNames();
 
         List<Dataset> datasets = new ArrayList<>();
         for (String name: datasetNames){
-//            Dataset dataset = zfsService.getDataset(name);
             Dataset dataset = zfsCallableFactory.getDatasetCallable(name).call();
             datasets.add(dataset);
         }

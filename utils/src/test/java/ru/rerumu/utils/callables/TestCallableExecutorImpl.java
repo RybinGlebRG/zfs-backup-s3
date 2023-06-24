@@ -2,6 +2,7 @@ package ru.rerumu.utils.callables;
 
 import org.junit.jupiter.api.Test;
 import ru.rerumu.zfs_backup_s3.utils.callables.impl.CallableExecutorImpl;
+import ru.rerumu.zfs_backup_s3.utils.callables.impl.CallableSupplier;
 
 import java.util.concurrent.Callable;
 
@@ -17,7 +18,7 @@ public class TestCallableExecutorImpl {
 
         when(callable.call()).thenReturn("Test");
 
-        callableExecutor.callWithRetry(()->callable);
+        callableExecutor.callWithRetry(new CallableSupplier<>(()->callable));
 
         verify(callable,times(1)).call();
     }
@@ -32,7 +33,7 @@ public class TestCallableExecutorImpl {
                 .thenThrow(IllegalArgumentException.class)
                 .thenReturn("Test");
 
-        callableExecutor.callWithRetry(()->callable);
+        callableExecutor.callWithRetry(new CallableSupplier<>(()->callable));
 
         verify(callable,times(2)).call();
     }

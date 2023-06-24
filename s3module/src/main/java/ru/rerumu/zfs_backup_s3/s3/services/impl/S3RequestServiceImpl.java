@@ -6,6 +6,9 @@ import ru.rerumu.zfs_backup_s3.s3.services.S3RequestService;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.requests.models.ListObject;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.requests.models.UploadPartResult;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.requests.CallableSupplierFactory;
+import ru.rerumu.zfs_backup_s3.utils.ByteArray;
+import ru.rerumu.zfs_backup_s3.utils.ByteArrayList;
+import ru.rerumu.zfs_backup_s3.utils.ImmutableList;
 import ru.rerumu.zfs_backup_s3.utils.callables.CallableExecutor;
 import software.amazon.awssdk.services.s3.model.*;
 
@@ -29,7 +32,7 @@ public class S3RequestServiceImpl implements S3RequestService {
 
     // TODO: Max part number?
     @Override
-    public UploadPartResult uploadPart(String key, String uploadId, Integer partNumber, byte[] data) {
+    public UploadPartResult uploadPart(String key, String uploadId, Integer partNumber, ByteArray data) {
         UploadPartResult partResult = callableExecutor.callWithRetry(
                 callableSupplierFactory.getUploadPartSupplier(key, uploadId, partNumber, data)
         );
@@ -56,7 +59,7 @@ public class S3RequestServiceImpl implements S3RequestService {
     }
 
     @Override
-    public void completeMultipartUpload(List<CompletedPart> completedPartList, String key, String uploadId, List<byte[]> md5List) {
+    public void completeMultipartUpload(ImmutableList<CompletedPart> completedPartList, String key, String uploadId, ByteArrayList md5List) {
         callableExecutor.callWithRetry(
                 callableSupplierFactory.getCompleteMultipartUploadSupplier(completedPartList, key, uploadId, md5List)
         );

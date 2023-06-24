@@ -1,13 +1,11 @@
 package ru.rerumu.zfs_backup_s3.zfs.models;
 
 
-// TODO: Check thread safe
+import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
+
+@ThreadSafe
 public record Snapshot(String dataset, String name) {
     private final static String DELIMITER ="@";
-
-//    public Snapshot(String dataset, String name){
-//        this(dataset,name,dataset+ DELIMITER +name);
-//    }
 
     public Snapshot(String fullName){
         this(

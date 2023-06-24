@@ -1,5 +1,7 @@
 package ru.rerumu.zfs_backup_s3.zfs.factories;
 
+import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
+import ru.rerumu.zfs_backup_s3.zfs.factories.impl.ZFSCallableFactoryImpl;
 import ru.rerumu.zfs_backup_s3.zfs.models.Snapshot;
 import ru.rerumu.zfs_backup_s3.zfs.models.Dataset;
 import ru.rerumu.zfs_backup_s3.zfs.models.Pool;
@@ -10,8 +12,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
-// TODO: Check thread safe
-public interface ZFSCallableFactory {
+@ThreadSafe
+public sealed interface ZFSCallableFactory permits ZFSCallableFactoryImpl {
 
     Callable<Pool> getPoolCallable(String poolName);
     Callable<Dataset> getDatasetCallable(String datasetName);

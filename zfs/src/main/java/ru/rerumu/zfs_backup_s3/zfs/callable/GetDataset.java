@@ -20,7 +20,7 @@ import java.util.Objects;
 import java.util.concurrent.Callable;
 
 @ThreadSafe
-public class GetDataset extends CallableOnlyOnce<Dataset> {
+public final class GetDataset extends CallableOnlyOnce<Dataset> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final String datasetName;
 
