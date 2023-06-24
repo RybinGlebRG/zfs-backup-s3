@@ -7,11 +7,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.zfs_backup_s3.zfs.factories.ZFSCallableFactory;
+import ru.rerumu.zfs_backup_s3.zfs.factories.ZFSCallableFactoryMock;
 import ru.rerumu.zfs_backup_s3.zfs.impl.ZFSServiceImpl;
 import ru.rerumu.zfs_backup_s3.zfs.models.Dataset;
 import ru.rerumu.zfs_backup_s3.zfs.models.Pool;
 import ru.rerumu.zfs_backup_s3.zfs.models.Snapshot;
 import ru.rerumu.zfs_backup_s3.zfs.services.SnapshotService;
+import ru.rerumu.zfs_backup_s3.zfs.services.SnapshotServiceMock;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -25,7 +27,7 @@ import static org.mockito.Mockito.*;
 public class TestZFSServiceImpl {
 
     @Mock
-    ZFSCallableFactory zfsCallableFactory;
+    ZFSCallableFactoryMock zfsCallableFactory;
 
     @Mock
     Callable<Pool> poolCallable;
@@ -34,7 +36,7 @@ public class TestZFSServiceImpl {
     Callable<Void> voidCallable;
 
     @Mock
-    SnapshotService snapshotService;
+    SnapshotServiceMock snapshotService;
 
 
     @Test

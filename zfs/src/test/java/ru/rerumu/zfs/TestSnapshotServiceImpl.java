@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.zfs_backup_s3.zfs.callable.CreateSnapshot;
 import ru.rerumu.zfs_backup_s3.zfs.callable.ListSnapshots;
 import ru.rerumu.zfs_backup_s3.zfs.factories.ZFSCallableFactory;
+import ru.rerumu.zfs_backup_s3.zfs.factories.ZFSCallableFactoryMock;
 import ru.rerumu.zfs_backup_s3.zfs.services.impl.SnapshotServiceImpl;
 import ru.rerumu.zfs_backup_s3.zfs.models.Dataset;
 import ru.rerumu.zfs_backup_s3.zfs.models.Snapshot;
@@ -25,12 +26,12 @@ import static org.mockito.Mockito.*;
 public class TestSnapshotServiceImpl {
 
     @Mock
-    CreateSnapshot createSnapshot = mock(CreateSnapshot.class);
+    CreateSnapshot createSnapshot;
     @Mock
-    ListSnapshots listSnapshots = mock(ListSnapshots.class);
+    ListSnapshots listSnapshots;
 
     @Mock
-    ZFSCallableFactory zfsCallableFactory;
+    ZFSCallableFactoryMock zfsCallableFactory;
 
     @Test
     void shouldCreateRecursive() throws Exception{

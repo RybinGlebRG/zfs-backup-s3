@@ -8,7 +8,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.zfs_backup_s3.utils.processes.ProcessWrapper;
 import ru.rerumu.zfs_backup_s3.utils.processes.StdProcessor;
+import ru.rerumu.zfs_backup_s3.utils.processes.StdProcessorMock;
 import ru.rerumu.zfs_backup_s3.utils.processes.factories.ProcessFactory;
+import ru.rerumu.zfs_backup_s3.utils.processes.factories.impl.ProcessFactoryMock;
 
 import java.io.IOException;
 import java.util.List;
@@ -21,13 +23,13 @@ public class TestProcessWrapper {
 
 
     @Mock
-    ProcessFactory processFactory;
+    ProcessFactoryMock processFactory;
 
     @Mock
     Process process;
 
     @Mock
-    StdProcessor stdProcessor;
+    StdProcessorMock stdProcessor;
 
     @Test
     void shouldBeCalled() throws Exception{

@@ -8,24 +8,22 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.zfs_backup_s3.s3.exceptions.IncorrectHashException;
 import ru.rerumu.zfs_backup_s3.s3.impl.operations.MultipartDownloadCallable;
-import ru.rerumu.zfs_backup_s3.s3.services.S3RequestService;
+import ru.rerumu.zfs_backup_s3.s3.services.impl.S3RequestServiceMock;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.requests.models.ListObject;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class TestMultipartDownloadCallable {
 
     @Mock
-    S3RequestService s3RequestService;
+    S3RequestServiceMock s3RequestService;
 
     @Test
     void shouldThrowException(@TempDir Path tempDir) throws Exception {

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.zfs_backup_s3.utils.processes.factories.ProcessWrapperFactory;
+import ru.rerumu.zfs_backup_s3.utils.processes.factories.ProcessWrapperFactoryMock;
 import ru.rerumu.zfs_backup_s3.zfs.callable.Receive;
 import ru.rerumu.zfs_backup_s3.zfs.models.Pool;
 
@@ -24,7 +25,7 @@ import static org.mockito.Mockito.when;
 public class TestReceive {
 
     @Mock
-    ProcessWrapperFactory processWrapperFactory;
+    ProcessWrapperFactoryMock processWrapperFactory;
     @Mock
     Callable<Void> processWrapper;
     @Mock

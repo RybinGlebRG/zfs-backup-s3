@@ -5,7 +5,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.zfs_backup_s3.utils.processes.factories.ProcessWrapperFactory;
+import ru.rerumu.zfs_backup_s3.utils.processes.factories.ProcessWrapperFactoryMock;
 import ru.rerumu.zfs_backup_s3.zfs.factories.StdConsumerFactory;
+import ru.rerumu.zfs_backup_s3.zfs.factories.StdConsumerFactoryMock;
 import ru.rerumu.zfs_backup_s3.zfs.factories.impl.ZFSCallableFactoryImpl;
 import ru.rerumu.zfs_backup_s3.zfs.models.Dataset;
 import ru.rerumu.zfs_backup_s3.zfs.models.Pool;
@@ -22,9 +24,9 @@ import static org.mockito.Mockito.mock;
 public class TestZFSCallableFactoryImpl {
 
     @Mock
-    ProcessWrapperFactory processWrapperFactory;
+    ProcessWrapperFactoryMock processWrapperFactory;
     @Mock
-    StdConsumerFactory stdConsumerFactory;
+    StdConsumerFactoryMock stdConsumerFactory;
 
     @Test
     void shouldCreate() {

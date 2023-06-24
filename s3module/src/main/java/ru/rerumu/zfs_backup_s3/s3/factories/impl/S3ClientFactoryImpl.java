@@ -26,6 +26,7 @@ public final class S3ClientFactoryImpl implements S3ClientFactory {
                     .region(s3Storage.getRegion())
                     .endpointOverride(s3Storage.getEndpoint())
                     .credentialsProvider(StaticCredentialsProvider.create(s3Storage.getCredentials()))
+                    .forcePathStyle(true)
                     .build();
             map.put(s3Storage,s3Client);
         }

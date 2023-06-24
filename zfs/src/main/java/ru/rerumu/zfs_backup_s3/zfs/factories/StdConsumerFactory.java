@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 @ThreadSafe
-public sealed interface StdConsumerFactory permits StdConsumerFactoryImpl {
+public sealed interface StdConsumerFactory permits StdConsumerFactoryMock, StdConsumerFactoryImpl {
 
     Consumer<BufferedInputStream> getDatasetStringStdConsumer(
             List<String> res

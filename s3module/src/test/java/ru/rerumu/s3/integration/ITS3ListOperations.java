@@ -35,10 +35,12 @@ import static org.mockito.ArgumentMatchers.any;
 @ExtendWith(MockitoExtension.class)
 public class ITS3ListOperations {
 
+    Map<String,String> env = System.getenv();
+
     @Test
     void shouldListAll(@TempDir Path tempDir) throws Exception {
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        logger.setLevel(Level.ERROR);
+        logger.setLevel(Level.INFO);
 //        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
 //        logger.setLevel(Level.INFO);
 //        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
@@ -47,13 +49,13 @@ public class ITS3ListOperations {
 //        logger.setLevel(Level.INFO);
 
         S3Storage s3Storage = new S3Storage(
-                Region.AWS_GLOBAL,
-                "test",
-                "1111",
-                "1111",
-                Paths.get("level-0"),
-                new URI("http://127.0.0.1:9090/"),
-                "STANDARD"
+                Region.of(env.get("ZFS_BACKUP_S3_REGION")),
+                env.get("ZFS_BACKUP_S3_BUCKET"),
+                env.get("ZFS_BACKUP_S3_ACCESS_KEY_ID"),
+                env.get("ZFS_BACKUP_S3_SECRET_ACCESS_KEY"),
+                Paths.get(env.get("ZFS_BACKUP_S3_FULL_PREFIX")),
+                new URI(env.get("ZFS_BACKUP_S3_ENDPOINT_URL")),
+                env.get("ZFS_BACKUP_S3_FULL_STORAGE_CLASS")
         );
 
         S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(new ImmutableList<>(List.of(s3Storage)));
@@ -76,9 +78,9 @@ public class ITS3ListOperations {
         LocalDateTime date = LocalDateTime.now();
         String dateFormatted =  date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"));
 
-        String key1 = "TestBucket/TestPool/level-0/shouldListAll__" + dateFormatted + "/" + uuid + ".part0";
-        String key2 = "TestBucket/TestPool/level-0/shouldListAll__" + dateFormatted + "/" + uuid + ".part1";
-        String key3 = "TestBucket/TestPool/level-0/shouldListAll__" + dateFormatted + "/" + uuid + ".part2";
+        String key1 = "TestPool/level-0/shouldListAll__" + dateFormatted + "/" + uuid + ".part0";
+        String key2 = "TestPool/level-0/shouldListAll__" + dateFormatted + "/" + uuid + ".part1";
+        String key3 = "TestPool/level-0/shouldListAll__" + dateFormatted + "/" + uuid + ".part2";
 
         Path pathUpload1 = tempDir.resolve(UUID.randomUUID().toString());
         Path pathUpload2 = tempDir.resolve(UUID.randomUUID().toString());
@@ -118,9 +120,9 @@ public class ITS3ListOperations {
 
         Assertions.assertEquals(3, keys.size());
 
-        Assertions.assertEquals(key1,keys.get(0));
-        Assertions.assertEquals(key2,keys.get(1));
-        Assertions.assertEquals(key3,keys.get(2));
+        Assertions.assertEquals(env.get("ZFS_BACKUP_S3_BUCKET")+"/"+key1,keys.get(0));
+        Assertions.assertEquals(env.get("ZFS_BACKUP_S3_BUCKET")+"/"+key2,keys.get(1));
+        Assertions.assertEquals(env.get("ZFS_BACKUP_S3_BUCKET")+"/"+key3,keys.get(2));
     }
 
     @Test
@@ -135,13 +137,13 @@ public class ITS3ListOperations {
 //        logger.setLevel(Level.INFO);
 
         S3Storage s3Storage = new S3Storage(
-                Region.AWS_GLOBAL,
-                "test",
-                "1111",
-                "1111",
-                Paths.get("level-0"),
-                new URI("http://127.0.0.1:9090/"),
-                "STANDARD"
+                Region.of(env.get("ZFS_BACKUP_S3_REGION")),
+                env.get("ZFS_BACKUP_S3_BUCKET"),
+                env.get("ZFS_BACKUP_S3_ACCESS_KEY_ID"),
+                env.get("ZFS_BACKUP_S3_SECRET_ACCESS_KEY"),
+                Paths.get(env.get("ZFS_BACKUP_S3_FULL_PREFIX")),
+                new URI(env.get("ZFS_BACKUP_S3_ENDPOINT_URL")),
+                env.get("ZFS_BACKUP_S3_FULL_STORAGE_CLASS")
         );
 
         S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(new ImmutableList<>(List.of(s3Storage)));
@@ -164,9 +166,9 @@ public class ITS3ListOperations {
         LocalDateTime date = LocalDateTime.now();
         String dateFormatted =  date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"));
 
-        String key1 = "TestBucket/TestPool/level-0/shouldListAll__" + dateFormatted + "/" + uuid + ".part0";
-        String key2 = "TestBucket/TestPool/level-0/shouldListAll__" + dateFormatted + "/" + uuid + ".part1";
-        String key3 = "TestBucket/TestPool/level-0/shouldListAll__" + dateFormatted + "/" + uuid + ".part2";
+        String key1 = "TestBucket/TestPool/level-0/shouldListOne__" + dateFormatted + "/" + uuid + ".part0";
+        String key2 = "TestBucket/TestPool/level-0/shouldListOne__" + dateFormatted + "/" + uuid + ".part1";
+        String key3 = "TestBucket/TestPool/level-0/shouldListOne__" + dateFormatted + "/" + uuid + ".part2";
 
         Path pathUpload1 = tempDir.resolve(UUID.randomUUID().toString());
         Path pathUpload2 = tempDir.resolve(UUID.randomUUID().toString());
@@ -221,13 +223,13 @@ public class ITS3ListOperations {
 //        logger.setLevel(Level.INFO);
 
         S3Storage s3Storage = new S3Storage(
-                Region.AWS_GLOBAL,
-                "test",
-                "1111",
-                "1111",
-                Paths.get("level-0"),
-                new URI("http://127.0.0.1:9090/"),
-                "STANDARD"
+                Region.of(env.get("ZFS_BACKUP_S3_REGION")),
+                env.get("ZFS_BACKUP_S3_BUCKET"),
+                env.get("ZFS_BACKUP_S3_ACCESS_KEY_ID"),
+                env.get("ZFS_BACKUP_S3_SECRET_ACCESS_KEY"),
+                Paths.get(env.get("ZFS_BACKUP_S3_FULL_PREFIX")),
+                new URI(env.get("ZFS_BACKUP_S3_ENDPOINT_URL")),
+                env.get("ZFS_BACKUP_S3_FULL_STORAGE_CLASS")
         );
 
         S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(new ImmutableList<>(List.of(s3Storage)));
@@ -250,9 +252,9 @@ public class ITS3ListOperations {
         LocalDateTime date = LocalDateTime.now();
         String dateFormatted =  date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"));
 
-        String key1 = "TestBucket/TestPool/level-0/shouldListAll__" + dateFormatted + "/" + uuid + ".part0";
-        String key2 = "TestBucket/TestPool/level-0/shouldListAll__" + dateFormatted + "/" + uuid + ".part1";
-        String key3 = "TestBucket/TestPool/level-0/shouldListAll__" + dateFormatted + "/" + uuid + ".part2";
+        String key1 = "TestBucket/TestPool/level-0/shouldNotFind__" + dateFormatted + "/" + uuid + ".part0";
+        String key2 = "TestBucket/TestPool/level-0/shouldNotFind__" + dateFormatted + "/" + uuid + ".part1";
+        String key3 = "TestBucket/TestPool/level-0/shouldNotFind__" + dateFormatted + "/" + uuid + ".part2";
 
         Path pathUpload1 = tempDir.resolve(UUID.randomUUID().toString());
         Path pathUpload2 = tempDir.resolve(UUID.randomUUID().toString());
@@ -305,13 +307,13 @@ public class ITS3ListOperations {
 //        logger.setLevel(Level.INFO);
 
         S3Storage s3Storage = new S3Storage(
-                Region.AWS_GLOBAL,
-                "test",
-                "1111",
-                "1111",
-                Paths.get("level-0"),
-                new URI("http://127.0.0.1:9090/"),
-                "STANDARD"
+                Region.of(env.get("ZFS_BACKUP_S3_REGION")),
+                env.get("ZFS_BACKUP_S3_BUCKET"),
+                env.get("ZFS_BACKUP_S3_ACCESS_KEY_ID"),
+                env.get("ZFS_BACKUP_S3_SECRET_ACCESS_KEY"),
+                Paths.get(env.get("ZFS_BACKUP_S3_FULL_PREFIX")),
+                new URI(env.get("ZFS_BACKUP_S3_ENDPOINT_URL")),
+                env.get("ZFS_BACKUP_S3_FULL_STORAGE_CLASS")
         );
 
         S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(new ImmutableList<>(List.of(s3Storage)));

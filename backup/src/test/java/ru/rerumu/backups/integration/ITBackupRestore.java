@@ -24,6 +24,7 @@ import ru.rerumu.zfs_backup_s3.s3.S3ServiceFactoryImpl;
 import ru.rerumu.zfs_backup_s3.s3.models.S3Storage;
 import ru.rerumu.zfs_backup_s3.s3.S3Service;
 
+import ru.rerumu.zfs_backup_s3.zfs.ZFSServiceMock;
 import ru.rerumu.zfs_backup_s3.zfs.models.Snapshot;
 import ru.rerumu.zfs_backup_s3.zfs.models.Dataset;
 import ru.rerumu.zfs_backup_s3.zfs.models.Pool;
@@ -38,10 +39,7 @@ import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -53,20 +51,23 @@ import static org.mockito.Mockito.*;
 public class ITBackupRestore {
 
     @Mock
-    ZFSService zfsServiceSend;
+    ZFSServiceMock zfsServiceSend;
 
     @Mock
-    ZFSService zfsServiceRestore;
+    ZFSServiceMock zfsServiceRestore;
+
+    Map<String,String> env = System.getenv();
 
     private SendService prepareSend(Path tempDir) throws Exception{
+
         S3Storage s3Storage = new S3Storage(
-                Region.AWS_GLOBAL,
-                "test",
-                "1111",
-                "1111",
-                Paths.get("level-0"),
-                new URI("http://127.0.0.1:9090/"),
-                "STANDARD"
+                Region.of(env.get("ZFS_BACKUP_S3_REGION")),
+                env.get("ZFS_BACKUP_S3_BUCKET"),
+                env.get("ZFS_BACKUP_S3_ACCESS_KEY_ID"),
+                env.get("ZFS_BACKUP_S3_SECRET_ACCESS_KEY"),
+                Paths.get(env.get("ZFS_BACKUP_S3_FULL_PREFIX")),
+                new URI(env.get("ZFS_BACKUP_S3_ENDPOINT_URL")),
+                env.get("ZFS_BACKUP_S3_FULL_STORAGE_CLASS")
         );
         S3ServiceFactory s3ServiceFactory =  new S3ServiceFactoryImpl();
         S3Service s3Service = s3ServiceFactory.getS3Service(
@@ -89,13 +90,13 @@ public class ITBackupRestore {
 
     private ReceiveService prepareReceive(Path tempDir) throws Exception{
         S3Storage s3Storage = new S3Storage(
-                Region.AWS_GLOBAL,
-                "test",
-                "1111",
-                "1111",
-                Path.of(""),
-                new URI("http://127.0.0.1:9090/"),
-                "STANDARD"
+                Region.of(env.get("ZFS_BACKUP_S3_REGION")),
+                env.get("ZFS_BACKUP_S3_BUCKET"),
+                env.get("ZFS_BACKUP_S3_ACCESS_KEY_ID"),
+                env.get("ZFS_BACKUP_S3_SECRET_ACCESS_KEY"),
+                Paths.get(env.get("ZFS_BACKUP_S3_FULL_PREFIX")),
+                new URI(env.get("ZFS_BACKUP_S3_ENDPOINT_URL")),
+                env.get("ZFS_BACKUP_S3_FULL_STORAGE_CLASS")
         );
         S3ServiceFactory s3ServiceFactory =  new S3ServiceFactoryImpl();
         S3Service s3Service = s3ServiceFactory.getS3Service(

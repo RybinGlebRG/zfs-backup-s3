@@ -13,7 +13,7 @@ import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 @ThreadSafe
-public sealed interface ZFSCallableFactory permits ZFSCallableFactoryImpl {
+public sealed interface ZFSCallableFactory permits ZFSCallableFactoryMock, ZFSCallableFactoryImpl {
 
     Callable<Pool> getPoolCallable(String poolName);
     Callable<Dataset> getDatasetCallable(String datasetName);

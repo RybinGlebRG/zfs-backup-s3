@@ -23,11 +23,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
 @ExtendWith(MockitoExtension.class)
 public class ITS3ServiceUploadDownload {
+
+    Map<String,String> env = System.getenv();
 
     @Test
     void shouldUploadDownloadSmall(@TempDir Path tempDir) throws Exception{
@@ -41,13 +44,13 @@ public class ITS3ServiceUploadDownload {
 //        logger.setLevel(Level.INFO);
 
         S3Storage s3Storage = new S3Storage(
-                Region.AWS_GLOBAL,
-                "test",
-                "1111",
-                "1111",
-                Paths.get("level-0"),
-                new URI("http://127.0.0.1:9090/"),
-                "STANDARD"
+                Region.of(env.get("ZFS_BACKUP_S3_REGION")),
+                env.get("ZFS_BACKUP_S3_BUCKET"),
+                env.get("ZFS_BACKUP_S3_ACCESS_KEY_ID"),
+                env.get("ZFS_BACKUP_S3_SECRET_ACCESS_KEY"),
+                Paths.get(env.get("ZFS_BACKUP_S3_FULL_PREFIX")),
+                new URI(env.get("ZFS_BACKUP_S3_ENDPOINT_URL")),
+                env.get("ZFS_BACKUP_S3_FULL_STORAGE_CLASS")
         );
 
         S3ServiceFactory s3ServiceFactory = new S3ServiceFactoryImpl();
@@ -101,13 +104,13 @@ public class ITS3ServiceUploadDownload {
 //        logger.setLevel(Level.INFO);
 
         S3Storage s3Storage = new S3Storage(
-                Region.AWS_GLOBAL,
-                "test",
-                "1111",
-                "1111",
-                Paths.get("level-0"),
-                new URI("http://127.0.0.1:9090/"),
-                "STANDARD"
+                Region.of(env.get("ZFS_BACKUP_S3_REGION")),
+                env.get("ZFS_BACKUP_S3_BUCKET"),
+                env.get("ZFS_BACKUP_S3_ACCESS_KEY_ID"),
+                env.get("ZFS_BACKUP_S3_SECRET_ACCESS_KEY"),
+                Paths.get(env.get("ZFS_BACKUP_S3_FULL_PREFIX")),
+                new URI(env.get("ZFS_BACKUP_S3_ENDPOINT_URL")),
+                env.get("ZFS_BACKUP_S3_FULL_STORAGE_CLASS")
         );
 
         S3ServiceFactory s3ServiceFactory = new S3ServiceFactoryImpl();

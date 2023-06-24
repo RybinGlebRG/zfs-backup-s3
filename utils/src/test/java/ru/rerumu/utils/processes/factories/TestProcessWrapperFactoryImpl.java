@@ -5,7 +5,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.zfs_backup_s3.utils.processes.StdProcessor;
+import ru.rerumu.zfs_backup_s3.utils.processes.StdProcessorMock;
 import ru.rerumu.zfs_backup_s3.utils.processes.factories.ProcessFactory;
+import ru.rerumu.zfs_backup_s3.utils.processes.factories.impl.ProcessFactoryMock;
 import ru.rerumu.zfs_backup_s3.utils.processes.factories.impl.ProcessWrapperFactoryImpl;
 
 
@@ -13,10 +15,10 @@ import ru.rerumu.zfs_backup_s3.utils.processes.factories.impl.ProcessWrapperFact
 public class TestProcessWrapperFactoryImpl {
 
     @Mock
-    ProcessFactory processFactory;
+    ProcessFactoryMock processFactory;
 
     @Mock
-    StdProcessor stdProcessor;
+    StdProcessorMock stdProcessor;
 
     @Test
     void shouldCreate(){

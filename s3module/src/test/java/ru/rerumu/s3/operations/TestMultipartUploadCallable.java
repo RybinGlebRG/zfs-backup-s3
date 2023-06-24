@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.zfs_backup_s3.s3.impl.operations.MultipartUploadCallable;
 import ru.rerumu.zfs_backup_s3.s3.services.S3RequestService;
+import ru.rerumu.zfs_backup_s3.s3.services.impl.S3RequestServiceMock;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -24,7 +25,7 @@ import static org.mockito.Mockito.*;
 public class TestMultipartUploadCallable {
 
     @Mock
-    S3RequestService s3RequestService;
+    S3RequestServiceMock s3RequestService;
 
     @Test
     void shouldThrowException(@TempDir Path tempDir) throws Exception {

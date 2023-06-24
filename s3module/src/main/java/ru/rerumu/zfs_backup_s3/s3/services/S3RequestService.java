@@ -1,6 +1,7 @@
 package ru.rerumu.zfs_backup_s3.s3.services;
 
 import ru.rerumu.zfs_backup_s3.s3.services.impl.S3RequestServiceImpl;
+import ru.rerumu.zfs_backup_s3.s3.services.impl.S3RequestServiceMock;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.requests.models.ListObject;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.requests.models.UploadPartResult;
 import ru.rerumu.zfs_backup_s3.utils.ByteArray;
@@ -13,7 +14,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 @ThreadSafe
-public sealed interface S3RequestService permits S3RequestServiceImpl {
+public sealed interface S3RequestService permits S3RequestServiceMock, S3RequestServiceImpl {
 
     UploadPartResult uploadPart(
             String key, String uploadId, Integer partNumber, ByteArray data

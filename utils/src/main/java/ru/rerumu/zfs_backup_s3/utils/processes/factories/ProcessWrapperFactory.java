@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 @ThreadSafe
-public sealed interface ProcessWrapperFactory permits ProcessWrapperFactoryImpl {
+public sealed interface ProcessWrapperFactory permits ProcessWrapperFactoryMock, ProcessWrapperFactoryImpl {
 
     Callable<Void> getProcessWrapper(
             List<String> args,

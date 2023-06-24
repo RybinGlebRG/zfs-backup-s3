@@ -7,7 +7,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.zfs_backup_s3.backups.services.ReceiveService;
+import ru.rerumu.zfs_backup_s3.backups.services.ReceiveServiceMock;
 import ru.rerumu.zfs_backup_s3.backups.services.SendService;
+import ru.rerumu.zfs_backup_s3.backups.services.SendServiceMock;
 
 import static org.mockito.Mockito.verify;
 
@@ -15,10 +17,10 @@ import static org.mockito.Mockito.verify;
 public class TestCliService {
 
     @Mock
-    SendService sendService;
+    SendServiceMock sendService;
 
     @Mock
-    ReceiveService receiveService;
+    ReceiveServiceMock receiveService;
 
     @Test
     void shouldSendFull()throws Exception{

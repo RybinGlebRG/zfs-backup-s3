@@ -11,7 +11,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 @ThreadSafe
-public sealed interface StdProcessor permits StdProcessorImpl {
+public sealed interface StdProcessor permits StdProcessorMock, StdProcessorImpl {
 
     void processStd(
             BufferedInputStream stderr,
