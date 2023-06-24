@@ -67,7 +67,7 @@ public class ITS3ServiceUploadDownload {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         BufferedInputStream bufferedInputStream = new BufferedInputStream(byteArrayInputStream);
 
-        String key = "TestBucket/TestPool/level-0/shouldUploadDownloadSmall__"
+        String key = "TestPool/level-0/shouldUploadDownloadSmall__"
                 + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"))
                 + "/";
 
@@ -127,7 +127,7 @@ public class ITS3ServiceUploadDownload {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         BufferedInputStream bufferedInputStream = new BufferedInputStream(byteArrayInputStream);
 
-        String key = "TestBucket/TestPool/level-0/shouldUploadDownloadBig__"
+        String key = "TestPool/level-0/shouldUploadDownloadBig__"
                 + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"))
                 + "/";
 

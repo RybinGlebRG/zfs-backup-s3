@@ -66,7 +66,7 @@ public class ITS3UploadDownloadOperations {
                         s3Storage
                 ));
 
-        String key = "TestBucket/TestPool/level-0/shouldUploadDownloadOnepart__"
+        String key = "TestPool/level-0/shouldUploadDownloadOnepart__"
                 + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"))
                 + "/" + UUID.randomUUID() + ".part0";
 
@@ -128,7 +128,7 @@ public class ITS3UploadDownloadOperations {
                         s3Storage
                 ));
 
-        String key = "TestBucket/TestPool/level-0/shouldUploadDownloadMultipart__"
+        String key = "TestPool/level-0/shouldUploadDownloadMultipart__"
                 + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"))
                 + "/" + UUID.randomUUID() + ".part0";
 
