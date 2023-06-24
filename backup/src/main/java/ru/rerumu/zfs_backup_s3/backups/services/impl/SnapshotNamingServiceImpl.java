@@ -8,6 +8,7 @@ import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+// TODO: rewrite?
 @ThreadSafe
 public final class SnapshotNamingServiceImpl implements SnapshotNamingService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());

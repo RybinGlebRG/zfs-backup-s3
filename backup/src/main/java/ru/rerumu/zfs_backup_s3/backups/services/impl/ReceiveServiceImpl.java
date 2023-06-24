@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.zfs_backup_s3.backups.factories.StdConsumerFactory;
 import ru.rerumu.zfs_backup_s3.backups.services.ReceiveService;
+import ru.rerumu.zfs_backup_s3.backups.services.S3KeyService;
 import ru.rerumu.zfs_backup_s3.backups.services.SnapshotNamingService;
 
 import ru.rerumu.zfs_backup_s3.s3.S3Service;
@@ -12,11 +13,9 @@ import ru.rerumu.zfs_backup_s3.utils.NotThreadSafe;
 import ru.rerumu.zfs_backup_s3.zfs.models.Pool;
 import ru.rerumu.zfs_backup_s3.zfs.ZFSService;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @NotThreadSafe
 public final class ReceiveServiceImpl implements ReceiveService {
@@ -36,42 +35,21 @@ public final class ReceiveServiceImpl implements ReceiveService {
         this.stdConsumerFactory = stdConsumerFactory;
     }
 
-    private String getNewestPrefix(String bucketName) {
-        String prefix = String.format(
-                "%s/",
-                bucketName
-        );
+    private String getNewestPrefix(String poolName, int level) {
+        String prefix = S3KeyService.getKey(poolName, level);
         List<String> keys = s3Service.list(prefix);
 
-        String maxDateKey = keys.stream()
-                .filter(item -> item.matches(bucketName + "/\\w+/level-0/[a-zA-Z0-9:_-]+/.*"))
-                .max(Comparator.comparing(
-                        item -> snapshotNamingService.extractTime(
-                                Paths.get(item).getName(3).toString()
-                        )
-                ))
-                .orElseThrow();
-        Path keyPath = Paths.get(maxDateKey);
-        String poolName = keyPath.getName(1).toString();
-        LocalDateTime maxDate = snapshotNamingService.extractTime(
-                keyPath.getName(3).toString()
-        );
-        String generatedName = snapshotNamingService.generateName(maxDate);
+        Optional<LocalDateTime> maxDate = S3KeyService.parseAndGetMaxDate(keys, poolName,level);
 
+        String res = S3KeyService.getKey(poolName,maxDate.orElseThrow(),level);
 
-        String res = String.format(
-                "%s/%s/level-0/%s/",
-                bucketName,
-                poolName,
-                generatedName
-        );
         return res;
     }
 
     @Override
     public void receive(String bucketName, String poolName) throws Exception {
         try {
-            String prefix = getNewestPrefix(bucketName);
+            String prefix = getNewestPrefix(poolName, 0);
             Pool pool = zfsService.getPool(poolName);
             zfsService.receive(
                     pool,

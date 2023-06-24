@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.zfs_backup_s3.backups.exceptions.SendError;
 import ru.rerumu.zfs_backup_s3.backups.factories.StdConsumerFactory;
+import ru.rerumu.zfs_backup_s3.backups.services.S3KeyService;
 import ru.rerumu.zfs_backup_s3.backups.services.SendService;
 import ru.rerumu.zfs_backup_s3.backups.services.SnapshotNamingService;
 
@@ -30,22 +31,15 @@ public final class SendServiceImpl implements SendService {
         this.stdConsumerFactory = stdConsumerFactory;
     }
 
-    private String escapeSymbols(String srcString) {
-        return srcString.replace('/', '-');
-    }
-
     @Override
     public void send(Pool pool, Bucket bucket) {
         Snapshot snapshot = zfsService.createRecursiveSnapshot(
                 pool.getRootDataset().orElseThrow(),
                 snapshotNamingService.generateName()
                 );
-        String prefix = String.format(
-                "%s/%s/level-0/%s/",
-                bucket.name(),
-                escapeSymbols(pool.name()),
-                escapeSymbols(snapshot.getName())
-        );
+
+
+        String  prefix = S3KeyService.getKey(pool.name(),snapshot.getName(),0);
 
         try {
             zfsService.send(

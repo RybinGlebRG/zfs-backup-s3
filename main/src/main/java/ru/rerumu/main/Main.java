@@ -16,6 +16,8 @@ public class Main {
             EntityFactory entityFactory = new EntityFactory();
             SendService sendService = entityFactory.getSendService(
                     configuration.region(),
+
+                    // TODO: Should be read from command line
                     configuration.bucketName(),
                     configuration.keyId(),
                     configuration.secretKey(),
