@@ -20,7 +20,7 @@ import java.util.Objects;
 import java.util.concurrent.Callable;
 
 @ThreadSafe
-public class UploadPartCallable extends CallableOnlyOnce<UploadPartResult> {
+public final class UploadPartCallable extends CallableOnlyOnce<UploadPartResult> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final String bucketName;
@@ -86,6 +86,6 @@ public class UploadPartCallable extends CallableOnlyOnce<UploadPartResult> {
                 .eTag(eTag)
                 .build();
 
-        return new UploadPartResult(md5bytes,completedPart);
+        return new UploadPartResult(new ByteArray(md5bytes),completedPart);
     }
 }

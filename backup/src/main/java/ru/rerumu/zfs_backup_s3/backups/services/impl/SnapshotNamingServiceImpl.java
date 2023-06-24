@@ -3,12 +3,13 @@ package ru.rerumu.zfs_backup_s3.backups.services.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.zfs_backup_s3.backups.services.SnapshotNamingService;
+import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-// TODO: Check thread safe
-public class SnapshotNamingServiceImpl implements SnapshotNamingService {
+@ThreadSafe
+public final class SnapshotNamingServiceImpl implements SnapshotNamingService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final static String SNAPSHOT_PREFIX="zfs-backup-s3";

@@ -1,5 +1,6 @@
 package ru.rerumu.zfs_backup_s3.s3.services.impl.requests;
 
+import ru.rerumu.zfs_backup_s3.utils.CallableOnlyOnce;
 import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest;
@@ -8,9 +9,8 @@ import software.amazon.awssdk.services.s3.model.CreateMultipartUploadResponse;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 
-// TODO: Check thread safe
 @ThreadSafe
-public final class CreateMultipartUploadCallable implements Callable<String> {
+public final class CreateMultipartUploadCallable extends CallableOnlyOnce<String> {
     private final String bucketName;
     private final String key;
     private final String storageClass;
@@ -30,7 +30,7 @@ public final class CreateMultipartUploadCallable implements Callable<String> {
     }
 
     @Override
-    public String call() throws Exception {
+    protected String callOnce(){
         CreateMultipartUploadRequest createMultipartUploadRequest = CreateMultipartUploadRequest.builder()
                 .bucket(bucketName)
                 .key(key)

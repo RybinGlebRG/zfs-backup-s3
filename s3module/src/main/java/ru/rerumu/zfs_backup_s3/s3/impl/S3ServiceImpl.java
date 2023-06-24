@@ -10,6 +10,7 @@ import ru.rerumu.zfs_backup_s3.s3.factories.ZFSFileWriterFactory;
 import ru.rerumu.zfs_backup_s3.s3.utils.FileManager;
 import ru.rerumu.zfs_backup_s3.s3.utils.ZFSFileReader;
 import ru.rerumu.zfs_backup_s3.s3.utils.ZFSFileWriter;
+import ru.rerumu.zfs_backup_s3.utils.NotThreadSafe;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -19,8 +20,8 @@ import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
 
-// TODO: Check thread safe
-public class S3ServiceImpl implements S3Service {
+@NotThreadSafe
+public final class S3ServiceImpl implements S3Service {
     private static final String PART_SUFFIX = ".part";
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());

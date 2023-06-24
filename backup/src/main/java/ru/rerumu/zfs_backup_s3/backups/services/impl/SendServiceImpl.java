@@ -9,14 +9,15 @@ import ru.rerumu.zfs_backup_s3.backups.services.SnapshotNamingService;
 
 import ru.rerumu.zfs_backup_s3.s3.models.Bucket;
 
+import ru.rerumu.zfs_backup_s3.utils.NotThreadSafe;
 import ru.rerumu.zfs_backup_s3.zfs.ZFSService;
 import ru.rerumu.zfs_backup_s3.zfs.models.Pool;
 import ru.rerumu.zfs_backup_s3.zfs.models.Snapshot;
 
 
 // TODO: Use resume tokens?
-// TODO: Check thread safe
-public class SendServiceImpl implements SendService {
+@NotThreadSafe
+public final class SendServiceImpl implements SendService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final SnapshotNamingService snapshotNamingService;
     private final ZFSService zfsService;

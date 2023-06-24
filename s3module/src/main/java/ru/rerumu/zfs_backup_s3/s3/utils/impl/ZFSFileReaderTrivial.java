@@ -3,13 +3,14 @@ package ru.rerumu.zfs_backup_s3.s3.utils.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.zfs_backup_s3.s3.utils.ZFSFileReader;
+import ru.rerumu.zfs_backup_s3.utils.NotThreadSafe;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-// TODO: Check thread safe
-public class ZFSFileReaderTrivial implements ZFSFileReader {
+@NotThreadSafe
+public final class ZFSFileReaderTrivial implements ZFSFileReader {
     private final Logger logger = LoggerFactory.getLogger(ZFSFileReaderTrivial.class);
     private final BufferedOutputStream bufferedOutputStream;
     private final Path path;

@@ -1,5 +1,7 @@
 package ru.rerumu.zfs_backup_s3.s3.services.impl.requests;
 
+import ru.rerumu.zfs_backup_s3.utils.CallableOnlyOnce;
+import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.AbortMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.AbortMultipartUploadResponse;
@@ -8,8 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-// TODO: Check thread safe
-public class AbortMultipartUploadCallable implements Callable<AbortMultipartUploadResponse> {
+@ThreadSafe
+public final class AbortMultipartUploadCallable extends CallableOnlyOnce<AbortMultipartUploadResponse> {
     private final String bucketName;
     private final String key;
     private final S3Client s3Client;
@@ -23,7 +25,7 @@ public class AbortMultipartUploadCallable implements Callable<AbortMultipartUplo
     }
 
     @Override
-    public AbortMultipartUploadResponse call() throws Exception {
+    protected AbortMultipartUploadResponse callOnce() throws Exception {
         AbortMultipartUploadRequest abortMultipartUploadRequest = AbortMultipartUploadRequest.builder()
                 .bucket(bucketName)
                 .key(key)

@@ -20,7 +20,7 @@ import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
 @ThreadSafe
-public class CallableSupplierFactory {
+public final class CallableSupplierFactory {
 
     private final S3ClientFactory s3ClientFactory;
     private final S3Storage s3Storage;

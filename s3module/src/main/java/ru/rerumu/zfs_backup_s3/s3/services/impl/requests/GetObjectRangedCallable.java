@@ -1,9 +1,12 @@
 package ru.rerumu.zfs_backup_s3.s3.services.impl.requests;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.zfs_backup_s3.utils.ByteArray;
+import ru.rerumu.zfs_backup_s3.utils.CallableOnlyOnce;
 import ru.rerumu.zfs_backup_s3.utils.MD5;
+import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -14,10 +17,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.HexFormat;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 
-// TODO: Check thread safe
-public class GetObjectRangedCallable implements Callable<byte[]> {
+@ThreadSafe
+public final class GetObjectRangedCallable extends CallableOnlyOnce<byte[]> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final String key;
     private final String bucketName;
@@ -27,7 +31,20 @@ public class GetObjectRangedCallable implements Callable<byte[]> {
     private final S3Client s3Client;
     private final Path targetPath;
 
-    public GetObjectRangedCallable(String key, String bucketName, Long startInclusive, Long endExclusive, S3Client s3Client, Path targetPath) {
+    public GetObjectRangedCallable(
+            @NonNull String key,
+            @NonNull String bucketName,
+            @NonNull Long startInclusive,
+            @NonNull Long endExclusive,
+            @NonNull S3Client s3Client,
+            @NonNull Path targetPath
+    ) {
+        Objects.requireNonNull(key);
+        Objects.requireNonNull(bucketName);
+        Objects.requireNonNull(startInclusive);
+        Objects.requireNonNull(endExclusive);
+        Objects.requireNonNull(s3Client);
+        Objects.requireNonNull(targetPath);
         this.key = key;
         this.bucketName = bucketName;
         this.startInclusive = startInclusive;
@@ -37,7 +54,7 @@ public class GetObjectRangedCallable implements Callable<byte[]> {
     }
 
     @Override
-    public byte[] call() throws Exception {
+    protected byte[] callOnce() throws Exception {
         logger.debug(String.format("Loading range from '%d' to '%d'", startInclusive, endExclusive-1));
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .range(String.format("bytes=%d-%d", startInclusive, endExclusive-1))

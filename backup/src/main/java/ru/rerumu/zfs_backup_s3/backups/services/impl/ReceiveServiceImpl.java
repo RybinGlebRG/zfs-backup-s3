@@ -8,6 +8,7 @@ import ru.rerumu.zfs_backup_s3.backups.services.SnapshotNamingService;
 
 import ru.rerumu.zfs_backup_s3.s3.S3Service;
 
+import ru.rerumu.zfs_backup_s3.utils.NotThreadSafe;
 import ru.rerumu.zfs_backup_s3.zfs.models.Pool;
 import ru.rerumu.zfs_backup_s3.zfs.ZFSService;
 
@@ -17,8 +18,8 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
-// TODO: Check thread safe
-public class ReceiveServiceImpl implements ReceiveService {
+@NotThreadSafe
+public final class ReceiveServiceImpl implements ReceiveService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final ZFSService zfsService;

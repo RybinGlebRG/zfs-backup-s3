@@ -5,13 +5,14 @@ import org.slf4j.LoggerFactory;
 import ru.rerumu.zfs_backup_s3.s3.exceptions.FileHitSizeLimitException;
 import ru.rerumu.zfs_backup_s3.s3.exceptions.ZFSStreamEndedException;
 import ru.rerumu.zfs_backup_s3.s3.utils.ZFSFileWriter;
+import ru.rerumu.zfs_backup_s3.utils.NotThreadSafe;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-// TODO: Check thread safe
-public class ZFSFileWriterTrivial implements ZFSFileWriter {
+@NotThreadSafe
+public final class ZFSFileWriterTrivial implements ZFSFileWriter {
     private final Logger logger = LoggerFactory.getLogger(ZFSFileWriterTrivial.class);
     private final long filePartSize;
     private final Path path;

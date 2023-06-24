@@ -9,6 +9,7 @@ import ru.rerumu.zfs_backup_s3.s3.services.impl.requests.CallableSupplierFactory
 import ru.rerumu.zfs_backup_s3.utils.ByteArray;
 import ru.rerumu.zfs_backup_s3.utils.ByteArrayList;
 import ru.rerumu.zfs_backup_s3.utils.ImmutableList;
+import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
 import ru.rerumu.zfs_backup_s3.utils.callables.CallableExecutor;
 import software.amazon.awssdk.services.s3.model.*;
 
@@ -18,8 +19,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-// TODO: Check thread safe
-public class S3RequestServiceImpl implements S3RequestService {
+@ThreadSafe
+public final class S3RequestServiceImpl implements S3RequestService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final CallableExecutor callableExecutor;

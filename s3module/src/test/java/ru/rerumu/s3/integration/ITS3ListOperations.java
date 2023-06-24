@@ -59,7 +59,6 @@ public class ITS3ListOperations {
         S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(new ImmutableList<>(List.of(s3Storage)));
         S3RequestService s3RequestService = new S3RequestServiceImpl(
                 new CallableExecutorImpl(),
-                // TODO: Thread safe?
                 new CallableSupplierFactory(
                         s3ClientFactory,
                         s3Storage
@@ -148,7 +147,6 @@ public class ITS3ListOperations {
         S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(new ImmutableList<>(List.of(s3Storage)));
         S3RequestService s3RequestService = new S3RequestServiceImpl(
                 new CallableExecutorImpl(),
-                // TODO: Thread safe?
                 new CallableSupplierFactory(
                         s3ClientFactory,
                         s3Storage
@@ -235,7 +233,6 @@ public class ITS3ListOperations {
         S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(new ImmutableList<>(List.of(s3Storage)));
         S3RequestService s3RequestService = new S3RequestServiceImpl(
                 new CallableExecutorImpl(),
-                // TODO: Thread safe?
                 new CallableSupplierFactory(
                         s3ClientFactory,
                         s3Storage
@@ -320,7 +317,6 @@ public class ITS3ListOperations {
         S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(new ImmutableList<>(List.of(s3Storage)));
         S3RequestService s3RequestService = new S3RequestServiceImpl(
                 new CallableExecutorImpl(),
-                // TODO: Thread safe?
                 new CallableSupplierFactory(
                         s3ClientFactory,
                         s3Storage

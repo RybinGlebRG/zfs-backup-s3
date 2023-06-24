@@ -1,23 +1,26 @@
 package ru.rerumu.zfs_backup_s3.s3.impl.operations;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.zfs_backup_s3.s3.exceptions.IncorrectHashException;
 import ru.rerumu.zfs_backup_s3.s3.services.S3RequestService;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.requests.models.Range;
 import ru.rerumu.zfs_backup_s3.utils.ByteArray;
+import ru.rerumu.zfs_backup_s3.utils.CallableOnlyOnce;
 import ru.rerumu.zfs_backup_s3.utils.MD5;
+import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
+import java.util.Objects;
 
-// TODO: Check thread safe
-public class MultipartDownloadCallable implements Callable<Void> {
+@ThreadSafe
+public final class MultipartDownloadCallable extends CallableOnlyOnce<Void> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final Path path;
@@ -27,7 +30,14 @@ public class MultipartDownloadCallable implements Callable<Void> {
     private final S3RequestService s3RequestService;
 
 
-    public MultipartDownloadCallable(Path path, String key, int maxPartSize, S3RequestService s3RequestService) {
+    public MultipartDownloadCallable(
+            @NonNull Path path,
+            @NonNull String key,
+            int maxPartSize,
+            @NonNull S3RequestService s3RequestService) {
+        Objects.requireNonNull(path);
+        Objects.requireNonNull(key);
+        Objects.requireNonNull(s3RequestService);
         this.path = path;
         this.key = key;
         this.maxPartSize = Long.valueOf(maxPartSize);
@@ -56,7 +66,7 @@ public class MultipartDownloadCallable implements Callable<Void> {
 
 
     @Override
-    public Void call() throws IOException, NoSuchAlgorithmException, IncorrectHashException {
+    protected Void callOnce() throws IOException, NoSuchAlgorithmException, IncorrectHashException {
         List<byte[]> md5List = new ArrayList<>();
         long fileSize = s3RequestService.getMetadata(key).size();
 

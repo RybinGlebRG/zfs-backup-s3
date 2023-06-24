@@ -1,5 +1,6 @@
 package ru.rerumu.zfs_backup_s3.s3.impl;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
 import ru.rerumu.zfs_backup_s3.s3.factories.S3ClientFactory;
 import ru.rerumu.zfs_backup_s3.s3.impl.operations.ListCallable;
 import ru.rerumu.zfs_backup_s3.s3.impl.operations.MultipartDownloadCallable;
@@ -7,23 +8,24 @@ import ru.rerumu.zfs_backup_s3.s3.impl.operations.MultipartUploadCallable;
 import ru.rerumu.zfs_backup_s3.s3.impl.operations.OnepartUploadCallable;
 import ru.rerumu.zfs_backup_s3.s3.services.S3RequestService;
 import ru.rerumu.zfs_backup_s3.s3.models.S3Storage;
+import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 
-// TODO: Check thread safe
-public class S3CallableFactoryImpl implements S3CallableFactory {
+@ThreadSafe
+public final class S3CallableFactoryImpl implements S3CallableFactory {
     private final int maxPartSize;
-    private final S3Storage s3Storage;
-    private final S3ClientFactory s3ClientFactory;
     private final S3RequestService s3RequestService;
 
-    public S3CallableFactoryImpl(int maxPartSize, S3Storage s3Storage, S3ClientFactory s3ClientFactory, S3RequestService s3RequestService) {
+    public S3CallableFactoryImpl(
+            int maxPartSize,
+            @NonNull S3RequestService s3RequestService) {
+        Objects.requireNonNull(s3RequestService);
         this.maxPartSize = maxPartSize;
-        this.s3Storage = s3Storage;
-        this.s3ClientFactory = s3ClientFactory;
         this.s3RequestService = s3RequestService;
     }
 

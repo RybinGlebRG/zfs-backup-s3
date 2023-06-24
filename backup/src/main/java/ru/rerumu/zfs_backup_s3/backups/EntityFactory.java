@@ -11,6 +11,7 @@ import ru.rerumu.zfs_backup_s3.s3.S3ServiceFactoryImpl;
 import ru.rerumu.zfs_backup_s3.s3.S3Service;
 import ru.rerumu.zfs_backup_s3.s3.models.S3Storage;
 import ru.rerumu.zfs_backup_s3.backups.services.SnapshotNamingService;
+import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
 import ru.rerumu.zfs_backup_s3.zfs.ZFSService;
 import ru.rerumu.zfs_backup_s3.zfs.ZFSServiceFactory;
 import ru.rerumu.zfs_backup_s3.backups.services.impl.SnapshotNamingServiceImpl;
@@ -24,10 +25,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
-// TODO: Check thread safe
-public class EntityFactory {
-    public EntityFactory() throws IOException {
-    }
+@ThreadSafe
+public final class EntityFactory {
 
     public SendService getSendService(
             Region region,

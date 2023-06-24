@@ -1,11 +1,15 @@
 package ru.rerumu.zfs_backup_s3.s3;
 
+import ru.rerumu.zfs_backup_s3.s3.impl.S3ServiceImpl;
+import ru.rerumu.zfs_backup_s3.utils.NotThreadSafe;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.nio.file.Path;
 import java.util.List;
 
-public interface S3Service {
+@NotThreadSafe
+public sealed interface S3Service permits S3ServiceImpl {
 
     void upload(BufferedInputStream bufferedInputStream, String key);
 

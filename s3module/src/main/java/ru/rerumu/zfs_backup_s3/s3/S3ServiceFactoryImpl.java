@@ -13,13 +13,14 @@ import ru.rerumu.zfs_backup_s3.s3.services.impl.S3RequestServiceImpl;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.requests.CallableSupplierFactory;
 import ru.rerumu.zfs_backup_s3.s3.utils.impl.FileManagerImpl;
 import ru.rerumu.zfs_backup_s3.utils.ImmutableList;
+import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
 import ru.rerumu.zfs_backup_s3.utils.callables.impl.CallableExecutorImpl;
 
 import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
-// TODO: Check thread safe
+@ThreadSafe
 public class S3ServiceFactoryImpl implements S3ServiceFactory {
 
     @Override
@@ -34,13 +35,11 @@ public class S3ServiceFactoryImpl implements S3ServiceFactory {
         S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(new ImmutableList<>(List.of(s3Storage)));
         S3RequestService s3RequestService = new S3RequestServiceImpl(
                 new CallableExecutorImpl(),
-                // TODO: Thread safe?
                 new CallableSupplierFactory(
                         s3ClientFactory,
                         s3Storage
                 ));
-        S3CallableFactory s3CallableFactory = new S3CallableFactoryImpl(maxPartSize, s3Storage, s3ClientFactory, s3RequestService);
-//        S3Repository s3Repository = new S3RepositoryImpl(s3CallableFactory);
+        S3CallableFactory s3CallableFactory = new S3CallableFactoryImpl(maxPartSize, s3RequestService);
 
         return new S3ServiceImpl(
                 new FileManagerImpl(

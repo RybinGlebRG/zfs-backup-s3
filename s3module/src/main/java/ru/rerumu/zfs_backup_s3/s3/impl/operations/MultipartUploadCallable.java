@@ -1,14 +1,13 @@
 package ru.rerumu.zfs_backup_s3.s3.impl.operations;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.zfs_backup_s3.s3.exceptions.IncorrectHashException;
 import ru.rerumu.zfs_backup_s3.s3.services.S3RequestService;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.requests.models.UploadPartResult;
 import ru.rerumu.zfs_backup_s3.s3.utils.InputStreamUtils;
-import ru.rerumu.zfs_backup_s3.utils.ByteArray;
-import ru.rerumu.zfs_backup_s3.utils.ByteArrayList;
-import ru.rerumu.zfs_backup_s3.utils.ImmutableList;
+import ru.rerumu.zfs_backup_s3.utils.*;
 import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.BufferedInputStream;
@@ -20,21 +19,25 @@ import java.util.*;
 import java.util.concurrent.Callable;
 
 // TODO: Send with the same part number?
-// TODO: Check thread safe
-public class MultipartUploadCallable implements Callable<Void> {
+@ThreadSafe
+public final class MultipartUploadCallable extends CallableOnlyOnce<Void> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final Path path;
     private final String key;
     private final int maxPartSize;
-    private final List<ByteArray> md5List = new ArrayList<>();
-    private final List<CompletedPart> completedPartList = new ArrayList<>();
-    private String uploadId = null;
-
     private final S3RequestService s3RequestService;
 
 
-    public MultipartUploadCallable(Path path, String key, int maxPartSize, S3RequestService s3RequestService) {
+    public MultipartUploadCallable(
+            @NonNull Path path,
+            @NonNull String key,
+            int maxPartSize,
+            @NonNull S3RequestService s3RequestService
+    ) {
+        Objects.requireNonNull(path);
+        Objects.requireNonNull(key);
+        Objects.requireNonNull(s3RequestService);
         this.path = path;
         this.key = key;
         this.maxPartSize = maxPartSize;
@@ -42,10 +45,13 @@ public class MultipartUploadCallable implements Callable<Void> {
     }
 
     @Override
-    public Void call() throws IOException, NoSuchAlgorithmException, IncorrectHashException {
+    protected Void callOnce() throws IOException, NoSuchAlgorithmException, IncorrectHashException {
+        String uploadId = null;
         try (BufferedInputStream bufferedInputStream = new BufferedInputStream(Files.newInputStream(path))) {
             int partNumber = 0;
             long uploadedBytesLen = 0;
+            List<ByteArray> md5List = new ArrayList<>();
+            List<CompletedPart> completedPartList = new ArrayList<>();
 
             uploadId = s3RequestService.createMultipartUpload(key);
 
@@ -63,7 +69,7 @@ public class MultipartUploadCallable implements Callable<Void> {
                         partNumber,
                         data
                 );
-                md5List.add(new ByteArray(partResult.md5()));
+                md5List.add(partResult.md5());
                 completedPartList.add(partResult.completedPart());
                 uploadedBytesLen+=data.array().length;
                 logger.debug(String.format("Uploaded %d bytes",uploadedBytesLen));

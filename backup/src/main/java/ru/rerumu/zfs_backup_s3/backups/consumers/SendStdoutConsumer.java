@@ -3,13 +3,14 @@ package ru.rerumu.zfs_backup_s3.backups.consumers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.zfs_backup_s3.s3.S3Service;
+import ru.rerumu.zfs_backup_s3.utils.NotThreadSafe;
 
 import java.io.BufferedInputStream;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-// TODO: Check thread safe
-public class SendStdoutConsumer implements Consumer<BufferedInputStream> {
+@NotThreadSafe
+public final class SendStdoutConsumer implements Consumer<BufferedInputStream> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final S3Service s3Service;
     private final String prefix;

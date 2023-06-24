@@ -15,7 +15,7 @@ import java.util.Objects;
 import java.util.concurrent.Callable;
 
 @ThreadSafe
-public class CompleteMultipartUploadCallable implements Callable<Void> {
+public final class CompleteMultipartUploadCallable extends CallableOnlyOnce<Void> {
 
     private final ImmutableList<CompletedPart> completedPartList;
     private final String bucketName;
@@ -47,7 +47,7 @@ public class CompleteMultipartUploadCallable implements Callable<Void> {
     }
 
     @Override
-    public Void call() throws Exception {
+    protected Void callOnce() throws Exception {
         CompletedMultipartUpload completedMultipartUpload = CompletedMultipartUpload.builder()
                 .parts(completedPartList.list())
                 .build();

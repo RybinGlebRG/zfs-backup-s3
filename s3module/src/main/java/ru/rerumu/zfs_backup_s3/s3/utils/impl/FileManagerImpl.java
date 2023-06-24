@@ -1,13 +1,14 @@
 package ru.rerumu.zfs_backup_s3.s3.utils.impl;
 
 import ru.rerumu.zfs_backup_s3.s3.utils.FileManager;
+import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-// TODO: Check thread safe
-public class FileManagerImpl implements FileManager {
+@ThreadSafe
+public final class FileManagerImpl implements FileManager {
     private final String unique;
     private final Path tempDir;
 
