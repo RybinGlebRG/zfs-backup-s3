@@ -22,6 +22,8 @@ import java.util.function.Consumer;
 @ThreadSafe
 public final class StdProcessorImpl implements StdProcessor {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    // TODO: Creates too many pools. Rewrite using only one?
     private final ExecutorService executorService = Executors.newCachedThreadPool();
     private final Consumer<BufferedInputStream> stderrConsumer;
     private final Consumer<BufferedInputStream> stdoutConsumer;
