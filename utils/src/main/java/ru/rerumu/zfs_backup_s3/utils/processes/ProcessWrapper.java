@@ -43,6 +43,7 @@ public final class ProcessWrapper extends CallableOnlyOnce<Void> {
         } catch (Exception e){
             logger.error(e.getMessage(),e);
             process.destroy();
+            throw e;
         }
 
         int exitCode = process.waitFor();

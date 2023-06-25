@@ -59,7 +59,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>ru.rerumu.zfs-backup-s3.main.Main</mainClass>
+                            <mainClass>ru.rerumu.main.Main</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

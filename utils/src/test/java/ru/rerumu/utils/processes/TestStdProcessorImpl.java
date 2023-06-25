@@ -57,14 +57,22 @@ public class TestStdProcessorImpl {
     void shouldProcessNoStdinConsumerOnly()throws Exception{
         StdProcessorImpl stdProcessor = new StdProcessorImpl(stderrConsumer,stdoutConsumer,null);
 
-        Assertions.assertThrows(IllegalArgumentException.class,()->stdProcessor.processStd(stderr,stdout,stdin));
+        stdProcessor.processStd(stderr,stdout,stdin);
+
+        verify(stderrConsumer).accept(stderr);
+        verify(stdoutConsumer).accept(stdout);
+        verify(stdinConsumer,never()).accept(stdin);
     }
 
     @Test
     void shouldProcessNoStdinOnly()throws Exception{
         StdProcessorImpl stdProcessor = new StdProcessorImpl(stderrConsumer,stdoutConsumer,stdinConsumer);
 
-        Assertions.assertThrows(IllegalArgumentException.class,()->stdProcessor.processStd(stderr,stdout,null));
+        stdProcessor.processStd(stderr,stdout,null);
+
+        verify(stderrConsumer).accept(stderr);
+        verify(stdoutConsumer).accept(stdout);
+        verify(stdinConsumer,never()).accept(stdin);
     }
 
     @Test

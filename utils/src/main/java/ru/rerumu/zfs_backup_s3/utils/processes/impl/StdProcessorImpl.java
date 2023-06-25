@@ -56,9 +56,11 @@ public final class StdProcessorImpl implements StdProcessor {
         try {
             if (stdin == null || stdinConsumer == null){
                 if (stdin != null){
-                    throw new IllegalArgumentException("StdProcessorImpl: If stdin is not null, stdinConsumer should be present");
+                    logger.warn("StdProcessorImpl: If stdin is not null, stdinConsumer should be present");
+//                    throw new IllegalArgumentException("StdProcessorImpl: If stdin is not null, stdinConsumer should be present");
                 } else if (stdinConsumer != null){
-                    throw new IllegalArgumentException("StdProcessorImpl: If stdinConsumer is present, stdin should also be present");
+                    logger.warn("StdProcessorImpl: If stdinConsumer is present, stdin should also be present");
+//                    throw new IllegalArgumentException("StdProcessorImpl: If stdinConsumer is present, stdin should also be present");
                 }
             } else {
                 stdinFuture = executorService.submit(
