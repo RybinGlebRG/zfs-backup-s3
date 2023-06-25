@@ -15,7 +15,7 @@
         <dependency>
             <groupId>ru.rerumu.zfs-backup-s3</groupId>
             <artifactId>utils</artifactId>
-            <version>3.0.0</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>ru.rerumu.zfs-backup-s3</groupId>
@@ -66,6 +66,7 @@
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
                     <appendAssemblyId>false</appendAssemblyId>
+                    <finalName>zfs-backup-s3-${project.version}</finalName>
 <!--                        <descriptors>-->
 <!--                            <descriptor>assembly.xml</descriptor>-->
 <!--                        </descriptors>-->

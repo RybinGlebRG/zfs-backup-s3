@@ -23,6 +23,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>17</java.version>
         <checkstyle.config.location>checkstyle.xml</checkstyle.config.location>
+        <custom.version>3.0.0</custom.version>
     </properties>
 
     <dependencies>
