@@ -39,18 +39,20 @@ public final class ReceiveServiceImpl implements ReceiveService {
         String prefix = S3KeyService.getKey(poolName, level);
         List<String> keys = s3Service.list(prefix);
 
-        Optional<LocalDateTime> maxDate = S3KeyService.parseAndGetMaxDate(keys, poolName,level);
+        logger.info(String.format("Found keys: %s",keys));
 
-        String res = S3KeyService.getKey(poolName,maxDate.orElseThrow(),level);
+        Optional<LocalDateTime> maxDate = S3KeyService.parseAndGetMaxDate(keys, poolName, level);
+
+        String res = S3KeyService.getKey(poolName, maxDate.orElseThrow(), level);
 
         return res;
     }
 
     @Override
-    public void receive(String bucketName, String poolName) throws Exception {
+    public void receive(String bucketName, String targetPoolName, String sourcePoolName) throws Exception {
         try {
-            String prefix = getNewestPrefix(poolName, 0);
-            Pool pool = zfsService.getPool(poolName);
+            String prefix = getNewestPrefix(sourcePoolName, 0);
+            Pool pool = zfsService.getPool(targetPoolName);
             zfsService.receive(
                     pool,
                     // TODO: Test

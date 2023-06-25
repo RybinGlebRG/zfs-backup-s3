@@ -3,26 +3,28 @@ package ru.rerumu.zfs_backup_s3.cli;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.rerumu.zfs_backup_s3.backups.EntityFactory;
 import ru.rerumu.zfs_backup_s3.backups.services.ReceiveService;
 import ru.rerumu.zfs_backup_s3.backups.services.SendService;
 
+import java.lang.module.Configuration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class CliService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final SendService sendService;
-    private final ReceiveService receiveService;
+    private final EntityFactory entityFactory;
 
-    public CliService(SendService sendService, ReceiveService receiveService) {
-        this.sendService = sendService;
-        this.receiveService = receiveService;
+    public CliService(EntityFactory entityFactory) {
+        this.entityFactory = entityFactory;
     }
 
     public void run(String[] args) throws Exception {
         Options options = new Options();
-        options.addOption("h", "help", false, "print this message");
+        options.addOption("h", "help", false, "Print this message");
+        options.addOption("n", "saved-pool-name", true, "Saved pool name");
 
         Option backupFullOption = Option.builder().longOpt("backupFull")
                 .desc("Create full backup")
@@ -39,7 +41,8 @@ public class CliService {
         HelpFormatter formatter = new HelpFormatter();
         List<String> positional = cmd.getArgList();
 
-
+        logger.info(String.format("Args: %s",Arrays.toString(cmd.getArgs())));
+        logger.info(String.format("Positional: %s",positional));
 
         if (cmd.hasOption("h")) {
             formatter.printHelp("zfs-s3-backup", options);
@@ -49,6 +52,7 @@ public class CliService {
         String poolName;
         String bucketName;
         Mode mode;
+        String savedPoolName =  cmd.getOptionValue("n");
 
 
         List<Boolean> modes = new ArrayList<>();
@@ -80,8 +84,17 @@ public class CliService {
         logger.info("Mode is '" + mode + "'");
 
         switch (mode) {
-            case BACKUP_FULL -> sendService.send(poolName, bucketName);
-            case RESTORE -> receiveService.receive(bucketName, poolName);
+            case BACKUP_FULL -> {
+                SendService sendService = entityFactory.getSendService(bucketName);
+                sendService.send(poolName, bucketName);
+            }
+            case RESTORE -> {
+                if (savedPoolName == null){
+                    throw new IllegalArgumentException();
+                }
+                ReceiveService receiveService = entityFactory.getReceiveService(bucketName);
+                receiveService.receive(bucketName, poolName, savedPoolName);
+            }
         }
 
         logger.info("Finished");

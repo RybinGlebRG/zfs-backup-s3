@@ -51,7 +51,7 @@ public class ITS3UploadDownloadOperations {
 
         S3Storage s3Storage = new S3Storage(
                 Region.of(env.get("ZFS_BACKUP_S3_REGION")),
-                env.get("ZFS_BACKUP_S3_BUCKET"),
+                env.get("TEST_BUCKET"),
                 env.get("ZFS_BACKUP_S3_ACCESS_KEY_ID"),
                 env.get("ZFS_BACKUP_S3_SECRET_ACCESS_KEY"),
                 Paths.get(env.get("ZFS_BACKUP_S3_FULL_PREFIX")),
@@ -113,7 +113,7 @@ public class ITS3UploadDownloadOperations {
 
         S3Storage s3Storage = new S3Storage(
                 Region.of(env.get("ZFS_BACKUP_S3_REGION")),
-                env.get("ZFS_BACKUP_S3_BUCKET"),
+                env.get("TEST_BUCKET"),
                 env.get("ZFS_BACKUP_S3_ACCESS_KEY_ID"),
                 env.get("ZFS_BACKUP_S3_SECRET_ACCESS_KEY"),
                 Paths.get(env.get("ZFS_BACKUP_S3_FULL_PREFIX")),

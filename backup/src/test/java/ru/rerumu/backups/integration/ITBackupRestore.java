@@ -62,7 +62,7 @@ public class ITBackupRestore {
 
         S3Storage s3Storage = new S3Storage(
                 Region.of(env.get("ZFS_BACKUP_S3_REGION")),
-                env.get("ZFS_BACKUP_S3_BUCKET"),
+                env.get("TEST_BUCKET"),
                 env.get("ZFS_BACKUP_S3_ACCESS_KEY_ID"),
                 env.get("ZFS_BACKUP_S3_SECRET_ACCESS_KEY"),
                 Paths.get(env.get("ZFS_BACKUP_S3_FULL_PREFIX")),
@@ -91,7 +91,7 @@ public class ITBackupRestore {
     private ReceiveService prepareReceive(Path tempDir) throws Exception{
         S3Storage s3Storage = new S3Storage(
                 Region.of(env.get("ZFS_BACKUP_S3_REGION")),
-                env.get("ZFS_BACKUP_S3_BUCKET"),
+                env.get("TEST_BUCKET"),
                 env.get("ZFS_BACKUP_S3_ACCESS_KEY_ID"),
                 env.get("ZFS_BACKUP_S3_SECRET_ACCESS_KEY"),
                 Paths.get(env.get("ZFS_BACKUP_S3_FULL_PREFIX")),
@@ -123,7 +123,7 @@ public class ITBackupRestore {
     @Test
     void shouldBackupRestore(@TempDir Path tempDir1, @TempDir Path tempDir2) throws Exception{
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        logger.setLevel(Level.INFO);
+        logger.setLevel(Level.DEBUG);
 
         String bucketName= "test";
         SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
@@ -186,7 +186,7 @@ public class ITBackupRestore {
                 .when(zfsServiceRestore).receive(any(),any());
 
         ReceiveService receiveService = prepareReceive(tempDir2);
-        receiveService.receive(bucketName,"RestorePool");
+        receiveService.receive(bucketName,"RestorePool","TestPool");
 
         byteArrayOutputStream.flush();
         byte[] dataRestored = byteArrayOutputStream.toByteArray();

@@ -40,7 +40,7 @@ public class ITS3ListOperations {
     @Test
     void shouldListAll(@TempDir Path tempDir) throws Exception {
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        logger.setLevel(Level.ERROR);
+        logger.setLevel(Level.INFO);
 //        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
 //        logger.setLevel(Level.INFO);
 //        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
@@ -48,9 +48,14 @@ public class ITS3ListOperations {
 //        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
 //        logger.setLevel(Level.INFO);
 
+
+        StringBuilder stringBuilder = new StringBuilder();
+        env.forEach((s1,s2)->stringBuilder.append(String.format("key: %s, value: %s\n",s1,s2)));
+        logger.info(String.format("env: %s",stringBuilder.toString()));
+
         S3Storage s3Storage = new S3Storage(
                 Region.of(env.get("ZFS_BACKUP_S3_REGION")),
-                env.get("ZFS_BACKUP_S3_BUCKET"),
+                env.get("TEST_BUCKET"),
                 env.get("ZFS_BACKUP_S3_ACCESS_KEY_ID"),
                 env.get("ZFS_BACKUP_S3_SECRET_ACCESS_KEY"),
                 Paths.get(env.get("ZFS_BACKUP_S3_FULL_PREFIX")),
@@ -138,7 +143,7 @@ public class ITS3ListOperations {
 
         S3Storage s3Storage = new S3Storage(
                 Region.of(env.get("ZFS_BACKUP_S3_REGION")),
-                env.get("ZFS_BACKUP_S3_BUCKET"),
+                env.get("TEST_BUCKET"),
                 env.get("ZFS_BACKUP_S3_ACCESS_KEY_ID"),
                 env.get("ZFS_BACKUP_S3_SECRET_ACCESS_KEY"),
                 Paths.get(env.get("ZFS_BACKUP_S3_FULL_PREFIX")),
@@ -224,7 +229,7 @@ public class ITS3ListOperations {
 
         S3Storage s3Storage = new S3Storage(
                 Region.of(env.get("ZFS_BACKUP_S3_REGION")),
-                env.get("ZFS_BACKUP_S3_BUCKET"),
+                env.get("TEST_BUCKET"),
                 env.get("ZFS_BACKUP_S3_ACCESS_KEY_ID"),
                 env.get("ZFS_BACKUP_S3_SECRET_ACCESS_KEY"),
                 Paths.get(env.get("ZFS_BACKUP_S3_FULL_PREFIX")),
@@ -308,7 +313,7 @@ public class ITS3ListOperations {
 
         S3Storage s3Storage = new S3Storage(
                 Region.of(env.get("ZFS_BACKUP_S3_REGION")),
-                env.get("ZFS_BACKUP_S3_BUCKET"),
+                env.get("TEST_BUCKET"),
                 env.get("ZFS_BACKUP_S3_ACCESS_KEY_ID"),
                 env.get("ZFS_BACKUP_S3_SECRET_ACCESS_KEY"),
                 Paths.get(env.get("ZFS_BACKUP_S3_FULL_PREFIX")),

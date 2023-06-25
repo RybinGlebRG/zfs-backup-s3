@@ -1,7 +1,6 @@
 #!/bin/sh
 
 export ZFS_BACKUP_S3_REGION=***
-export ZFS_BACKUP_S3_BUCKET=***
 export ZFS_BACKUP_S3_ACCESS_KEY_ID=***
 export ZFS_BACKUP_S3_SECRET_ACCESS_KEY=***
 export ZFS_BACKUP_S3_FULL_PREFIX=***

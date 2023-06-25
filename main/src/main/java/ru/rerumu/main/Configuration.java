@@ -26,10 +26,6 @@ public final class Configuration {
         return Region.of(env.get("ZFS_BACKUP_S3_REGION"));
     }
 
-    public String bucketName(){
-        return env.get("ZFS_BACKUP_S3_BUCKET");
-    }
-
     public String keyId(){
         return env.get("ZFS_BACKUP_S3_ACCESS_KEY_ID");
     }

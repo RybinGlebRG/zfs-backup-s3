@@ -13,7 +13,7 @@ import java.time.format.DateTimeFormatter;
 public final class SnapshotNamingServiceImpl implements SnapshotNamingService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final static String SNAPSHOT_PREFIX="zfs-backup-s3";
+    private final static String SNAPSHOT_PREFIX="zfs-backup-s3__level-0__";
 
     private String formatDate(LocalDateTime localDateTime){
         return localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"));

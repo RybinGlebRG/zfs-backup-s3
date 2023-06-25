@@ -28,17 +28,30 @@ import java.util.UUID;
 @ThreadSafe
 public final class EntityFactory {
 
+    private final Region region;
+    private final String keyId;
+    private final String secretKey;
+    private final Path prefix;
+    private final URI endpoint;
+    private final String storageClass;
+    private final int maxPartSize;
+    private final long filePartSize;
+    private final Path tempDir;
+
+    public EntityFactory(Region region, String keyId, String secretKey, Path prefix, URI endpoint, String storageClass, int maxPartSize, long filePartSize, Path tempDir) {
+        this.region = region;
+        this.keyId = keyId;
+        this.secretKey = secretKey;
+        this.prefix = prefix;
+        this.endpoint = endpoint;
+        this.storageClass = storageClass;
+        this.maxPartSize = maxPartSize;
+        this.filePartSize = filePartSize;
+        this.tempDir = tempDir;
+    }
+
     public SendService getSendService(
-            Region region,
-            String bucketName,
-            String keyId,
-            String secretKey,
-            Path prefix,
-            URI endpoint,
-            String storageClass,
-            int maxPartSize,
-            long filePartSize,
-            Path tempDir
+            String bucketName
     ) {
         S3Storage s3Storage = new S3Storage(region, bucketName, keyId, secretKey, prefix, endpoint, storageClass);
         S3ServiceFactory s3ServiceFactory =  new S3ServiceFactoryImpl();
@@ -62,16 +75,7 @@ public final class EntityFactory {
     }
 
     public ReceiveService getReceiveService(
-            Region region,
-            String bucketName,
-            String keyId,
-            String secretKey,
-            Path prefix,
-            URI endpoint,
-            String storageClass,
-            int maxPartSize,
-            long filePartSize,
-            Path tempDir
+            String bucketName
     ) {
         S3Storage s3Storage = new S3Storage(region, bucketName, keyId, secretKey, prefix, endpoint, storageClass);
         S3ServiceFactory s3ServiceFactory =  new S3ServiceFactoryImpl();

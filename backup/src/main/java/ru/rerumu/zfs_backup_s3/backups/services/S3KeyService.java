@@ -1,5 +1,7 @@
 package ru.rerumu.zfs_backup_s3.backups.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
 
 import java.nio.file.Path;
@@ -12,8 +14,9 @@ import java.util.Optional;
 
 // TODO: Test
 @ThreadSafe
-public class S3KeyService {
-    private final static String SNAPSHOT_PREFIX="zfs-backup-s3";
+public final class S3KeyService {
+    private final static Logger logger = LoggerFactory.getLogger(S3KeyService.class);
+    private final static String SNAPSHOT_PREFIX="zfs-backup-s3__level-0__";
 
     private static String escapeSymbols(String srcString) {
         return srcString.replace('/', '-');
@@ -62,7 +65,9 @@ public class S3KeyService {
 
     public static Optional<LocalDateTime> parseAndGetMaxDate(List<String> keys, String poolName, int level){
         Optional<String> maxDateKey = keys.stream()
-                .filter(item -> item.matches(poolName+"/level-"+level+"/"+SNAPSHOT_PREFIX+"[0-9:_-]+/.*"))
+                .peek(item-> logger.debug(String.format("Before filter: %s",item)))
+                .filter(item -> item.matches(poolName+"/level-"+level+"/"+SNAPSHOT_PREFIX+"[0-9:T_-]+/.*"))
+                .peek(item-> logger.debug(String.format("Passed filter: %s",item)))
                 .max(Comparator.comparing(
                         item -> extractTime(
                                 Paths.get(item).getName(2).toString()

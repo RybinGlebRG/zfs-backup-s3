@@ -13,12 +13,8 @@ public class Main {
     public static void main(String[] args) {
         try {
             Configuration configuration = new Configuration();
-            EntityFactory entityFactory = new EntityFactory();
-            SendService sendService = entityFactory.getSendService(
+            EntityFactory entityFactory = new EntityFactory(
                     configuration.region(),
-
-                    // TODO: Should be read from command line
-                    configuration.bucketName(),
                     configuration.keyId(),
                     configuration.secretKey(),
                     configuration.prefix(),
@@ -28,19 +24,7 @@ public class Main {
                     configuration.filePartSize(),
                     configuration.tempDir()
             );
-            ReceiveService receiveService = entityFactory.getReceiveService(
-                    configuration.region(),
-                    configuration.bucketName(),
-                    configuration.keyId(),
-                    configuration.secretKey(),
-                    configuration.prefix(),
-                    configuration.endpoint(),
-                    configuration.storageClass(),
-                    configuration.maxPartSize(),
-                    configuration.filePartSize(),
-                    configuration.tempDir()
-            );
-            CliService cliService = new CliService(sendService, receiveService);
+            CliService cliService = new CliService(entityFactory);
             cliService.run(args);
         } catch (Exception e){
             e.printStackTrace();
