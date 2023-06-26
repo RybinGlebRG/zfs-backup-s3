@@ -46,11 +46,9 @@ public final class CreateSnapshot extends CallableOnlyOnce<Void> {
 
         processWrapperFactory.getProcessWrapper(
                 command,
-                new StdProcessorImpl(
-                        new StdLineConsumer(logger::error),
-                        new StdLineConsumer(logger::debug),
-                        null
-                )
+                null,
+                new StdLineConsumer(logger::debug),
+                new StdLineConsumer(logger::error)
         ).call();
 
         return null;

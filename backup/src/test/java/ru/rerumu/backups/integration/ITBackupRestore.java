@@ -101,7 +101,7 @@ public class ITBackupRestore {
         S3ServiceFactory s3ServiceFactory =  new S3ServiceFactoryImpl();
         S3Service s3Service = s3ServiceFactory.getS3Service(
                 s3Storage,
-                12_000_000,
+                8_000_000,
                 30_000_000L,
                 tempDir,
                 UUID.randomUUID()
@@ -186,7 +186,7 @@ public class ITBackupRestore {
                 .when(zfsServiceRestore).receive(any(),any());
 
         ReceiveService receiveService = prepareReceive(tempDir2);
-        receiveService.receive(bucketName,"RestorePool","TestPool");
+        receiveService.receive(bucketName,"RestorePool");
 
         byteArrayOutputStream.flush();
         byte[] dataRestored = byteArrayOutputStream.toByteArray();

@@ -49,7 +49,6 @@ public class TestProcessWrapper {
     void shouldDestroyProcess()throws Exception{
         when(processFactory.create(any())).thenReturn(process);
         doThrow(ExecutionException.class).when(stdProcessor).processStd(any(),any(),any());
-        when(process.waitFor()).thenReturn(1);
 
         ProcessWrapper processWrapper = new ProcessWrapper(
                 List.of(),
@@ -57,7 +56,7 @@ public class TestProcessWrapper {
                 stdProcessor
         );
 
-        Assertions.assertThrows(IOException.class, processWrapper::call);
+        Assertions.assertThrows(ExecutionException.class, processWrapper::call);
 
         verify(process).destroy();
     }

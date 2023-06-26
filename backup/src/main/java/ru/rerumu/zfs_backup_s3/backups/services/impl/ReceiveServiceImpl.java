@@ -35,23 +35,23 @@ public final class ReceiveServiceImpl implements ReceiveService {
         this.stdConsumerFactory = stdConsumerFactory;
     }
 
-    private String getNewestPrefix(String poolName, int level) {
-        String prefix = S3KeyService.getKey(poolName, level);
+    private String getNewestPrefix(int level) {
+        String prefix = S3KeyService.getKey(level);
         List<String> keys = s3Service.list(prefix);
 
         logger.info(String.format("Found keys: %s",keys));
 
-        Optional<LocalDateTime> maxDate = S3KeyService.parseAndGetMaxDate(keys, poolName, level);
+        Optional<LocalDateTime> maxDate = S3KeyService.parseAndGetMaxDate(keys, level);
 
-        String res = S3KeyService.getKey(poolName, maxDate.orElseThrow(), level);
+        String res = S3KeyService.getKey(maxDate.orElseThrow(), level);
 
         return res;
     }
 
     @Override
-    public void receive(String bucketName, String targetPoolName, String sourcePoolName) throws Exception {
+    public void receive(String bucketName, String targetPoolName) throws Exception {
         try {
-            String prefix = getNewestPrefix(sourcePoolName, 0);
+            String prefix = getNewestPrefix(0);
             Pool pool = zfsService.getPool(targetPoolName);
             zfsService.receive(
                     pool,

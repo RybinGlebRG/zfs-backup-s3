@@ -2,6 +2,7 @@ package ru.rerumu.zfs_backup_s3.s3.services.impl.requests;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import ru.rerumu.zfs_backup_s3.s3.factories.S3ClientFactory;
+import ru.rerumu.zfs_backup_s3.utils.ImmutableMap;
 import ru.rerumu.zfs_backup_s3.s3.models.S3Storage;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.requests.models.UploadPartResult;
 import ru.rerumu.zfs_backup_s3.utils.ByteArray;
@@ -14,10 +15,7 @@ import software.amazon.awssdk.services.s3.model.CompletedPart;
 import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
 
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Callable;
-import java.util.function.Supplier;
 
 @ThreadSafe
 public final class CallableSupplierFactory {
@@ -35,12 +33,15 @@ public final class CallableSupplierFactory {
     }
 
     public CallableSupplier<String> getCreateMultipartUploadSupplier(
-            String key){
+            String key,
+            ImmutableMap metadata
+    ){
         return new CallableSupplier<>(() -> new CreateMultipartUploadCallable(
                 s3Storage.getBucketName(),
                 key,
                 s3Storage.getStorageClass(),
-                s3ClientFactory.getS3Client(s3Storage)
+                s3ClientFactory.getS3Client(s3Storage),
+                metadata
         ));
     }
 
@@ -120,6 +121,16 @@ public final class CallableSupplierFactory {
                 endExclusive,
                 s3ClientFactory.getS3Client(s3Storage),
                 targetPath
+        ));
+    }
+
+    public CallableSupplier<ImmutableMap> getGetObjectMetadataSupplier(
+            String key
+    ){
+        return new CallableSupplier<>(()-> new GetObjectMetadataCallable(
+                key,
+                s3Storage.getBucketName(),
+                s3ClientFactory.getS3Client(s3Storage)
         ));
     }
 }

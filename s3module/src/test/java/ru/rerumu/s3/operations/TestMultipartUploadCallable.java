@@ -9,11 +9,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.zfs_backup_s3.s3.impl.operations.MultipartUploadCallable;
 import ru.rerumu.zfs_backup_s3.s3.services.S3RequestService;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.S3RequestServiceMock;
+import ru.rerumu.zfs_backup_s3.utils.ImmutableMap;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -32,7 +35,11 @@ public class TestMultipartUploadCallable {
         Path path = tempDir.resolve(UUID.randomUUID().toString());
         Files.createFile(path);
 
-        when(s3RequestService.createMultipartUpload("test-key"))
+        Map<String,String> metadata = new HashMap<>();
+        metadata.put("X-Multipart","true");
+        metadata.put("X-Multipart-Part-Size","1_000");
+
+        when(s3RequestService.createMultipartUpload(eq("test-key"), any()))
                 .thenThrow(RuntimeException.class);
 
 
@@ -61,7 +68,12 @@ public class TestMultipartUploadCallable {
                 StandardOpenOption.WRITE
         );
 
-        when(s3RequestService.createMultipartUpload("test-key"))
+        Map<String,String> metadata = new HashMap<>();
+        metadata.put("X-Multipart","true");
+        metadata.put("X-Multipart-Part-Size","1_000");
+
+
+        when(s3RequestService.createMultipartUpload(eq("test-key"),any()))
                 .thenReturn("test-upload");
         when(s3RequestService.uploadPart(eq("test-key"),eq("test-upload"),anyInt(),any()))
                 .thenThrow(RuntimeException.class);

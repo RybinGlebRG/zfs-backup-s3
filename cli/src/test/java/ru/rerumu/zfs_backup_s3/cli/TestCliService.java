@@ -44,9 +44,9 @@ public class TestCliService {
         when(entityFactory.getReceiveService("TestBucket")).thenReturn(receiveService);
 
         CliService cliService = new CliService(entityFactory);
-        cliService.run(new String[]{"--restore","-n","TestPool","TestBucket", "RestorePool"});
+        cliService.run(new String[]{"--restore","TestBucket", "RestorePool"});
 
-        verify(receiveService).receive("TestBucket","RestorePool", "TestPool");
+        verify(receiveService).receive("TestBucket","RestorePool");
     }
 
     @Test
@@ -69,13 +69,6 @@ public class TestCliService {
         CliService cliService = new CliService(entityFactory);
 
         Assertions.assertThrows(IllegalArgumentException.class,()->cliService.run(new String[]{"--backupFull"}));
-    }
-
-    @Test
-    void shouldThrowException3()throws Exception{
-        CliService cliService = new CliService(entityFactory);
-
-        Assertions.assertThrows(IllegalArgumentException.class,()->cliService.run(new String[]{"--restore","TestBucket", "TestPool"}));
     }
 
     @Test

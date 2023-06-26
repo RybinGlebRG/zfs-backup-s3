@@ -39,7 +39,7 @@ public final class SendServiceImpl implements SendService {
                 );
 
 
-        String  prefix = S3KeyService.getKey(pool.name(),snapshot.getName(),0);
+        String  prefix = S3KeyService.getKey(snapshot.getName(),0);
 
         try {
             zfsService.send(

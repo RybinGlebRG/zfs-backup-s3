@@ -4,6 +4,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.zfs_backup_s3.s3.exceptions.IncorrectHashException;
+import ru.rerumu.zfs_backup_s3.utils.ImmutableMap;
 import ru.rerumu.zfs_backup_s3.s3.services.S3RequestService;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.requests.models.UploadPartResult;
 import ru.rerumu.zfs_backup_s3.s3.utils.InputStreamUtils;
@@ -16,7 +17,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.concurrent.Callable;
 
 // TODO: Send with the same part number?
 @ThreadSafe
@@ -53,7 +53,11 @@ public final class MultipartUploadCallable extends CallableOnlyOnce<Void> {
             List<ByteArray> md5List = new ArrayList<>();
             List<CompletedPart> completedPartList = new ArrayList<>();
 
-            uploadId = s3RequestService.createMultipartUpload(key);
+            Map<String,String> metadata = new HashMap<>();
+            metadata.put("x-multipart","true");
+            metadata.put("x-multipart-part-size",String.valueOf(maxPartSize));
+
+            uploadId = s3RequestService.createMultipartUpload(key,new ImmutableMap(metadata));
 
             logger.info(String.format("uploadId = '%s'", uploadId));
 

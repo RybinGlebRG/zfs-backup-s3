@@ -59,19 +59,20 @@ public final class UploadPartCallable extends CallableOnlyOnce<UploadPartResult>
                 .bucket(bucketName)
                 .key(key)
                 .uploadId(uploadId)
-                .partNumber(partNumber).build();
+                .partNumber(partNumber)
+                .build();
 
         UploadPartResponse response = s3Client.uploadPart(
                 uploadPartRequest, RequestBody.fromBytes(data.array())
         );
 
-        String bytesHex = HexFormat.of().formatHex(data.array());
-        logger.trace(String.format(
-                "Uploaded %d bytes:\n%s...%s",
-                data.array().length,
-                bytesHex.substring(0,50),
-                bytesHex.substring(bytesHex.length()-50)
-        ));
+//        String bytesHex = HexFormat.of().formatHex(data.array());
+//        logger.trace(String.format(
+//                "Uploaded %d bytes:\n%s...%s",
+//                data.array().length,
+//                bytesHex.substring(0,50),
+//                bytesHex.substring(bytesHex.length()-50)
+//        ));
 
         String eTag = response.eTag();
 

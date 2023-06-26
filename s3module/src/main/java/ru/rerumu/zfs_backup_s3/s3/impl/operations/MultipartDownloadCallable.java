@@ -7,10 +7,7 @@ import org.slf4j.LoggerFactory;
 import ru.rerumu.zfs_backup_s3.s3.exceptions.IncorrectHashException;
 import ru.rerumu.zfs_backup_s3.s3.services.S3RequestService;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.requests.models.Range;
-import ru.rerumu.zfs_backup_s3.utils.ByteArray;
-import ru.rerumu.zfs_backup_s3.utils.CallableOnlyOnce;
-import ru.rerumu.zfs_backup_s3.utils.MD5;
-import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
+import ru.rerumu.zfs_backup_s3.utils.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -44,11 +41,11 @@ public final class MultipartDownloadCallable extends CallableOnlyOnce<Void> {
         this.s3RequestService = s3RequestService;
     }
 
-    private void finish( List<byte[]> md5List, int partNumber) throws NoSuchAlgorithmException, IOException, IncorrectHashException {
+    private void finish( List<byte[]> md5List, int partNumber, boolean isMultipart) throws NoSuchAlgorithmException, IOException, IncorrectHashException {
         String md5;
         String storedMd5Hex = s3RequestService.getMetadata(key).md5Hex();
 
-        if (storedMd5Hex.contains("-")){
+        if (isMultipart){
             byte[] concatenatedMd5 = md5List.stream()
                     .reduce(new byte[0],ArrayUtils::addAll,ArrayUtils::addAll);
             md5 = MD5.getMD5Hex(new ByteArray(concatenatedMd5))+"-"+partNumber;
@@ -69,10 +66,27 @@ public final class MultipartDownloadCallable extends CallableOnlyOnce<Void> {
     protected Void callOnce() throws IOException, NoSuchAlgorithmException, IncorrectHashException {
         List<byte[]> md5List = new ArrayList<>();
         long fileSize = s3RequestService.getMetadata(key).size();
+        ImmutableMap metadata = s3RequestService.getObjectMetadata(key);
+
+        StringBuilder stringBuilder = new StringBuilder();
+        metadata.map().entrySet()
+                .forEach(entry-> stringBuilder.append(String.format("Key: %s, Value: %s",entry.getKey(),entry.getValue())));
+        logger.debug(String.format("Got metadata: \n%s",stringBuilder.toString()));
+
+        // TODO: Should be case insensitive
+        boolean isMultipart = metadata.map().containsKey("x-multipart") && metadata.map().get("x-multipart").equals("true");
+        Long partSize;
+
+        // TODO: Should be case insensitive
+        if (metadata.map().containsKey("x-multipart-part-size")){
+            partSize = Long.parseLong(metadata.map().get("x-multipart-part-size"));
+        } else {
+            partSize = maxPartSize;
+        }
 
         Range range = new Range(
                 0L,
-                Math.min(maxPartSize, fileSize)
+                Math.min(partSize, fileSize)
         );
 
         while (range.start()<fileSize) {
@@ -81,11 +95,11 @@ public final class MultipartDownloadCallable extends CallableOnlyOnce<Void> {
 
             range = new Range(
                     range.end(),
-                    Math.min(range.end() + maxPartSize, fileSize)
+                    Math.min(range.end() + partSize, fileSize)
             );
         }
 
-        finish( md5List, md5List.size());
+        finish( md5List, md5List.size(), isMultipart);
 
         return null;
     }

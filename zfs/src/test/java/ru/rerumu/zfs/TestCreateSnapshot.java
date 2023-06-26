@@ -27,7 +27,9 @@ public class TestCreateSnapshot {
     void shouldCall() throws Exception{
         Dataset dataset = new Dataset("TestDataset",new ArrayList<>());
 
-        when(processWrapperFactory.getProcessWrapper(any(),any())).thenReturn(processWrapper);
+        when(processWrapperFactory.getProcessWrapper(eq(List.of(
+                "zfs","snapshot","TestDataset@zfs-backup-s3__2023-03-22T194000"
+        )),eq(null),any(),any())).thenReturn(processWrapper);
 
 
         Callable<Void> createSnapshot = new CreateSnapshot(
@@ -39,18 +41,16 @@ public class TestCreateSnapshot {
 
         createSnapshot.call();
 
-
-
-        verify(processWrapperFactory).getProcessWrapper(eq(List.of(
-                "zfs","snapshot","TestDataset@zfs-backup-s3__2023-03-22T194000"
-        )),any());
+        verifyNoMoreInteractions(processWrapperFactory);
     }
 
     @Test
     void shouldCallRecursive() throws Exception{
         Dataset dataset = new Dataset("TestDataset",new ArrayList<>());
 
-        when(processWrapperFactory.getProcessWrapper(any(),any())).thenReturn(processWrapper);
+        when(processWrapperFactory.getProcessWrapper(eq(List.of(
+                "zfs","snapshot","-r","TestDataset@zfs-backup-s3__2023-03-22T194000"
+        )),eq(null),any(),any())).thenReturn(processWrapper);
 
 
         Callable<Void> createSnapshot = new CreateSnapshot(
@@ -62,10 +62,6 @@ public class TestCreateSnapshot {
 
         createSnapshot.call();
 
-
-
-        verify(processWrapperFactory).getProcessWrapper(eq(List.of(
-                "zfs","snapshot","-r","TestDataset@zfs-backup-s3__2023-03-22T194000"
-        )),any());
+        verifyNoMoreInteractions(processWrapperFactory);
     }
 }

@@ -2,6 +2,7 @@ package ru.rerumu.zfs_backup_s3.s3.services.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.rerumu.zfs_backup_s3.utils.ImmutableMap;
 import ru.rerumu.zfs_backup_s3.s3.services.S3RequestService;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.requests.models.ListObject;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.requests.models.UploadPartResult;
@@ -41,9 +42,9 @@ public final class S3RequestServiceImpl implements S3RequestService {
     }
 
     @Override
-    public String createMultipartUpload(String key) {
+    public String createMultipartUpload(String key, ImmutableMap metadata) {
         String uploadId = callableExecutor.callWithRetry(
-                callableSupplierFactory.getCreateMultipartUploadSupplier(key)
+                callableSupplierFactory.getCreateMultipartUploadSupplier(key, metadata)
         );
         return uploadId;
     }
@@ -118,5 +119,13 @@ public final class S3RequestServiceImpl implements S3RequestService {
                 callableSupplierFactory.getGetObjectRangedSupplier(key, startInclusive, endExclusive, targetPath)
         );
         return md5;
+    }
+
+    @Override
+    public ImmutableMap getObjectMetadata(String key) {
+        ImmutableMap metadata = callableExecutor.callWithRetry(
+                callableSupplierFactory.getGetObjectMetadataSupplier(key)
+        );
+        return metadata;
     }
 }

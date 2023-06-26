@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+
 // TODO: Test
 @ThreadSafe
 public final class S3KeyService {
@@ -31,21 +32,19 @@ public final class S3KeyService {
         return res;
     }
 
-    public static String getKey(String poolName, String snapshotName, int level){
+    public static String getKey(String snapshotName, int level){
         String key = String.format(
-                "%s/level-%d/%s/",
-                escapeSymbols(poolName),
+                "level-%d/%s/",
                 level,
                 escapeSymbols(snapshotName)
         );
         return key;
     }
 
-    public static String getKey(String poolName, LocalDateTime localDateTime, int level){
+    public static String getKey( LocalDateTime localDateTime, int level){
         String tmp = SNAPSHOT_PREFIX+"__" +formatDate(localDateTime);
         String key = String.format(
-                "%s/level-%d/%s/",
-                escapeSymbols(poolName),
+                "level-%d/%s/",
                 level,
                 tmp
         );
@@ -53,24 +52,23 @@ public final class S3KeyService {
     }
 
 
-    public static String getKey(String poolName, int level){
+    public static String getKey(int level){
         String key = String.format(
-                "%s/level-%d/%s",
-                escapeSymbols(poolName),
+                "level-%d/%s",
                 level,
                 SNAPSHOT_PREFIX
         );
         return key;
     }
 
-    public static Optional<LocalDateTime> parseAndGetMaxDate(List<String> keys, String poolName, int level){
+    public static Optional<LocalDateTime> parseAndGetMaxDate(List<String> keys, int level){
         Optional<String> maxDateKey = keys.stream()
                 .peek(item-> logger.debug(String.format("Before filter: %s",item)))
-                .filter(item -> item.matches(poolName+"/level-"+level+"/"+SNAPSHOT_PREFIX+"[0-9:T_-]+/.*"))
+                .filter(item -> item.matches("level-"+level+"/"+SNAPSHOT_PREFIX+"[0-9:T_-]+/.*"))
                 .peek(item-> logger.debug(String.format("Passed filter: %s",item)))
                 .max(Comparator.comparing(
                         item -> extractTime(
-                                Paths.get(item).getName(2).toString()
+                                Paths.get(item).getName(1).toString()
                         )
                 ));
 
@@ -80,7 +78,7 @@ public final class S3KeyService {
 
         Path keyPath = Paths.get(maxDateKey.get());
         LocalDateTime res = extractTime(
-                keyPath.getName(2).toString()
+                keyPath.getName(1).toString()
         );
         return Optional.of(res);
     }

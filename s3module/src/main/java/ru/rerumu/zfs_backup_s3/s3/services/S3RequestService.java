@@ -1,5 +1,6 @@
 package ru.rerumu.zfs_backup_s3.s3.services;
 
+import ru.rerumu.zfs_backup_s3.utils.ImmutableMap;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.S3RequestServiceImpl;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.S3RequestServiceMock;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.requests.models.ListObject;
@@ -21,7 +22,8 @@ public sealed interface S3RequestService permits S3RequestServiceMock, S3Request
     );
 
     String createMultipartUpload(
-            String key
+            String key,
+            ImmutableMap metadata
     );
 
     void abortMultipartUpload(
@@ -42,4 +44,6 @@ public sealed interface S3RequestService permits S3RequestServiceMock, S3Request
     void putObject(Path sourcePath, String targetKey);
 
     byte[] getObjectRange(String key,Long startInclusive, Long endExclusive, Path targetPath);
+
+    ImmutableMap getObjectMetadata(String key);
 }

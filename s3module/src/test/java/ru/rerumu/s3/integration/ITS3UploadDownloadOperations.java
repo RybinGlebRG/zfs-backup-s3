@@ -66,7 +66,7 @@ public class ITS3UploadDownloadOperations {
                         s3Storage
                 ));
 
-        String key = "TestPool/level-0/shouldUploadDownloadOnepart__"
+        String key = "level-0/shouldUploadDownloadOnepart__"
                 + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"))
                 + "/" + UUID.randomUUID() + ".part0";
 
@@ -128,7 +128,7 @@ public class ITS3UploadDownloadOperations {
                         s3Storage
                 ));
 
-        String key = "TestPool/level-0/shouldUploadDownloadMultipart__"
+        String key = "level-0/shouldUploadDownloadMultipart__"
                 + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"))
                 + "/" + UUID.randomUUID() + ".part0";
 
@@ -156,6 +156,73 @@ public class ITS3UploadDownloadOperations {
                 pathDownload,
                 key,
                 12_000_000,
+                s3RequestService
+        );
+        downloadCallable.call();
+
+
+        byte[] dataUpload = Files.readAllBytes(pathUpload);
+        byte[] dataDownload = Files.readAllBytes(pathDownload);
+
+        Assertions.assertArrayEquals(dataUpload, dataDownload);
+    }
+
+    @Test
+    void shouldUploadDownloadMultipartChooseCorrectPartSize(@TempDir Path tempDir) throws Exception {
+        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        logger.setLevel(Level.ERROR);
+//        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
+//        logger.setLevel(Level.INFO);
+//        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
+//        logger.setLevel(Level.INFO);
+//        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
+//        logger.setLevel(Level.INFO);
+
+        S3Storage s3Storage = new S3Storage(
+                Region.of(env.get("ZFS_BACKUP_S3_REGION")),
+                env.get("TEST_BUCKET"),
+                env.get("ZFS_BACKUP_S3_ACCESS_KEY_ID"),
+                env.get("ZFS_BACKUP_S3_SECRET_ACCESS_KEY"),
+                Paths.get(env.get("ZFS_BACKUP_S3_FULL_PREFIX")),
+                new URI(env.get("ZFS_BACKUP_S3_ENDPOINT_URL")),
+                env.get("ZFS_BACKUP_S3_FULL_STORAGE_CLASS")
+        );
+        S3ClientFactory s3ClientFactory = new S3ClientFactoryImpl(new ImmutableList<>(List.of(s3Storage)));
+        S3RequestService s3RequestService = new S3RequestServiceImpl(
+                new CallableExecutorImpl(),
+                new CallableSupplierFactory(
+                        s3ClientFactory,
+                        s3Storage
+                ));
+
+        String key = "level-0/shouldUploadDownloadMultipart__"
+                + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"))
+                + "/" + UUID.randomUUID() + ".part0";
+
+        Path pathUpload = tempDir.resolve(UUID.randomUUID().toString());
+        byte[] data = new byte[30_000_000];
+        new Random().nextBytes(data);
+        Files.write(
+                pathUpload,
+                data,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND,
+                StandardOpenOption.WRITE
+        );
+        MultipartUploadCallable uploadCallable = new MultipartUploadCallable(
+                pathUpload,
+                key,
+                12_000_000,
+                s3RequestService
+        );
+        uploadCallable.call();
+
+
+        Path pathDownload = tempDir.resolve(UUID.randomUUID().toString());
+        MultipartDownloadCallable downloadCallable = new MultipartDownloadCallable(
+                pathDownload,
+                key,
+                6_000_000,
                 s3RequestService
         );
         downloadCallable.call();

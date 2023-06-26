@@ -10,9 +10,11 @@ import ru.rerumu.zfs_backup_s3.s3.exceptions.IncorrectHashException;
 import ru.rerumu.zfs_backup_s3.s3.impl.operations.MultipartDownloadCallable;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.S3RequestServiceMock;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.requests.models.ListObject;
+import ru.rerumu.zfs_backup_s3.utils.ImmutableMap;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -36,8 +38,10 @@ public class TestMultipartDownloadCallable {
 
         when(s3RequestService.getMetadata("test-key"))
                 .thenReturn(new ListObject("test-key","12345",100L));
+        when(s3RequestService.getObjectMetadata("test-key")).thenReturn(new ImmutableMap(new HashMap<>()));
         when(s3RequestService.getObjectRange("test-key",0L,100L,path))
                 .thenReturn(md5);
+
 
 
         Callable<Void> callable = new MultipartDownloadCallable(

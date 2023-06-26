@@ -24,7 +24,6 @@ public class CliService {
     public void run(String[] args) throws Exception {
         Options options = new Options();
         options.addOption("h", "help", false, "Print this message");
-        options.addOption("n", "saved-pool-name", true, "Saved pool name");
 
         Option backupFullOption = Option.builder().longOpt("backupFull")
                 .desc("Create full backup")
@@ -52,7 +51,6 @@ public class CliService {
         String poolName;
         String bucketName;
         Mode mode;
-        String savedPoolName =  cmd.getOptionValue("n");
 
 
         List<Boolean> modes = new ArrayList<>();
@@ -89,11 +87,8 @@ public class CliService {
                 sendService.send(poolName, bucketName);
             }
             case RESTORE -> {
-                if (savedPoolName == null){
-                    throw new IllegalArgumentException();
-                }
                 ReceiveService receiveService = entityFactory.getReceiveService(bucketName);
-                receiveService.receive(bucketName, poolName, savedPoolName);
+                receiveService.receive(bucketName, poolName);
             }
         }
 
