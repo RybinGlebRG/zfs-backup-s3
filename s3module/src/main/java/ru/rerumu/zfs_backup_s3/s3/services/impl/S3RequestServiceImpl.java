@@ -98,8 +98,13 @@ public final class S3RequestServiceImpl implements S3RequestService {
     @Override
     public ListObject getMetadata(String key) {
         List<ListObject> objects = listObjects(key);
+
+        objects = objects.stream()
+                .filter(item -> item.key().equals(key))
+                .collect(Collectors.toCollection(ArrayList::new));
+
         if(objects.size() != 1){
-            throw new AssertionError();
+            throw new AssertionError(String.format("objects size is '%d', not equals '1'",objects.size()));
         } else {
             return objects.get(0);
         }
