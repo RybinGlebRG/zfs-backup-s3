@@ -68,4 +68,18 @@ public class TestSnapshotListStdConsumer {
         Assertions.assertThrows(RuntimeException.class,()->snapshotListStdConsumer.accept(bufferedInputStream));
 
     }
+
+    @Test
+    void shouldReturnEmpty(){
+        List<Snapshot> snapshotList = new ArrayList<>();
+        byte[] data = new byte[0];
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
+        BufferedInputStream bufferedInputStream = new BufferedInputStream(byteArrayInputStream);
+
+
+        SnapshotListStdConsumer snapshotListStdConsumer = new SnapshotListStdConsumer(snapshotList);
+        snapshotListStdConsumer.accept(bufferedInputStream);
+
+        Assertions.assertEquals(0,snapshotList.size());
+    }
 }

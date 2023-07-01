@@ -41,11 +41,12 @@ public final class SnapshotListStdConsumer implements Consumer<BufferedInputStre
         try {
             byte[] output = bufferedInputStream.readAllBytes();
             String str = new String(output, StandardCharsets.UTF_8);
-            logger.debug(String.format("Got from process: \n%s", str));
+            logger.debug(String.format("Got from process: \n'%s'", str));
             String[] lines = str.split("\\n");
 
             Arrays.stream(lines)
                     .map(String::strip)
+                    .filter(item -> item.length()>0)
                     .peek(this::validateLine)
                     .map(Snapshot::new)
                     .peek(item -> logger.debug(String.format("Got snapshot: %s", item.getFullName())))
