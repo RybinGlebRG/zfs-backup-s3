@@ -9,6 +9,7 @@ import software.amazon.awssdk.regions.Region;
 import java.net.URI;
 import java.nio.file.Paths;
 
+// TODO: Executor not closes at the end?
 public class Main {
     public static void main(String[] args) {
         try {
