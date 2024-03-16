@@ -1,14 +1,14 @@
-package ru.rerumu.s3.integration;
+package ru.rerumu.zfs_backup_s3.local_storage.integration;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import ru.rerumu.zfs_backup_s3.s3.exceptions.FileHitSizeLimitException;
-import ru.rerumu.zfs_backup_s3.s3.exceptions.ZFSStreamEndedException;
-import ru.rerumu.zfs_backup_s3.s3.utils.ZFSFileReader;
-import ru.rerumu.zfs_backup_s3.s3.utils.ZFSFileWriter;
-import ru.rerumu.zfs_backup_s3.s3.utils.impl.ZFSFileReaderTrivial;
-import ru.rerumu.zfs_backup_s3.s3.utils.impl.ZFSFileWriterTrivial;
+import ru.rerumu.zfs_backup_s3.local_storage.exceptions.FileHitSizeLimitException;
+import ru.rerumu.zfs_backup_s3.local_storage.exceptions.ZFSStreamEndedException;
+import ru.rerumu.zfs_backup_s3.local_storage.services.ZFSFileReader;
+import ru.rerumu.zfs_backup_s3.local_storage.services.ZFSFileWriter;
+import ru.rerumu.zfs_backup_s3.local_storage.services.impl.ZFSFileReaderTrivial;
+import ru.rerumu.zfs_backup_s3.local_storage.services.impl.ZFSFileWriterTrivial;
 
 import java.io.*;
 import java.nio.file.Path;

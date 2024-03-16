@@ -14,13 +14,11 @@ import ru.rerumu.zfs_backup_s3.s3.S3ServiceFactoryImpl;
 import ru.rerumu.zfs_backup_s3.s3.models.S3Storage;
 import software.amazon.awssdk.regions.Region;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -30,10 +28,10 @@ import java.util.UUID;
 @ExtendWith(MockitoExtension.class)
 public class ITS3ServiceUploadDownload {
 
-    Map<String,String> env = System.getenv();
+    Map<String, String> env = System.getenv();
 
     @Test
-    void shouldUploadDownloadSmall(@TempDir Path tempDir) throws Exception{
+    void shouldUploadDownloadSmall(@TempDir Path tempDir) throws Exception {
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         logger.setLevel(Level.ERROR);
 //        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
@@ -56,44 +54,43 @@ public class ITS3ServiceUploadDownload {
         S3ServiceFactory s3ServiceFactory = new S3ServiceFactoryImpl();
         S3Service s3Service = s3ServiceFactory.getS3Service(
                 s3Storage,
-                12_000_000,
-                100_000_000_000L,
-                tempDir,
-                UUID.randomUUID()
+                12_000_000
         );
 
         byte[] data = new byte[1_000];
         new Random().nextBytes(data);
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
-        BufferedInputStream bufferedInputStream = new BufferedInputStream(byteArrayInputStream);
 
         String key = "TestPool/level-0/shouldUploadDownloadSmall__"
                 + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"))
                 + "/";
 
-        s3Service.upload(bufferedInputStream,key);
+        Path tempFile = tempDir.resolve(UUID.randomUUID().toString());
+        Files.write(
+                tempFile,
+                data,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND,
+                StandardOpenOption.WRITE
+        );
+        byte[] srcBytes = Files.readAllBytes(tempFile);
+
+        s3Service.upload(tempFile, key);
+        Files.delete(tempFile);
 
         S3ServiceFactory s3ServiceFactoryDownload = new S3ServiceFactoryImpl();
         S3Service s3ServiceDownload = s3ServiceFactoryDownload.getS3Service(
                 s3Storage,
-                12_000_000,
-                100_000_000_000L,
-                tempDir,
-                UUID.randomUUID()
+                12_000_000
         );
 
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(byteArrayOutputStream);
-        s3ServiceDownload.download(key,bufferedOutputStream);
+        s3ServiceDownload.download(key, tempFile);
+        byte[] resBytes = Files.readAllBytes(tempFile);
 
-        bufferedOutputStream.flush();
-        byte[] dataDownloaded = byteArrayOutputStream.toByteArray();
-
-        Assertions.assertArrayEquals(data,dataDownloaded);
+        Assertions.assertArrayEquals(srcBytes, resBytes);
     }
 
     @Test
-    void shouldUploadDownloadBig(@TempDir Path tempDir) throws Exception{
+    void shouldUploadDownloadBig(@TempDir Path tempDir) throws Exception {
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         logger.setLevel(Level.ERROR);
 //        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
@@ -116,39 +113,38 @@ public class ITS3ServiceUploadDownload {
         S3ServiceFactory s3ServiceFactory = new S3ServiceFactoryImpl();
         S3Service s3Service = s3ServiceFactory.getS3Service(
                 s3Storage,
-                7_000_000,
-                10_000_000L,
-                tempDir,
-                UUID.randomUUID()
+                7_000_000
         );
 
         byte[] data = new byte[24_000_000];
         new Random().nextBytes(data);
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
-        BufferedInputStream bufferedInputStream = new BufferedInputStream(byteArrayInputStream);
+        Path tempFile = tempDir.resolve(UUID.randomUUID().toString());
+        Files.write(
+                tempFile,
+                data,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND,
+                StandardOpenOption.WRITE
+        );
+        byte[] srcBytes = Files.readAllBytes(tempFile);
+
 
         String key = "TestPool/level-0/shouldUploadDownloadBig__"
                 + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"))
                 + "/";
 
-        s3Service.upload(bufferedInputStream,key);
+        s3Service.upload(tempFile, key);
+        Files.delete(tempFile);
 
         S3ServiceFactory s3ServiceFactoryDownload = new S3ServiceFactoryImpl();
         S3Service s3ServiceDownload = s3ServiceFactoryDownload.getS3Service(
                 s3Storage,
-                7_000_000,
-                10_000_000L,
-                tempDir,
-                UUID.randomUUID()
+                7_000_000
         );
 
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(byteArrayOutputStream);
-        s3ServiceDownload.download(key,bufferedOutputStream);
+        s3ServiceDownload.download(key, tempFile);
+        byte[] resBytes = Files.readAllBytes(tempFile);
 
-        bufferedOutputStream.flush();
-        byte[] dataDownloaded = byteArrayOutputStream.toByteArray();
-
-        Assertions.assertArrayEquals(data,dataDownloaded);
+        Assertions.assertArrayEquals(srcBytes, resBytes);
     }
 }
