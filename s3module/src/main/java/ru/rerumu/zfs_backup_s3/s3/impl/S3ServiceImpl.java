@@ -3,20 +3,10 @@ package ru.rerumu.zfs_backup_s3.s3.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.zfs_backup_s3.s3.S3Service;
-import ru.rerumu.zfs_backup_s3.s3.exceptions.FileHitSizeLimitException;
-import ru.rerumu.zfs_backup_s3.s3.exceptions.ZFSStreamEndedException;
-import ru.rerumu.zfs_backup_s3.s3.factories.ZFSFileReaderFactory;
-import ru.rerumu.zfs_backup_s3.s3.factories.ZFSFileWriterFactory;
-import ru.rerumu.zfs_backup_s3.s3.utils.FileManager;
-import ru.rerumu.zfs_backup_s3.s3.utils.ZFSFileReader;
-import ru.rerumu.zfs_backup_s3.s3.utils.ZFSFileWriter;
 import ru.rerumu.zfs_backup_s3.utils.NotThreadSafe;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
 
@@ -25,18 +15,9 @@ public final class S3ServiceImpl implements S3Service {
     private static final String PART_SUFFIX = ".part";
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private final FileManager fileManager;
-
-    private final ZFSFileWriterFactory zfsFileWriterFactory;
-    private final ZFSFileReaderFactory zfsFileReaderFactory;
-
     private final S3CallableFactory s3CallableFactory;
 
-    public S3ServiceImpl(FileManager fileManager, ZFSFileWriterFactory zfsFileWriterFactory, ZFSFileReaderFactory zfsFileReaderFactory, S3CallableFactory s3CallableFactory) {
-        this.fileManager = fileManager;
-        this.zfsFileWriterFactory = zfsFileWriterFactory;
-        this.zfsFileReaderFactory = zfsFileReaderFactory;
+    public S3ServiceImpl(S3CallableFactory s3CallableFactory) {
         this.s3CallableFactory = s3CallableFactory;
     }
 
@@ -47,8 +28,8 @@ public final class S3ServiceImpl implements S3Service {
                 .anyMatch(item -> item.equals(key));
     }
 
-
-    private void upload(Path path, String prefix) {
+    @Override
+    public void upload(Path path, String prefix) {
         String key = prefix + path.getFileName().toString();
         logger.info(String.format("Trying to upload file '%s' to '%s'", path.toString(), key));
 
@@ -67,58 +48,11 @@ public final class S3ServiceImpl implements S3Service {
     }
 
     @Override
-    public void upload(BufferedInputStream bufferedInputStream, String key) {
-        try {
-            int n = 0;
-            while (true) {
-                Path newFilePath = fileManager.getNew(null, ".part" + n++);
-                try (ZFSFileWriter zfsFileWriter = zfsFileWriterFactory.getZFSFileWriter(newFilePath)) {
-                    zfsFileWriter.write(bufferedInputStream);
-                } catch (FileHitSizeLimitException e) {
-                    upload(newFilePath, key);
-                    Files.delete(newFilePath);
-                    logger.debug(String.format("File '%s' processed", newFilePath));
-                } catch (ZFSStreamEndedException e) {
-                    upload(newFilePath, key);
-                    Files.delete(newFilePath);
-                    logger.debug(String.format("File '%s' processed", newFilePath));
-                    logger.info("End of stream. Exiting");
-                    break;
-                }
-
-            }
-        } catch (Exception e) {
-            logger.error(e.getMessage(),e);
-            throw new RuntimeException(e);
-        }
-    }
-
-
-    private void download(String prefix, Path targetPath) {
+    public void download(String prefix, Path targetPath) {
         try {
             logger.info(String.format("Trying to download file '%s' to '%s'", prefix, targetPath.toString()));
             s3CallableFactory.getDownloadCallable(prefix, targetPath).call();
             logger.debug(String.format("Successfully downloaded file '%s' to  '%s'. Size = %d", prefix, targetPath.toString(), Files.size(targetPath)));
-        } catch (Exception e){
-            logger.error(e.getMessage(),e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public void download(String prefix, BufferedOutputStream bufferedOutputStream) {
-        try {
-
-            List<String> keys = list(prefix);
-            for (String key : keys) {
-                Path part = fileManager.getNew(null, "-" + Paths.get(key).getFileName());
-                download(key,part);
-                ZFSFileReader zfsFileReader = zfsFileReaderFactory.getZFSFileReader(
-                        bufferedOutputStream, part
-                );
-                zfsFileReader.read();
-                fileManager.delete(part);
-            }
         } catch (Exception e){
             logger.error(e.getMessage(),e);
             throw new RuntimeException(e);

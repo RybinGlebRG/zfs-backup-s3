@@ -2,37 +2,41 @@ package ru.rerumu.zfs_backup_s3.backups.services.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.zfs_backup_s3.backups.factories.StdConsumerFactory;
 import ru.rerumu.zfs_backup_s3.backups.services.ReceiveService;
 import ru.rerumu.zfs_backup_s3.backups.services.S3KeyService;
-import ru.rerumu.zfs_backup_s3.backups.services.SnapshotNamingService;
 
+import ru.rerumu.zfs_backup_s3.local_storage.services.LocalStorageService;
 import ru.rerumu.zfs_backup_s3.s3.S3Service;
 
 import ru.rerumu.zfs_backup_s3.utils.NotThreadSafe;
 import ru.rerumu.zfs_backup_s3.zfs.models.Pool;
 import ru.rerumu.zfs_backup_s3.zfs.ZFSService;
 
+import java.io.BufferedOutputStream;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 @NotThreadSafe
 public final class ReceiveServiceImpl implements ReceiveService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final ZFSService zfsService;
-    private final SnapshotNamingService snapshotNamingService;
 
     private final S3Service s3Service;
+    private final LocalStorageService localStorageService;
 
-    private final StdConsumerFactory stdConsumerFactory;
-
-    public ReceiveServiceImpl(ZFSService zfsService, SnapshotNamingService snapshotNamingService, S3Service s3Service, StdConsumerFactory stdConsumerFactory) {
+    public ReceiveServiceImpl(
+            ZFSService zfsService,
+            S3Service s3Service,
+            LocalStorageService localStorageService
+    ) {
         this.zfsService = zfsService;
-        this.snapshotNamingService = snapshotNamingService;
         this.s3Service = s3Service;
-        this.stdConsumerFactory = stdConsumerFactory;
+        this.localStorageService = localStorageService;
     }
 
     private String getNewestPrefix(int level) {
@@ -52,11 +56,20 @@ public final class ReceiveServiceImpl implements ReceiveService {
     public void receive(String bucketName, String targetPoolName) throws Exception {
         try {
             String prefix = getNewestPrefix(0);
+
+            // Get S3 keys for stored files
+            List<String> keys = s3Service.list(prefix);
+
+            BiConsumer<String, Path> fileDownloader = s3Service::download;
+            Consumer<BufferedOutputStream> outputStreamGenerator = bufferedOutputStream ->
+                    localStorageService.receive(keys, fileDownloader, bufferedOutputStream);
+
+
             Pool pool = zfsService.getPool(targetPoolName);
             zfsService.receive(
                     pool,
                     // TODO: Test
-                    stdConsumerFactory.getReceiveStdinConsumer(prefix)
+                    outputStreamGenerator
             );
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
