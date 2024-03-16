@@ -1,13 +1,16 @@
-package ru.rerumu.zfs_backup_s3.s3.utils.impl;
+package ru.rerumu.zfs_backup_s3.local_storage.services.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rerumu.zfs_backup_s3.s3.exceptions.FileHitSizeLimitException;
-import ru.rerumu.zfs_backup_s3.s3.exceptions.ZFSStreamEndedException;
-import ru.rerumu.zfs_backup_s3.s3.utils.ZFSFileWriter;
+import ru.rerumu.zfs_backup_s3.local_storage.exceptions.FileHitSizeLimitException;
+import ru.rerumu.zfs_backup_s3.local_storage.exceptions.ZFSStreamEndedException;
+import ru.rerumu.zfs_backup_s3.local_storage.services.ZFSFileWriter;
 import ru.rerumu.zfs_backup_s3.utils.NotThreadSafe;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 

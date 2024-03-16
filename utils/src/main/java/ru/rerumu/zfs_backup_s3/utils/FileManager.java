@@ -1,7 +1,6 @@
-package ru.rerumu.zfs_backup_s3.s3.utils;
+package ru.rerumu.zfs_backup_s3.utils;
 
-import ru.rerumu.zfs_backup_s3.s3.utils.impl.FileManagerImpl;
-import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
+import ru.rerumu.zfs_backup_s3.utils.impl.FileManagerImpl;
 
 import java.io.IOException;
 import java.nio.file.Path;

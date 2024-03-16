@@ -1,8 +1,8 @@
-package ru.rerumu.zfs_backup_s3.s3.factories.impl;
+package ru.rerumu.zfs_backup_s3.local_storage.factories.impl;
 
-import ru.rerumu.zfs_backup_s3.s3.utils.ZFSFileWriter;
-import ru.rerumu.zfs_backup_s3.s3.factories.ZFSFileWriterFactory;
-import ru.rerumu.zfs_backup_s3.s3.utils.impl.ZFSFileWriterTrivial;
+import ru.rerumu.zfs_backup_s3.local_storage.factories.ZFSFileWriterFactory;
+import ru.rerumu.zfs_backup_s3.local_storage.services.ZFSFileWriter;
+import ru.rerumu.zfs_backup_s3.local_storage.services.impl.ZFSFileWriterTrivial;
 import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
 
 import java.io.IOException;

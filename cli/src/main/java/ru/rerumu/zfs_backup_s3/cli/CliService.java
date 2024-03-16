@@ -21,6 +21,9 @@ public class CliService {
         this.entityFactory = entityFactory;
     }
 
+    /**
+     * TODO: Add "--skipFilesGeneration" option. Meant to be used with independent upload when files already has been generated
+     */
     public void run(String[] args) throws Exception {
         Options options = new Options();
         options.addOption("h", "help", false, "Print this message");

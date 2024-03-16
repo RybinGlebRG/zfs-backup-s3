@@ -1,8 +1,8 @@
-package ru.rerumu.zfs_backup_s3.s3.factories.impl;
+package ru.rerumu.zfs_backup_s3.local_storage.factories.impl;
 
-import ru.rerumu.zfs_backup_s3.s3.utils.ZFSFileReader;
-import ru.rerumu.zfs_backup_s3.s3.factories.ZFSFileReaderFactory;
-import ru.rerumu.zfs_backup_s3.s3.utils.impl.ZFSFileReaderTrivial;
+import ru.rerumu.zfs_backup_s3.local_storage.factories.ZFSFileReaderFactory;
+import ru.rerumu.zfs_backup_s3.local_storage.services.ZFSFileReader;
+import ru.rerumu.zfs_backup_s3.local_storage.services.impl.ZFSFileReaderTrivial;
 import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
 
 import java.io.BufferedOutputStream;

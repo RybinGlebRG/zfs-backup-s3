@@ -1,7 +1,7 @@
-package ru.rerumu.zfs_backup_s3.s3.utils;
+package ru.rerumu.zfs_backup_s3.local_storage.services;
 
-import ru.rerumu.zfs_backup_s3.s3.exceptions.FileHitSizeLimitException;
-import ru.rerumu.zfs_backup_s3.s3.exceptions.ZFSStreamEndedException;
+import ru.rerumu.zfs_backup_s3.local_storage.exceptions.FileHitSizeLimitException;
+import ru.rerumu.zfs_backup_s3.local_storage.exceptions.ZFSStreamEndedException;
 import ru.rerumu.zfs_backup_s3.utils.NotThreadSafe;
 
 import java.io.BufferedInputStream;
