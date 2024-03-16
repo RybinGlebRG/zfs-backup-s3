@@ -10,8 +10,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ru.rerumu.zfs_backup_s3.backups.factories.StdConsumerFactory;
-import ru.rerumu.zfs_backup_s3.backups.factories.impl.StdConsumerFactoryImpl;
 import ru.rerumu.zfs_backup_s3.backups.services.ReceiveService;
 import ru.rerumu.zfs_backup_s3.backups.services.SendService;
 import ru.rerumu.zfs_backup_s3.backups.services.SnapshotNamingService;
@@ -19,16 +17,23 @@ import ru.rerumu.zfs_backup_s3.backups.services.impl.ReceiveServiceImpl;
 import ru.rerumu.zfs_backup_s3.backups.services.impl.SendServiceImpl;
 import ru.rerumu.zfs_backup_s3.backups.services.impl.SnapshotNamingServiceImpl;
 
+import ru.rerumu.zfs_backup_s3.local_storage.factories.ZFSFileReaderFactory;
+import ru.rerumu.zfs_backup_s3.local_storage.factories.ZFSFileWriterFactory;
+import ru.rerumu.zfs_backup_s3.local_storage.factories.impl.ZFSFileReaderFactoryImpl;
+import ru.rerumu.zfs_backup_s3.local_storage.factories.impl.ZFSFileWriterFactoryImpl;
+import ru.rerumu.zfs_backup_s3.local_storage.services.LocalStorageService;
+import ru.rerumu.zfs_backup_s3.local_storage.services.impl.ConsecutiveLocalStorageService;
 import ru.rerumu.zfs_backup_s3.s3.S3ServiceFactory;
 import ru.rerumu.zfs_backup_s3.s3.S3ServiceFactoryImpl;
 import ru.rerumu.zfs_backup_s3.s3.models.S3Storage;
 import ru.rerumu.zfs_backup_s3.s3.S3Service;
 
+import ru.rerumu.zfs_backup_s3.utils.FileManager;
+import ru.rerumu.zfs_backup_s3.utils.impl.FileManagerImpl;
 import ru.rerumu.zfs_backup_s3.zfs.ZFSServiceMock;
 import ru.rerumu.zfs_backup_s3.zfs.models.Snapshot;
 import ru.rerumu.zfs_backup_s3.zfs.models.Dataset;
 import ru.rerumu.zfs_backup_s3.zfs.models.Pool;
-import ru.rerumu.zfs_backup_s3.zfs.ZFSService;
 
 import software.amazon.awssdk.regions.Region;
 
@@ -72,18 +77,22 @@ public class ITBackupRestore {
         S3ServiceFactory s3ServiceFactory =  new S3ServiceFactoryImpl();
         S3Service s3Service = s3ServiceFactory.getS3Service(
                 s3Storage,
-                12_000_000,
-                30_000_000L,
-                tempDir,
-                UUID.randomUUID()
+                12_000_000
         );
         SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
-        StdConsumerFactory stdConsumerFactory = new StdConsumerFactoryImpl(s3Service);
+        ZFSFileReaderFactory zfsFileReaderFactory = new ZFSFileReaderFactoryImpl();
+        ZFSFileWriterFactory zfsFileWriterFactory = new ZFSFileWriterFactoryImpl(30_000_000L);
+        FileManager fileManager = new FileManagerImpl(UUID.randomUUID().toString(), tempDir);
+        LocalStorageService localStorageService = new ConsecutiveLocalStorageService(
+                zfsFileReaderFactory,
+                zfsFileWriterFactory,
+                fileManager
+        );
         SendService sendService = new SendServiceImpl(
                 snapshotNamingService,
                 zfsServiceSend,
-                stdConsumerFactory
-        );
+                localStorageService,
+                s3Service);
         return sendService;
 
     }
@@ -101,18 +110,20 @@ public class ITBackupRestore {
         S3ServiceFactory s3ServiceFactory =  new S3ServiceFactoryImpl();
         S3Service s3Service = s3ServiceFactory.getS3Service(
                 s3Storage,
-                8_000_000,
-                30_000_000L,
-                tempDir,
-                UUID.randomUUID()
+                8_000_000
         );
-        SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
-        StdConsumerFactory stdConsumerFactory = new StdConsumerFactoryImpl(s3Service);
+        ZFSFileReaderFactory zfsFileReaderFactory = new ZFSFileReaderFactoryImpl();
+        ZFSFileWriterFactory zfsFileWriterFactory = new ZFSFileWriterFactoryImpl(30_000_000L);
+        FileManager fileManager = new FileManagerImpl(UUID.randomUUID().toString(), tempDir);
+        LocalStorageService localStorageService = new ConsecutiveLocalStorageService(
+                zfsFileReaderFactory,
+                zfsFileWriterFactory,
+                fileManager
+        );
         ReceiveService receiveService = new ReceiveServiceImpl(
                 zfsServiceRestore,
-                snapshotNamingService,
                 s3Service,
-                stdConsumerFactory
+                localStorageService
         );
 
 

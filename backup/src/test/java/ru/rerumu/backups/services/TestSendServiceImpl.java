@@ -5,9 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.rerumu.zfs_backup_s3.backups.factories.StdConsumerFactory;
 import ru.rerumu.zfs_backup_s3.backups.services.SnapshotNamingService;
 import ru.rerumu.zfs_backup_s3.backups.services.impl.SendServiceImpl;
+import ru.rerumu.zfs_backup_s3.local_storage.services.LocalStorageService;
+import ru.rerumu.zfs_backup_s3.s3.S3Service;
 import ru.rerumu.zfs_backup_s3.zfs.ZFSService;
 import ru.rerumu.zfs_backup_s3.zfs.models.Dataset;
 import ru.rerumu.zfs_backup_s3.zfs.models.Pool;
@@ -28,12 +29,12 @@ public class TestSendServiceImpl {
 
     @Mock
     SnapshotNamingService snapshotNamingService;
-
     @Mock
     ZFSService zfsService;
-
     @Mock
-    StdConsumerFactory stdConsumerFactory;
+    LocalStorageService localStorageService;
+    @Mock
+    S3Service s3Service;
 
     @Test
     void shouldSend() throws Exception {
@@ -51,7 +52,8 @@ public class TestSendServiceImpl {
         SendServiceImpl sendService = new SendServiceImpl(
                 snapshotNamingService,
                 zfsService,
-                stdConsumerFactory
+                localStorageService,
+                s3Service
         );
         sendService.send("TestPool","TestBucket");
 
