@@ -33,13 +33,13 @@ public class ITS3ServiceUploadDownload {
     @Test
     void shouldUploadDownloadSmall(@TempDir Path tempDir) throws Exception {
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        logger.setLevel(Level.ERROR);
-//        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
-//        logger.setLevel(Level.INFO);
-//        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
-//        logger.setLevel(Level.INFO);
-//        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
-//        logger.setLevel(Level.INFO);
+        logger.setLevel(Level.DEBUG);
+        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
+        logger.setLevel(Level.INFO);
+        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
+        logger.setLevel(Level.INFO);
+        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
+        logger.setLevel(Level.INFO);
 
         S3Storage s3Storage = new S3Storage(
                 Region.of(env.get("ZFS_BACKUP_S3_REGION")),
@@ -64,7 +64,8 @@ public class ITS3ServiceUploadDownload {
                 + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"))
                 + "/";
 
-        Path tempFile = tempDir.resolve(UUID.randomUUID().toString());
+        String fileName = UUID.randomUUID().toString();
+        Path tempFile = tempDir.resolve(fileName);
         Files.write(
                 tempFile,
                 data,
@@ -83,7 +84,7 @@ public class ITS3ServiceUploadDownload {
                 12_000_000
         );
 
-        s3ServiceDownload.download(key, tempFile);
+        s3ServiceDownload.download(key + fileName, tempFile);
         byte[] resBytes = Files.readAllBytes(tempFile);
 
         Assertions.assertArrayEquals(srcBytes, resBytes);
@@ -92,13 +93,13 @@ public class ITS3ServiceUploadDownload {
     @Test
     void shouldUploadDownloadBig(@TempDir Path tempDir) throws Exception {
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        logger.setLevel(Level.ERROR);
-//        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
-//        logger.setLevel(Level.INFO);
-//        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
-//        logger.setLevel(Level.INFO);
-//        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
-//        logger.setLevel(Level.INFO);
+        logger.setLevel(Level.DEBUG);
+        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.interceptor.ExecutionInterceptorChain.class);
+        logger.setLevel(Level.INFO);
+        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.core.internal.io.AwsChunkedEncodingInputStream.class);
+        logger.setLevel(Level.INFO);
+        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(software.amazon.awssdk.auth.signer.Aws4Signer.class);
+        logger.setLevel(Level.INFO);
 
         S3Storage s3Storage = new S3Storage(
                 Region.of(env.get("ZFS_BACKUP_S3_REGION")),
@@ -118,7 +119,8 @@ public class ITS3ServiceUploadDownload {
 
         byte[] data = new byte[24_000_000];
         new Random().nextBytes(data);
-        Path tempFile = tempDir.resolve(UUID.randomUUID().toString());
+        String fileName = UUID.randomUUID().toString();
+        Path tempFile = tempDir.resolve(fileName);
         Files.write(
                 tempFile,
                 data,
@@ -142,7 +144,7 @@ public class ITS3ServiceUploadDownload {
                 7_000_000
         );
 
-        s3ServiceDownload.download(key, tempFile);
+        s3ServiceDownload.download(key + fileName, tempFile);
         byte[] resBytes = Files.readAllBytes(tempFile);
 
         Assertions.assertArrayEquals(srcBytes, resBytes);
