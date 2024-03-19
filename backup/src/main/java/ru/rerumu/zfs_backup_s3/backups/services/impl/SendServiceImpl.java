@@ -28,50 +28,51 @@ public final class SendServiceImpl implements SendService {
     private final SnapshotNamingService snapshotNamingService;
     private final ZFSService zfsService;
     private final LocalStorageService localStorageService;
-    private final S3Service s3Service;
 
-    public SendServiceImpl(SnapshotNamingService snapshotNamingService, ZFSService zfsService, LocalStorageService localStorageService, S3Service s3Service) {
+    public SendServiceImpl(SnapshotNamingService snapshotNamingService, ZFSService zfsService, LocalStorageService localStorageService) {
         this.snapshotNamingService = snapshotNamingService;
         this.zfsService = zfsService;
         this.localStorageService = localStorageService;
-        this.s3Service = s3Service;
     }
 
     @Override
-    public void send(Pool pool, Bucket bucket) {
-        Snapshot snapshot = zfsService.createRecursiveSnapshot(
-                pool.getRootDataset().orElseThrow(),
-                snapshotNamingService.generateName()
+    public void send(Pool pool, Bucket bucket, String continueSnapshotName) {
+        try {
+
+
+            if (localStorageService.areFilesPresent()){
+                logger.info(String.format("Files already present. Sending files with prefix='%s'",continueSnapshotName));
+                String  prefix = S3KeyService.getKey(continueSnapshotName,0);
+                localStorageService.sendExisting(prefix);
+            } else {
+                logger.info(String.format("Files not present. Generating stream  for pool='%s' and sending files",pool.name()));
+                Snapshot snapshot = zfsService.createRecursiveSnapshot(
+                        pool.getRootDataset().orElseThrow(),
+                        snapshotNamingService.generateName()
                 );
 
-
-        String  prefix = S3KeyService.getKey(snapshot.getName(),0);
-
-        Consumer<Path> fileConsumer = path -> s3Service.upload(path,prefix);
-        Consumer<BufferedInputStream> bufferedInputStreamConsumer = bufferedInputStream ->
-                localStorageService.send(bufferedInputStream, fileConsumer);
-
-        try {
-            zfsService.send(
-                    snapshot,
-                    // TODO: Add test
-                    bufferedInputStreamConsumer
-            );
+                String  prefix = S3KeyService.getKey(snapshot.getName(),0);
+                Consumer<BufferedInputStream> bufferedInputStreamConsumer = bufferedInputStream ->
+                        localStorageService.send(bufferedInputStream, prefix);
+                zfsService.send(
+                        snapshot,
+                        // TODO: Add test
+                        bufferedInputStreamConsumer
+                );
+            }
         } catch (Exception e) {
             logger.error(e.getMessage(),e);
             throw new SendError(e);
         }
-
-
     }
 
     // TODO: Why exception is thrown?
     @Override
-    public void send(String poolName, String bucketName) throws Exception {
+    public void send(String poolName, String bucketName, String continueSnapshotName) throws Exception {
         try {
             Bucket bucket = new Bucket(bucketName);
             Pool pool = zfsService.getPool(poolName);
-            send(pool, bucket);
+            send(pool, bucket, continueSnapshotName);
         } catch (Exception e){
             logger.error(e.getMessage(), e);
             throw e;

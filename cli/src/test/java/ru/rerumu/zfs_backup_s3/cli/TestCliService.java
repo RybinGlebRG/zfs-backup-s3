@@ -36,7 +36,7 @@ public class TestCliService {
         CliService cliService = new CliService(entityFactory);
         cliService.run(new String[]{"--backupFull", "TestPool","TestBucket"});
 
-        verify(sendService).send("TestPool","TestBucket");
+        verify(sendService).send("TestPool","TestBucket", null);
     }
 
     @Test

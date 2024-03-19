@@ -6,4 +6,5 @@ module ru.rerumu.zfs_backup_s3.local_storage {
 
     requires ru.rerumu.zfs_backup_s3.utils;
     requires org.slf4j;
+    requires ru.rerumu.zfs_backup_s3.s3module;
 }

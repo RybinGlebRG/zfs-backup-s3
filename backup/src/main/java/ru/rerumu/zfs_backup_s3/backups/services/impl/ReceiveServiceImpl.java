@@ -57,13 +57,8 @@ public final class ReceiveServiceImpl implements ReceiveService {
         try {
             String prefix = getNewestPrefix(0);
 
-            // Get S3 keys for stored files
-            List<String> keys = s3Service.list(prefix);
-
-            BiConsumer<String, Path> fileDownloader = s3Service::download;
             Consumer<BufferedOutputStream> outputStreamGenerator = bufferedOutputStream ->
-                    localStorageService.receive(keys, fileDownloader, bufferedOutputStream);
-
+                    localStorageService.receive(prefix, bufferedOutputStream);
 
             Pool pool = zfsService.getPool(targetPoolName);
             zfsService.receive(
