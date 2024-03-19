@@ -5,12 +5,12 @@ import ru.rerumu.zfs_backup_s3.zfs.models.Pool;
 
 public final class SendServiceMock implements SendService {
     @Override
-    public void send(Pool pool, Bucket bucket) {
+    public void send(Pool pool, Bucket bucket, String continueSnapshotName) {
 
     }
 
     @Override
-    public void send(String poolName, String bucketName) throws Exception {
+    public void send(String poolName, String bucketName, String continueSnapshotName) throws Exception {
 
     }
 }

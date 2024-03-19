@@ -9,10 +9,12 @@ import ru.rerumu.zfs_backup_s3.local_storage.factories.ZFSFileWriterFactory;
 import ru.rerumu.zfs_backup_s3.local_storage.services.LocalStorageService;
 import ru.rerumu.zfs_backup_s3.local_storage.services.ZFSFileReader;
 import ru.rerumu.zfs_backup_s3.local_storage.services.ZFSFileWriter;
+import ru.rerumu.zfs_backup_s3.s3.S3Service;
 import ru.rerumu.zfs_backup_s3.utils.FileManager;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -28,22 +30,25 @@ public final class ConsecutiveLocalStorageService implements LocalStorageService
     private final ZFSFileWriterFactory zfsFileWriterFactory;
     private final ZFSFileReaderFactory zfsFileReaderFactory;
     private final FileManager fileManager;
+    private final S3Service s3Service;
 
     public ConsecutiveLocalStorageService(
             ZFSFileReaderFactory zfsFileReaderFactory,
             ZFSFileWriterFactory zfsFileWriterFactory,
-            FileManager fileManager
+            FileManager fileManager,
+            S3Service s3Service
     ) {
         this.zfsFileReaderFactory = zfsFileReaderFactory;
         this.zfsFileWriterFactory = zfsFileWriterFactory;
         this.fileManager = fileManager;
+        this.s3Service = s3Service;
     }
 
     /**
      * First generate all files, then send them
      */
     @Override
-    public void send(BufferedInputStream bufferedInputStream, Consumer<Path> fileConsumer) {
+    public void send(BufferedInputStream bufferedInputStream, String prefix) {
         try {
             List<Path> generatedFiles = new ArrayList<>();
             int n = 0;
@@ -66,7 +71,7 @@ public final class ConsecutiveLocalStorageService implements LocalStorageService
 
             // File sending
             for (Path file : generatedFiles) {
-                fileConsumer.accept(file);
+                s3Service.upload(file, prefix);
                 fileManager.delete(file);
             }
         } catch (Exception e) {
@@ -75,20 +80,59 @@ public final class ConsecutiveLocalStorageService implements LocalStorageService
         }
     }
 
+    @Override
+    public void sendExisting(String prefix) {
+        try {
+            List<Path> presentFiles = getPresentFiles();
+            // File sending
+            for (Path file : presentFiles) {
+                s3Service.upload(file, prefix);
+                fileManager.delete(file);
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public boolean areFilesPresent() {
+        try {
+            return getPresentFiles().size() > 0;
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private List<Path> getPresentFiles() throws IOException {
+        return fileManager.getPresentFiles();
+    }
+
     /**
      * First receive all files, then process
      */
-    public void receive(List<String> keys, BiConsumer<String, Path> fileDownloader, BufferedOutputStream bufferedOutputStream) {
+    @Override
+    public void receive(String prefix, BufferedOutputStream bufferedOutputStream) {
         try {
 
+            // Get S3 keys for stored files
+            List<String> keys = s3Service.list(prefix);
+
             List<Path> files = new ArrayList<>();
+
+            List<Path> alreadyPresent = getPresentFiles();
 
             for (String key : keys) {
                 // Calc path from key
                 Path path = fileManager.getNew(null, "-" + Paths.get(key).getFileName());
-                files.add(path);
 
-                fileDownloader.accept(key, path);
+                // Only load files if not already present
+                if (!alreadyPresent.contains(path)){
+                    logger.info(String.format("File with key='%s' is not present. Downloading to file='%S'", key, path));
+                    s3Service.download(key, path);
+                    files.add(path);
+                }
             }
 
             // Send to ZFS

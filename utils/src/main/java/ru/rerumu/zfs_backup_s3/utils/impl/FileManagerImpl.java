@@ -6,6 +6,9 @@ import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @ThreadSafe
 public final class FileManagerImpl implements FileManager {
@@ -31,5 +34,10 @@ public final class FileManagerImpl implements FileManager {
 
     public void delete(Path path) throws IOException {
         Files.delete(path);
+    }
+
+    public List<Path> getPresentFiles() throws IOException {
+        return Files.list(tempDir)
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 }

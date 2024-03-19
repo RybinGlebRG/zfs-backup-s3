@@ -71,13 +71,14 @@ public final class EntityFactory {
         LocalStorageService localStorageService = new ConsecutiveLocalStorageService(
                 zfsFileReaderFactory,
                 zfsFileWriterFactory,
-                fileManager
+                fileManager,
+                s3Service
         );
         SendService sendService = new SendServiceImpl(
                 snapshotNamingService,
                 zfsService,
-                localStorageService,
-                s3Service);
+                localStorageService
+        );
         return sendService;
     }
 
@@ -98,7 +99,8 @@ public final class EntityFactory {
         LocalStorageService localStorageService = new ConsecutiveLocalStorageService(
                 zfsFileReaderFactory,
                 zfsFileWriterFactory,
-                fileManager
+                fileManager,
+                s3Service
         );
         ReceiveService receiveService = new ReceiveServiceImpl(
                 zfsService,

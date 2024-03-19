@@ -52,10 +52,9 @@ public class TestSendServiceImpl {
         SendServiceImpl sendService = new SendServiceImpl(
                 snapshotNamingService,
                 zfsService,
-                localStorageService,
-                s3Service
+                localStorageService
         );
-        sendService.send("TestPool","TestBucket");
+        sendService.send("TestPool","TestBucket", null);
 
 
         Dataset shouldDataset = new Dataset("TestPool", new ArrayList<>());

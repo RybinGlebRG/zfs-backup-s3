@@ -8,6 +8,6 @@ import ru.rerumu.zfs_backup_s3.zfs.models.Pool;
 @NotThreadSafe
 public sealed interface SendService permits SendServiceMock, SendServiceImpl {
 
-    void send(Pool pool, Bucket bucket);
-    void send(String poolName, String bucketName) throws Exception;
+    void send(Pool pool, Bucket bucket, String continueSnapshotName);
+    void send(String poolName, String bucketName, String continueSnapshotName) throws Exception;
 }

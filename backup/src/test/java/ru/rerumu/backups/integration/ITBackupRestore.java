@@ -86,13 +86,14 @@ public class ITBackupRestore {
         LocalStorageService localStorageService = new ConsecutiveLocalStorageService(
                 zfsFileReaderFactory,
                 zfsFileWriterFactory,
-                fileManager
+                fileManager,
+                s3Service
         );
         SendService sendService = new SendServiceImpl(
                 snapshotNamingService,
                 zfsServiceSend,
-                localStorageService,
-                s3Service);
+                localStorageService
+        );
         return sendService;
 
     }
@@ -118,7 +119,8 @@ public class ITBackupRestore {
         LocalStorageService localStorageService = new ConsecutiveLocalStorageService(
                 zfsFileReaderFactory,
                 zfsFileWriterFactory,
-                fileManager
+                fileManager,
+                s3Service
         );
         ReceiveService receiveService = new ReceiveServiceImpl(
                 zfsServiceRestore,
@@ -181,7 +183,7 @@ public class ITBackupRestore {
                 .when(zfsServiceSend).send(any(),any());
 
         SendService sendService = prepareSend(tempDir1);
-        sendService.send("TestPool",bucketName);
+        sendService.send("TestPool",bucketName, null);
 
 
         Pool restorePool = new Pool("RestorePool",new ArrayList<>());

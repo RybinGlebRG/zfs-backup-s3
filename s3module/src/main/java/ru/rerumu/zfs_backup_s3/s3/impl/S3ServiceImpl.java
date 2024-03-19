@@ -3,6 +3,7 @@ package ru.rerumu.zfs_backup_s3.s3.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.zfs_backup_s3.s3.S3Service;
+import ru.rerumu.zfs_backup_s3.s3.exceptions.FileAlreadyPresentOnS3Exception;
 import ru.rerumu.zfs_backup_s3.utils.NotThreadSafe;
 
 import java.nio.file.Files;
@@ -33,8 +34,10 @@ public final class S3ServiceImpl implements S3Service {
         String key = prefix + path.getFileName().toString();
         logger.info(String.format("Trying to upload file '%s' to '%s'", path.toString(), key));
 
-
         try {
+            if (isExists(key)){
+                throw new FileAlreadyPresentOnS3Exception();
+            }
             s3CallableFactory.getUploadCallable(path, key).call();
 
             while (!isExists(key)) {
