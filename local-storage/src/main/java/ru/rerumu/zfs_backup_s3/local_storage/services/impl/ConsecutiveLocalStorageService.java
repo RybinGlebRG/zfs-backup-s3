@@ -17,15 +17,19 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public final class ConsecutiveLocalStorageService implements LocalStorageService {
+    private static final String PART_SUFFIX = ".part";
+    private static final Comparator<Path> filesComparator = Comparator.comparing(path -> {
+        String fileName = path.getFileName().toString();
+        String fileNumberStr = fileName.substring(fileName.lastIndexOf(PART_SUFFIX) + PART_SUFFIX.length());
+        return Integer.valueOf(fileNumberStr);
+    });
+
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final ZFSFileWriterFactory zfsFileWriterFactory;
     private final ZFSFileReaderFactory zfsFileReaderFactory;
@@ -125,15 +129,18 @@ public final class ConsecutiveLocalStorageService implements LocalStorageService
 
             for (String key : keys) {
                 // Calc path from key
-                Path path = fileManager.getNew(null, "-" + Paths.get(key).getFileName());
+                Path path = fileManager.resolve(Paths.get(key).getFileName().toString());
 
                 // Only load files if not already present
                 if (!alreadyPresent.contains(path)){
                     logger.info(String.format("File with key='%s' is not present. Downloading to file='%S'", key, path));
                     s3Service.download(key, path);
-                    files.add(path);
                 }
+
+                files.add(path);
             }
+
+            files.sort(filesComparator);
 
             // Send to ZFS
             for (Path file : files) {

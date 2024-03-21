@@ -175,32 +175,6 @@ public class ITBackupWithPartiallyUploaded {
 
         String bucketName = "test";
         SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
-        List<Dataset> datasets = new ArrayList<>();
-        datasets.add(new Dataset(
-                "TestPool",
-                List.of(
-                        new Snapshot("TestPool@tmp1"),
-                        new Snapshot("TestPool@tmp2"),
-                        new Snapshot("TestPool@tmp3")
-                )
-        ));
-        datasets.add(new Dataset(
-                "TestPool/encrypted",
-                List.of(
-                        new Snapshot("TestPool/encrypted@tmp1"),
-                        new Snapshot("TestPool/encrypted@tmp2"),
-                        new Snapshot("TestPool/encrypted@tmp3")
-                )
-        ));
-        datasets.add(new Dataset(
-                "TestPool/encrypted/tested",
-                List.of(
-                        new Snapshot("TestPool/encrypted/tested@tmp1"),
-                        new Snapshot("TestPool/encrypted/tested@tmp2"),
-                        new Snapshot("TestPool/encrypted/tested@tmp3")
-                )
-        ));
-        Pool pool = new Pool("TestPool", datasets);
         Snapshot snapshot = new Snapshot("TestPool@" + snapshotNamingService.generateName());
         byte[] data = new byte[80_000_000];
 
@@ -215,7 +189,7 @@ public class ITBackupWithPartiallyUploaded {
         SendService sendService = prepareSend(tempDir1);
         s3ServiceSend.upload(paths.get(0),key);
         Files.delete(paths.get(0));
-        sendService.send(pool.name(), bucketName, snapshot.getName());
+        sendService.send("TestPool", bucketName, snapshot.getName());
 
 
         Pool restorePool = new Pool("RestorePool", new ArrayList<>());
