@@ -161,32 +161,6 @@ public class ITRestoreWithPartiallyDownloaded {
 
         String bucketName = "test";
         SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
-        List<Dataset> datasets = new ArrayList<>();
-        datasets.add(new Dataset(
-                "TestPool",
-                List.of(
-                        new Snapshot("TestPool@tmp1"),
-                        new Snapshot("TestPool@tmp2"),
-                        new Snapshot("TestPool@tmp3")
-                )
-        ));
-        datasets.add(new Dataset(
-                "TestPool/encrypted",
-                List.of(
-                        new Snapshot("TestPool/encrypted@tmp1"),
-                        new Snapshot("TestPool/encrypted@tmp2"),
-                        new Snapshot("TestPool/encrypted@tmp3")
-                )
-        ));
-        datasets.add(new Dataset(
-                "TestPool/encrypted/tested",
-                List.of(
-                        new Snapshot("TestPool/encrypted/tested@tmp1"),
-                        new Snapshot("TestPool/encrypted/tested@tmp2"),
-                        new Snapshot("TestPool/encrypted/tested@tmp3")
-                )
-        ));
-        Pool pool = new Pool("TestPool", datasets);
         Snapshot snapshot = new Snapshot("TestPool@" + snapshotNamingService.generateName());
         byte[] data = new byte[80_000_000];
 
@@ -207,12 +181,12 @@ public class ITRestoreWithPartiallyDownloaded {
             s3ServiceSend.upload(file,key);
             Files.delete(file);
         }
-        Files.write(paths.get(0), tempBytes, StandardOpenOption.CREATE);
 
+        // Make it look like first file is already downloaded
+        Files.write(tempDir2.resolve(paths.get(0).getFileName()), tempBytes, StandardOpenOption.CREATE);
 
 
         ReceiveService receiveService = prepareReceive(tempDir2);
-        s3ServiceReceive.download(key+paths.get(0).getFileName().toString(),tempDir2.resolve(paths.get(0).getFileName()));
 
         Pool restorePool = new Pool("RestorePool", new ArrayList<>());
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();

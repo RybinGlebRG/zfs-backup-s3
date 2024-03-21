@@ -14,4 +14,6 @@ public sealed interface FileManager permits FileManagerImpl {
     void delete(Path path) throws IOException;
 
     List<Path> getPresentFiles() throws IOException;
+
+    Path resolve(String str);
 }

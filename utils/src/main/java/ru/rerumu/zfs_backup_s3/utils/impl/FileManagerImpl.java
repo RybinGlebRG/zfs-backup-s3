@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @ThreadSafe
 public final class FileManagerImpl implements FileManager {
@@ -37,7 +38,12 @@ public final class FileManagerImpl implements FileManager {
     }
 
     public List<Path> getPresentFiles() throws IOException {
-        return Files.list(tempDir)
-                .collect(Collectors.toCollection(ArrayList::new));
+        try(Stream<Path> pathStream = Files.list(tempDir)){
+            return pathStream.collect(Collectors.toCollection(ArrayList::new));
+        }
+    }
+
+    public Path resolve(String str){
+        return tempDir.resolve(str);
     }
 }
