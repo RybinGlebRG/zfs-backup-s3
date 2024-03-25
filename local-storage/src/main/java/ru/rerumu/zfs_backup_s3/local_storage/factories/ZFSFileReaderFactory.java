@@ -9,6 +9,6 @@ import java.io.BufferedOutputStream;
 import java.nio.file.Path;
 
 @ThreadSafe
-public sealed interface ZFSFileReaderFactory permits ZFSFileReaderFactoryImpl {
+public interface ZFSFileReaderFactory {
     ZFSFileReader getZFSFileReader(BufferedOutputStream bufferedOutputStream, Path path);
 }

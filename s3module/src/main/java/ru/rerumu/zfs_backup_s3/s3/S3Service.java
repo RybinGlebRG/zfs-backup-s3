@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 @NotThreadSafe
-public sealed interface S3Service permits S3ServiceImpl {
+public interface S3Service {
     void upload(Path path, String prefix);
     void download(String prefix, Path targetPath);
     List<String> list(String prefix);

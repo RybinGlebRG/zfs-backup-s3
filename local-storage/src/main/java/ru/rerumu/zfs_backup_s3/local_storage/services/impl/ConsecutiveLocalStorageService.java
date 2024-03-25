@@ -10,17 +10,16 @@ import ru.rerumu.zfs_backup_s3.local_storage.services.LocalStorageService;
 import ru.rerumu.zfs_backup_s3.local_storage.services.ZFSFileReader;
 import ru.rerumu.zfs_backup_s3.local_storage.services.ZFSFileWriter;
 import ru.rerumu.zfs_backup_s3.s3.S3Service;
-import ru.rerumu.zfs_backup_s3.utils.FileManager;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class ConsecutiveLocalStorageService implements LocalStorageService {
     private static final String PART_SUFFIX = ".part";
@@ -33,19 +32,34 @@ public final class ConsecutiveLocalStorageService implements LocalStorageService
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final ZFSFileWriterFactory zfsFileWriterFactory;
     private final ZFSFileReaderFactory zfsFileReaderFactory;
-    private final FileManager fileManager;
     private final S3Service s3Service;
+    private final String unique;
+    private final Path tempDir;
 
     public ConsecutiveLocalStorageService(
             ZFSFileReaderFactory zfsFileReaderFactory,
             ZFSFileWriterFactory zfsFileWriterFactory,
-            FileManager fileManager,
-            S3Service s3Service
+            S3Service s3Service,
+            String unique,
+            Path tempDir
     ) {
         this.zfsFileReaderFactory = zfsFileReaderFactory;
         this.zfsFileWriterFactory = zfsFileWriterFactory;
-        this.fileManager = fileManager;
         this.s3Service = s3Service;
+        this.unique = unique;
+        this.tempDir = tempDir;
+    }
+
+    private Path getNew(String prefix, String postfix) {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (prefix != null) {
+            stringBuilder.append(prefix);
+        }
+        stringBuilder.append(unique);
+        if (postfix != null) {
+            stringBuilder.append(postfix);
+        }
+        return tempDir.resolve(stringBuilder.toString());
     }
 
     /**
@@ -59,7 +73,7 @@ public final class ConsecutiveLocalStorageService implements LocalStorageService
 
             //File generation
             while (true) {
-                Path newFilePath = fileManager.getNew(null, ".part" + n++);
+                Path newFilePath = getNew(null, ".part" + n++);
                 try (ZFSFileWriter zfsFileWriter = zfsFileWriterFactory.getZFSFileWriter(newFilePath)) {
                     zfsFileWriter.write(bufferedInputStream);
                 } catch (FileHitSizeLimitException e) {
@@ -76,7 +90,7 @@ public final class ConsecutiveLocalStorageService implements LocalStorageService
             // File sending
             for (Path file : generatedFiles) {
                 s3Service.upload(file, prefix);
-                fileManager.delete(file);
+                Files.delete(file);
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -86,13 +100,17 @@ public final class ConsecutiveLocalStorageService implements LocalStorageService
 
     @Override
     public void sendExisting(String prefix) {
+        logger.info(String.format("Sending existing files. Prefix='%s'", prefix));
         try {
             List<Path> presentFiles = getPresentFiles();
             // File sending
             for (Path file : presentFiles) {
+                logger.debug(String.format("Uploading file '%s' with prefix '%s'", file.getFileName(), prefix));
                 s3Service.upload(file, prefix);
-                fileManager.delete(file);
+                logger.debug(String.format("Deleting file '%s'", file.getFileName()));
+                Files.delete(file);
             }
+            logger.info("All files sent");
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             throw new RuntimeException(e);
@@ -110,7 +128,9 @@ public final class ConsecutiveLocalStorageService implements LocalStorageService
     }
 
     private List<Path> getPresentFiles() throws IOException {
-        return fileManager.getPresentFiles();
+        try (Stream<Path> pathStream = Files.list(tempDir)) {
+            return pathStream.collect(Collectors.toCollection(ArrayList::new));
+        }
     }
 
     /**
@@ -129,10 +149,10 @@ public final class ConsecutiveLocalStorageService implements LocalStorageService
 
             for (String key : keys) {
                 // Calc path from key
-                Path path = fileManager.resolve(Paths.get(key).getFileName().toString());
+                Path path = tempDir.resolve(Paths.get(key).getFileName().toString());
 
                 // Only load files if not already present
-                if (!alreadyPresent.contains(path)){
+                if (!alreadyPresent.contains(path)) {
                     logger.info(String.format("File with key='%s' is not present. Downloading to file='%S'", key, path));
                     s3Service.download(key, path);
                 }
@@ -152,7 +172,7 @@ public final class ConsecutiveLocalStorageService implements LocalStorageService
 
             // Delete all files
             for (Path file : files) {
-                fileManager.delete(file);
+                Files.delete(file);
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);

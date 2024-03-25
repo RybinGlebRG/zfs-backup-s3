@@ -25,10 +25,7 @@ import ru.rerumu.zfs_backup_s3.s3.S3Service;
 import ru.rerumu.zfs_backup_s3.s3.S3ServiceFactory;
 import ru.rerumu.zfs_backup_s3.s3.S3ServiceFactoryImpl;
 import ru.rerumu.zfs_backup_s3.s3.models.S3Storage;
-import ru.rerumu.zfs_backup_s3.utils.FileManager;
-import ru.rerumu.zfs_backup_s3.utils.impl.FileManagerImpl;
 import ru.rerumu.zfs_backup_s3.zfs.ZFSServiceMock;
-import ru.rerumu.zfs_backup_s3.zfs.models.Dataset;
 import ru.rerumu.zfs_backup_s3.zfs.models.Pool;
 import ru.rerumu.zfs_backup_s3.zfs.models.Snapshot;
 import software.amazon.awssdk.regions.Region;
@@ -78,13 +75,12 @@ public class ITBackupWithPartiallyUploaded {
         SnapshotNamingService snapshotNamingService = new SnapshotNamingServiceImpl();
         ZFSFileReaderFactory zfsFileReaderFactory = new ZFSFileReaderFactoryImpl();
         ZFSFileWriterFactory zfsFileWriterFactory = new ZFSFileWriterFactoryImpl(30_000_000L);
-        FileManager fileManager = new FileManagerImpl(UUID.randomUUID().toString(), tempDir);
         LocalStorageService localStorageService = new ConsecutiveLocalStorageService(
                 zfsFileReaderFactory,
                 zfsFileWriterFactory,
-                fileManager,
-                s3ServiceSend
-        );
+                s3ServiceSend,
+                UUID.randomUUID().toString(),
+                tempDir);
         SendService sendService = new SendServiceImpl(
                 snapshotNamingService,
                 zfsServiceSend,
@@ -111,13 +107,12 @@ public class ITBackupWithPartiallyUploaded {
         );
         ZFSFileReaderFactory zfsFileReaderFactory = new ZFSFileReaderFactoryImpl();
         ZFSFileWriterFactory zfsFileWriterFactory = new ZFSFileWriterFactoryImpl(30_000_000L);
-        FileManager fileManager = new FileManagerImpl(UUID.randomUUID().toString(), tempDir);
         LocalStorageService localStorageService = new ConsecutiveLocalStorageService(
                 zfsFileReaderFactory,
                 zfsFileWriterFactory,
-                fileManager,
-                s3Service
-        );
+                s3Service,
+                UUID.randomUUID().toString(),
+                tempDir);
         ReceiveService receiveService = new ReceiveServiceImpl(
                 zfsServiceRestore,
                 s3Service,
