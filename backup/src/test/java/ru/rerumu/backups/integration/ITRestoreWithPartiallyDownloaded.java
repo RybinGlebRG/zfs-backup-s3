@@ -10,10 +10,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.zfs_backup_s3.backups.services.ReceiveService;
-import ru.rerumu.zfs_backup_s3.backups.services.SendService;
 import ru.rerumu.zfs_backup_s3.backups.services.SnapshotNamingService;
 import ru.rerumu.zfs_backup_s3.backups.services.impl.ReceiveServiceImpl;
-import ru.rerumu.zfs_backup_s3.backups.services.impl.SendServiceImpl;
 import ru.rerumu.zfs_backup_s3.backups.services.impl.SnapshotNamingServiceImpl;
 import ru.rerumu.zfs_backup_s3.local_storage.factories.ZFSFileReaderFactory;
 import ru.rerumu.zfs_backup_s3.local_storage.factories.ZFSFileWriterFactory;
@@ -25,10 +23,7 @@ import ru.rerumu.zfs_backup_s3.s3.S3Service;
 import ru.rerumu.zfs_backup_s3.s3.S3ServiceFactory;
 import ru.rerumu.zfs_backup_s3.s3.S3ServiceFactoryImpl;
 import ru.rerumu.zfs_backup_s3.s3.models.S3Storage;
-import ru.rerumu.zfs_backup_s3.utils.FileManager;
-import ru.rerumu.zfs_backup_s3.utils.impl.FileManagerImpl;
 import ru.rerumu.zfs_backup_s3.zfs.ZFSServiceMock;
-import ru.rerumu.zfs_backup_s3.zfs.models.Dataset;
 import ru.rerumu.zfs_backup_s3.zfs.models.Pool;
 import ru.rerumu.zfs_backup_s3.zfs.models.Snapshot;
 import software.amazon.awssdk.regions.Region;
@@ -97,13 +92,12 @@ public class ITRestoreWithPartiallyDownloaded {
         );
         ZFSFileReaderFactory zfsFileReaderFactory = new ZFSFileReaderFactoryImpl();
         ZFSFileWriterFactory zfsFileWriterFactory = new ZFSFileWriterFactoryImpl(30_000_000L);
-        FileManager fileManager = new FileManagerImpl(UUID.randomUUID().toString(), tempDir);
         LocalStorageService localStorageService = new ConsecutiveLocalStorageService(
                 zfsFileReaderFactory,
                 zfsFileWriterFactory,
-                fileManager,
-                s3ServiceReceive
-        );
+                s3ServiceReceive,
+                UUID.randomUUID().toString(),
+                tempDir);
         ReceiveService receiveService = new ReceiveServiceImpl(
                 zfsServiceRestore,
                 s3ServiceReceive,

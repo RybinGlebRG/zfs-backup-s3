@@ -8,6 +8,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 @ThreadSafe
-public sealed interface ZFSFileWriterFactory permits ZFSFileWriterFactoryImpl {
+public interface ZFSFileWriterFactory {
     ZFSFileWriter getZFSFileWriter(Path path) throws IOException;
 }
