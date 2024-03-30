@@ -7,7 +7,7 @@ import java.io.IOException;
 
 // TODO: Rename
 @NotThreadSafe
-public sealed interface ZFSFileReader permits ZFSFileReaderTrivial {
+public interface ZFSFileReader {
 
     void read() throws IOException;
 }

@@ -18,7 +18,6 @@ import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
-// TODO: Send with the same part number?
 @ThreadSafe
 public final class MultipartUploadCallable extends CallableOnlyOnce<Void> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());

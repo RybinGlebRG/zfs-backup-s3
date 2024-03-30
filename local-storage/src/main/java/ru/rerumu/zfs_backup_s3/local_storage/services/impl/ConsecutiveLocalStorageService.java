@@ -50,18 +50,6 @@ public final class ConsecutiveLocalStorageService implements LocalStorageService
         this.tempDir = tempDir;
     }
 
-    private Path getNew(String prefix, String postfix) {
-        StringBuilder stringBuilder = new StringBuilder();
-        if (prefix != null) {
-            stringBuilder.append(prefix);
-        }
-        stringBuilder.append(unique);
-        if (postfix != null) {
-            stringBuilder.append(postfix);
-        }
-        return tempDir.resolve(stringBuilder.toString());
-    }
-
     /**
      * First generate all files, then send them
      */
@@ -73,7 +61,7 @@ public final class ConsecutiveLocalStorageService implements LocalStorageService
 
             //File generation
             while (true) {
-                Path newFilePath = getNew(null, ".part" + n++);
+                Path newFilePath = tempDir.resolve(unique + ".part" + n++);
                 try (ZFSFileWriter zfsFileWriter = zfsFileWriterFactory.getZFSFileWriter(newFilePath)) {
                     zfsFileWriter.write(bufferedInputStream);
                 } catch (FileHitSizeLimitException e) {
