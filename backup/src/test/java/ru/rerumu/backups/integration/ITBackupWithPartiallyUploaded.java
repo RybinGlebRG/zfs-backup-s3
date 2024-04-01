@@ -25,7 +25,7 @@ import ru.rerumu.zfs_backup_s3.s3.S3Service;
 import ru.rerumu.zfs_backup_s3.s3.S3ServiceFactory;
 import ru.rerumu.zfs_backup_s3.s3.S3ServiceFactoryImpl;
 import ru.rerumu.zfs_backup_s3.s3.models.S3Storage;
-import ru.rerumu.zfs_backup_s3.zfs.ZFSServiceMock;
+import ru.rerumu.zfs_backup_s3.zfs.ZFSService4Mock;
 import ru.rerumu.zfs_backup_s3.zfs.models.Pool;
 import ru.rerumu.zfs_backup_s3.zfs.models.Snapshot;
 import software.amazon.awssdk.regions.Region;
@@ -47,10 +47,10 @@ import static org.mockito.Mockito.when;
 public class ITBackupWithPartiallyUploaded {
 
     @Mock
-    ZFSServiceMock zfsServiceSend;
+    ZFSService4Mock zfsServiceSend;
 
     @Mock
-    ZFSServiceMock zfsServiceRestore;
+    ZFSService4Mock zfsServiceRestore;
 
     S3Service s3ServiceSend;
 

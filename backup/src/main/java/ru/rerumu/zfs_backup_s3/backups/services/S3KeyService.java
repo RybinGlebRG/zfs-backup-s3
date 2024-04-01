@@ -3,6 +3,7 @@ package ru.rerumu.zfs_backup_s3.backups.services;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rerumu.zfs_backup_s3.utils.ThreadSafe;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 
@@ -32,7 +34,8 @@ public final class S3KeyService {
         return res;
     }
 
-    public static String getKey(String snapshotName, int level){
+    public static String getKey(@NonNull String snapshotName, int level){
+        Objects.requireNonNull(snapshotName,"Snapshot name cannot be null");
         String key = String.format(
                 "level-%d/%s/",
                 level,

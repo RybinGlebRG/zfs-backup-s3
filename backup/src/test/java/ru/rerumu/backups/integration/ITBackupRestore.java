@@ -28,7 +28,7 @@ import ru.rerumu.zfs_backup_s3.s3.S3ServiceFactoryImpl;
 import ru.rerumu.zfs_backup_s3.s3.models.S3Storage;
 import ru.rerumu.zfs_backup_s3.s3.S3Service;
 
-import ru.rerumu.zfs_backup_s3.zfs.ZFSServiceMock;
+import ru.rerumu.zfs_backup_s3.zfs.ZFSService4Mock;
 import ru.rerumu.zfs_backup_s3.zfs.models.Snapshot;
 import ru.rerumu.zfs_backup_s3.zfs.models.Dataset;
 import ru.rerumu.zfs_backup_s3.zfs.models.Pool;
@@ -54,10 +54,10 @@ import static org.mockito.Mockito.*;
 public class ITBackupRestore {
 
     @Mock
-    ZFSServiceMock zfsServiceSend;
+    ZFSService4Mock zfsServiceSend;
 
     @Mock
-    ZFSServiceMock zfsServiceRestore;
+    ZFSService4Mock zfsServiceRestore;
 
     Map<String,String> env = System.getenv();
 

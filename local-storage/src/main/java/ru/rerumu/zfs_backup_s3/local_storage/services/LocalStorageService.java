@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public sealed interface LocalStorageService permits ConsecutiveLocalStorageService {
+public sealed interface LocalStorageService permits ConsecutiveLocalStorageService, ru.rerumu.zfs_backup_s3.local_storage.services.impl.LocalStorageService4Mock {
     void send(BufferedInputStream bufferedInputStream, String prefix);
     void sendExisting(String prefix);
 

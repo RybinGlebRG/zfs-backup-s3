@@ -56,7 +56,6 @@ public final class SendServiceImpl implements SendService {
                         localStorageService.send(bufferedInputStream, prefix);
                 zfsService.send(
                         snapshot,
-                        // TODO: Add test
                         bufferedInputStreamConsumer
                 );
             }
@@ -66,7 +65,6 @@ public final class SendServiceImpl implements SendService {
         }
     }
 
-    // TODO: Why exception is thrown?
     @Override
     public void send(String poolName, String bucketName, String continueSnapshotName) throws Exception {
         try {
