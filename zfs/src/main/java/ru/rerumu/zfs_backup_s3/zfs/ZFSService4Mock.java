@@ -1,5 +1,6 @@
 package ru.rerumu.zfs_backup_s3.zfs;
 
+import ru.rerumu.zfs_backup_s3.utils.Generated;
 import ru.rerumu.zfs_backup_s3.zfs.models.Dataset;
 import ru.rerumu.zfs_backup_s3.zfs.models.Pool;
 import ru.rerumu.zfs_backup_s3.zfs.models.Snapshot;
@@ -8,6 +9,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.util.function.Consumer;
 
+@Generated
 public final class ZFSService4Mock implements ZFSService {
     @Override
     public Pool getPool(String name) throws Exception {

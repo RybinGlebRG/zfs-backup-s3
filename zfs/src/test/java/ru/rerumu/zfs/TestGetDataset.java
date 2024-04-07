@@ -5,10 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.rerumu.zfs_backup_s3.utils.processes.factories.ProcessWrapperFactory;
-import ru.rerumu.zfs_backup_s3.utils.processes.factories.ProcessWrapperFactoryMock;
+import ru.rerumu.zfs_backup_s3.utils.processes.factories.ProcessWrapperFactory4Mock;
 import ru.rerumu.zfs_backup_s3.zfs.callable.GetDataset;
-import ru.rerumu.zfs_backup_s3.zfs.factories.StdConsumerFactory;
 import ru.rerumu.zfs_backup_s3.zfs.factories.StdConsumerFactoryMock;
 import ru.rerumu.zfs_backup_s3.zfs.models.Dataset;
 
@@ -26,7 +24,7 @@ import static org.mockito.Mockito.*;
 public class TestGetDataset {
 
     @Mock
-    ProcessWrapperFactoryMock processWrapperFactory;
+    ProcessWrapperFactory4Mock processWrapperFactory;
 
     @Mock
     Callable<Void> processWrapper;

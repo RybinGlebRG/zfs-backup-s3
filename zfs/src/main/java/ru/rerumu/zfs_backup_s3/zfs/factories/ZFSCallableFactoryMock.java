@@ -1,5 +1,6 @@
 package ru.rerumu.zfs_backup_s3.zfs.factories;
 
+import ru.rerumu.zfs_backup_s3.utils.Generated;
 import ru.rerumu.zfs_backup_s3.zfs.models.Dataset;
 import ru.rerumu.zfs_backup_s3.zfs.models.Pool;
 import ru.rerumu.zfs_backup_s3.zfs.models.Snapshot;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
+@Generated
 public final class ZFSCallableFactoryMock implements ZFSCallableFactory {
     @Override
     public Callable<Pool> getPoolCallable(String poolName) {

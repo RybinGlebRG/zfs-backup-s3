@@ -77,7 +77,7 @@ public class CliService {
             bucketName = positional.get(0);
             poolName = positional.get(1);
         } else {
-            throw new AssertionError("Something went horribly wrong");
+            throw new AssertionError("Something went wrong");
         }
 
         if (cmd.hasOption("c")) {

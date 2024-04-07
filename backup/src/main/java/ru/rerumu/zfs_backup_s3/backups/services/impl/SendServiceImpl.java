@@ -22,6 +22,7 @@ import java.util.function.Consumer;
 
 
 // TODO: Use resume tokens?
+// TODO: Stop unfinished multipart upload
 @NotThreadSafe
 public final class SendServiceImpl implements SendService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());

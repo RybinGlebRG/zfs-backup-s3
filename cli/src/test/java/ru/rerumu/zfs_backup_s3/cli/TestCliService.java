@@ -2,18 +2,16 @@ package ru.rerumu.zfs_backup_s3.cli;
 
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rerumu.zfs_backup_s3.backups.EntityFactory;
-import ru.rerumu.zfs_backup_s3.backups.services.ReceiveService;
-import ru.rerumu.zfs_backup_s3.backups.services.ReceiveServiceMock;
-import ru.rerumu.zfs_backup_s3.backups.services.SendService;
-import ru.rerumu.zfs_backup_s3.backups.services.SendServiceMock;
+import ru.rerumu.zfs_backup_s3.backups.services.ReceiveService4Mock;
+import ru.rerumu.zfs_backup_s3.backups.services.SendService4Mock;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -21,13 +19,20 @@ import static org.mockito.Mockito.when;
 public class TestCliService {
 
     @Mock
-    SendServiceMock sendService;
+    SendService4Mock sendService;
 
     @Mock
-    ReceiveServiceMock receiveService;
+    ReceiveService4Mock receiveService;
 
     @Mock
     EntityFactory entityFactory;
+
+    private CliService cliService;
+
+    @BeforeEach
+    public void beforeEach(){
+        cliService = new CliService(entityFactory);
+    }
 
     @Test
     void shouldSendFull()throws Exception{
@@ -75,5 +80,14 @@ public class TestCliService {
     void shouldPrint()throws Exception{
         CliService cliService = new CliService(entityFactory);
         cliService.run(new String[]{"-h"});
+    }
+
+    @Test
+    public void shouldContinue() throws Exception{
+        when(entityFactory.getSendService("TestBucket")).thenReturn(sendService);
+
+        cliService.run(new String[]{"--backupFull","--continue","test_snapshot", "TestPool","TestBucket"});
+
+        verify(sendService).send("TestPool","TestBucket", "test_snapshot");
     }
 }

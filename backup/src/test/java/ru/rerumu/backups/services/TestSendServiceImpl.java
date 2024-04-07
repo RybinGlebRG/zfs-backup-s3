@@ -22,7 +22,7 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-// TODO: Check
+
 @ExtendWith(MockitoExtension.class)
 public class TestSendServiceImpl {
 
@@ -85,5 +85,35 @@ public class TestSendServiceImpl {
                 eq(new Snapshot("TestPool@zfs-backup-s3__level-0__2023-03-22T194000")),
                 any()
         );
+    }
+
+    @Test
+    void shouldContinue() throws Exception{
+        /*
+            Creating test objects
+         */
+        List<Dataset> datasetList = new ArrayList<>();
+        datasetList.add(new Dataset("TestPool",new ArrayList<>()));
+        Pool pool = new Pool("TestPool", datasetList);
+        String continueSnapshotName = "zfs-backup-s3__level-0__2023-03-22T194000";
+
+
+        /*
+            Mocking
+         */
+        when(zfsService.getPool("TestPool")).thenReturn(pool);
+        when(localStorageService.areFilesPresent()).thenReturn(true);
+
+
+        /*
+            Steps
+         */
+        sendService.send("TestPool","TestBucket", continueSnapshotName);
+
+
+        /*
+            Asserts
+         */
+        verify(localStorageService).sendExisting("level-0/zfs-backup-s3__level-0__2023-03-22T194000/");
     }
 }
