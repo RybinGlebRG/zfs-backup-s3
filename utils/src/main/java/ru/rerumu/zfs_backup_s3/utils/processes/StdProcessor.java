@@ -6,12 +6,10 @@ import ru.rerumu.zfs_backup_s3.utils.processes.impl.StdProcessorImpl;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 @ThreadSafe
-public sealed interface StdProcessor permits StdProcessorMock, StdProcessorImpl {
+public sealed interface StdProcessor permits StdProcessor4Mock, StdProcessorImpl {
 
     void processStd(
             BufferedInputStream stderr,

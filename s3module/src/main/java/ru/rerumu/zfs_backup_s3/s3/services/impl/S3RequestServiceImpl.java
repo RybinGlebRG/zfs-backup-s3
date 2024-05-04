@@ -27,12 +27,11 @@ public final class S3RequestServiceImpl implements S3RequestService {
     private final CallableExecutor callableExecutor;
     private final CallableSupplierFactory callableSupplierFactory;
 
-    public S3RequestServiceImpl(CallableExecutor callableExecutor,  CallableSupplierFactory callableSupplierFactory) {
+    public S3RequestServiceImpl(CallableExecutor callableExecutor, CallableSupplierFactory callableSupplierFactory) {
         this.callableExecutor = callableExecutor;
         this.callableSupplierFactory = callableSupplierFactory;
     }
 
-    // TODO: Max part number?
     @Override
     public UploadPartResult uploadPart(String key, String uploadId, Integer partNumber, ByteArray data) {
         UploadPartResult partResult = callableExecutor.callWithRetry(
@@ -74,21 +73,22 @@ public final class S3RequestServiceImpl implements S3RequestService {
         );
 
         List<ListObject> result = response.contents().stream()
-                .map(item->new ListObject(item.key(), item.eTag(), item.size()))
+                .map(item -> new ListObject(item.key(), item.eTag(), item.size()))
                 .collect(Collectors.toCollection(ArrayList::new));
-        logger.debug(String.format("Found on S3: %s",result));
+        logger.debug(String.format("Found on S3: %s", result));
 
-        while (response.isTruncated()){
+        logger.debug(String.format("Response truncated = '%s'", response.isTruncated()));
+        while (response.isTruncated()) {
             String nextMarker = response.nextMarker();
             Objects.requireNonNull(nextMarker);
-            logger.debug(String.format("Next marker = '%s'",nextMarker));
+            logger.debug(String.format("Next marker = '%s'", nextMarker));
 
             response = callableExecutor.callWithRetry(
-                    callableSupplierFactory.getListObjectSupplier(key,nextMarker)
+                    callableSupplierFactory.getListObjectSupplier(key, nextMarker)
             );
 
             response.contents().stream()
-                    .map(item->new ListObject(item.key(), item.eTag(), item.size()))
+                    .map(item -> new ListObject(item.key(), item.eTag(), item.size()))
                     .forEachOrdered(result::add);
         }
 
@@ -99,12 +99,14 @@ public final class S3RequestServiceImpl implements S3RequestService {
     public ListObject getMetadata(String key) {
         List<ListObject> objects = listObjects(key);
 
+        logger.debug(String.format("Checking equality to key='%s'",key));
         objects = objects.stream()
+                .peek(item -> logger.debug(String.format("Item key='%s'",item.key())))
                 .filter(item -> item.key().equals(key))
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        if(objects.size() != 1){
-            throw new AssertionError(String.format("objects size is '%d', not equals '1'",objects.size()));
+        if (objects.size() != 1) {
+            throw new AssertionError(String.format("objects size is '%d', not equals '1'", objects.size()));
         } else {
             return objects.get(0);
         }
@@ -114,7 +116,7 @@ public final class S3RequestServiceImpl implements S3RequestService {
     @Override
     public void putObject(Path sourcePath, String targetKey) {
         callableExecutor.callWithRetry(
-           callableSupplierFactory.getPutObjectSupplier(sourcePath, targetKey)
+                callableSupplierFactory.getPutObjectSupplier(sourcePath, targetKey)
         );
     }
 

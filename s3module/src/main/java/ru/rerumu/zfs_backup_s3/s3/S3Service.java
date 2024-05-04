@@ -7,14 +7,12 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.function.Consumer;
 
 @NotThreadSafe
-public sealed interface S3Service permits S3ServiceImpl {
-
-    void upload(BufferedInputStream bufferedInputStream, String key);
-
-    void download(String prefix, BufferedOutputStream bufferedOutputStream);
-
+public interface S3Service {
+    void upload(Path path, String prefix);
+    void download(String prefix, Path targetPath);
     List<String> list(String prefix);
 
 }

@@ -8,4 +8,6 @@ module ru.rerumu.zfs_backup_s3.backup {
     requires software.amazon.awssdk.regions;
     requires ru.rerumu.zfs_backup_s3.utils;
     requires commons.cli;
+    requires ru.rerumu.zfs_backup_s3.local_storage;
+    requires org.checkerframework.checker.qual;
 }
