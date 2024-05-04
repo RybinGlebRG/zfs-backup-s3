@@ -72,12 +72,12 @@ public final class GetObjectRangedCallable extends CallableOnlyOnce<byte[]> {
         );
 
         String bytesHex = HexFormat.of().formatHex(responseBytes);
-        logger.trace(String.format(
-                "Downloaded %d bytes:\n%s...%s",
-                responseBytes.length,
-                bytesHex.substring(0,50),
-                bytesHex.substring(bytesHex.length()-50)
-        ));
+//        logger.trace(String.format(
+//                "Downloaded %d bytes:\n%s...%s",
+//                responseBytes.length,
+//                bytesHex.substring(0, (int)Math.min(50L,endExclusive)),
+//                bytesHex.substring(bytesHex.length()-(int)Math.min(50L,endExclusive))
+//        ));
 
         byte[] md5 = MD5.getMD5Bytes(new ByteArray(responseBytes));
         logger.debug(String.format("Downloaded MD5 = '%s'",MD5.getMD5Hex(new ByteArray(responseBytes))));

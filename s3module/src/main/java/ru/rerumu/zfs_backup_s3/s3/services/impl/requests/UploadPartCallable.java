@@ -53,6 +53,7 @@ public final class UploadPartCallable extends CallableOnlyOnce<UploadPartResult>
 
     @Override
     protected UploadPartResult callOnce() throws Exception {
+        logger.debug("Uploading part '{}' of upload '{}' with key '{}' to bucket '{}'", partNumber, uploadId, key, bucketName);
         String md5 = MD5.getMD5Hex(data);
 
         UploadPartRequest uploadPartRequest = UploadPartRequest.builder()

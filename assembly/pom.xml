@@ -5,7 +5,7 @@
     <parent>
         <artifactId>zfs-backup-s3</artifactId>
         <groupId>ru.rerumu.zfs-backup-s3</groupId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -20,27 +20,32 @@
         <dependency>
             <groupId>ru.rerumu.zfs-backup-s3</groupId>
             <artifactId>s3module</artifactId>
-            <version>3.0.0</version>
+            <version>3.1.0</version>
         </dependency>
         <dependency>
             <groupId>ru.rerumu.zfs-backup-s3</groupId>
             <artifactId>zfs</artifactId>
-            <version>3.0.0</version>
+            <version>3.1.0</version>
         </dependency>
         <dependency>
             <groupId>ru.rerumu.zfs-backup-s3</groupId>
             <artifactId>backup</artifactId>
-            <version>3.0.0</version>
+            <version>3.1.0</version>
         </dependency>
         <dependency>
             <groupId>ru.rerumu.zfs-backup-s3</groupId>
             <artifactId>cli</artifactId>
-            <version>3.0.0</version>
+            <version>3.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.rerumu.zfs-backup-s3</groupId>
+            <artifactId>local-storage</artifactId>
+            <version>3.1.0</version>
         </dependency>
         <dependency>
             <groupId>ru.rerumu.zfs-backup-s3</groupId>
             <artifactId>main</artifactId>
-            <version>3.0.0</version>
+            <version>3.1.0</version>
         </dependency>
     </dependencies>
 

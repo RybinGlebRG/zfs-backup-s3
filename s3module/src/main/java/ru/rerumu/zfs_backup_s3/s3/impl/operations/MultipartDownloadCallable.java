@@ -65,6 +65,7 @@ public final class MultipartDownloadCallable extends CallableOnlyOnce<Void> {
     @Override
     protected Void callOnce() throws IOException, NoSuchAlgorithmException, IncorrectHashException {
         List<byte[]> md5List = new ArrayList<>();
+        logger.debug(String.format("Getting metadata for key '%s'",key));
         long fileSize = s3RequestService.getMetadata(key).size();
         ImmutableMap metadata = s3RequestService.getObjectMetadata(key);
 

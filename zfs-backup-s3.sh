@@ -10,4 +10,5 @@ nohup java -Xms1g -Xmx3g \
 -Dcom.sun.management.jmxremote.local.only=false \
 -Dcom.sun.management.jmxremote.authenticate=false \
 -Dcom.sun.management.jmxremote.ssl=false \
+-Dlogback.configurationFile=logback.xml \
 -jar ./zfs-backup-s3-?.?.?.jar "$@" >> output.java 2>&1 &

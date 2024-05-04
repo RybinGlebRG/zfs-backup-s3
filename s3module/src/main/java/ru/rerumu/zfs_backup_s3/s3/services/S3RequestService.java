@@ -1,5 +1,6 @@
 package ru.rerumu.zfs_backup_s3.s3.services;
 
+import ru.rerumu.zfs_backup_s3.s3.exceptions.PartNumberTooLargeException;
 import ru.rerumu.zfs_backup_s3.utils.ImmutableMap;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.S3RequestServiceImpl;
 import ru.rerumu.zfs_backup_s3.s3.services.impl.S3RequestServiceMock;
@@ -19,7 +20,7 @@ public sealed interface S3RequestService permits S3RequestServiceMock, S3Request
 
     UploadPartResult uploadPart(
             String key, String uploadId, Integer partNumber, ByteArray data
-    );
+    ) throws PartNumberTooLargeException;
 
     String createMultipartUpload(
             String key,

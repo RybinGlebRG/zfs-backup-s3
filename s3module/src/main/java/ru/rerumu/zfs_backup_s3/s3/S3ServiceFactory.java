@@ -8,9 +8,6 @@ public interface S3ServiceFactory {
 
     S3Service getS3Service(
             S3Storage s3Storage,
-            int maxPartSize,
-            long filePartSize,
-            Path tempDir,
-            UUID uuid
+            int maxPartSize
     );
 }

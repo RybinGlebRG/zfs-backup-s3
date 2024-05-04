@@ -11,7 +11,7 @@ import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 @ThreadSafe
-public sealed interface ProcessWrapperFactory permits ProcessWrapperFactoryMock, ProcessWrapperFactoryImpl {
+public sealed interface ProcessWrapperFactory permits ProcessWrapperFactory4Mock, ProcessWrapperFactoryImpl {
 
     Callable<Void> getProcessWrapper(
             List<String> args,

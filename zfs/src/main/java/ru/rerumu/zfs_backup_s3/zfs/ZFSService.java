@@ -11,7 +11,7 @@ import java.io.BufferedOutputStream;
 import java.util.function.Consumer;
 
 @NotThreadSafe
-public sealed interface ZFSService permits ZFSServiceMock, ZFSServiceImpl {
+public sealed interface ZFSService permits ZFSService4Mock, ZFSServiceImpl {
 
     Pool getPool(String name) throws Exception;
     void send(Snapshot snapshot, Consumer<BufferedInputStream> consumer) throws Exception;
