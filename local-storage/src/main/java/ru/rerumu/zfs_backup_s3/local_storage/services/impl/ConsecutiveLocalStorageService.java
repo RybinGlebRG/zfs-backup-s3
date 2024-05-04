@@ -91,6 +91,7 @@ public final class ConsecutiveLocalStorageService implements LocalStorageService
         logger.info(String.format("Sending existing files. Prefix='%s'", prefix));
         try {
             List<Path> presentFiles = getPresentFiles();
+            // TODO: Sort files
             // File sending
             for (Path file : presentFiles) {
                 logger.debug(String.format("Uploading file '%s' with prefix '%s'", file.getFileName(), prefix));

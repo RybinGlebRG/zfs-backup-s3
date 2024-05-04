@@ -32,7 +32,6 @@ public final class S3RequestServiceImpl implements S3RequestService {
         this.callableSupplierFactory = callableSupplierFactory;
     }
 
-    // TODO: Max part number?
     @Override
     public UploadPartResult uploadPart(String key, String uploadId, Integer partNumber, ByteArray data) {
         UploadPartResult partResult = callableExecutor.callWithRetry(

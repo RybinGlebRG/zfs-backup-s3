@@ -29,7 +29,7 @@ public final class S3KeyService {
     }
 
     private static LocalDateTime extractTime(String snapshotName) {
-        String timeStr = snapshotName.substring(SNAPSHOT_PREFIX.length()+2);
+        String timeStr = snapshotName.substring(SNAPSHOT_PREFIX.length());
         LocalDateTime res = LocalDateTime.parse(timeStr,DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss"));
         return res;
     }
@@ -45,7 +45,7 @@ public final class S3KeyService {
     }
 
     public static String getKey( LocalDateTime localDateTime, int level){
-        String tmp = SNAPSHOT_PREFIX+"__" +formatDate(localDateTime);
+        String tmp = SNAPSHOT_PREFIX+formatDate(localDateTime);
         String key = String.format(
                 "level-%d/%s/",
                 level,

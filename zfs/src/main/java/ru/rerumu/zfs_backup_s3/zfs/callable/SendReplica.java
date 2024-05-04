@@ -39,6 +39,7 @@ public final class SendReplica extends CallableOnlyOnce<Void> {
         this.stdoutConsumer = stdoutConsumer;
     }
 
+    // TODO: Protected?
     @Override
     public Void callOnce() throws Exception {
         List<String> command = new ArrayList<>();
